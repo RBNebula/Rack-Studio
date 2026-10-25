@@ -31,6 +31,6 @@ Snapshot: 25 October 2026. Milestone: preserve the working lacing-bar/rear-place
 
 ## Next work
 
-First resolve the Linux browser baseline using the CI trace/diagnostics and keep `main` stable. The next product task should obtain and record the missing rack/device/support measurements, then add numeric and browser checks for the measured fit. This gates meaningful installation-animation and cable-dynamics work. Continue the priorities in `ROADMAP.md` on separate reviewed branches.
+First resolve [the Linux browser baseline, issue #4](https://github.com/RBNebula/Rack-Studio/issues/4) using the CI trace/diagnostics and keep `main` stable. The next product task should obtain and record the missing rack/device/support measurements, then add numeric and browser checks for the measured fit. This gates meaningful installation-animation and cable-dynamics work. Continue the priorities in `ROADMAP.md` on separate reviewed branches.
 
 No application behavior was intentionally changed for the migration. Test tooling gains a cross-platform browser choice; runtime source remains preserved. Update this file after major work with the actual subsystem outcome, commands/results and remaining uncertainty.

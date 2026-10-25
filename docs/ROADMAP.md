@@ -4,6 +4,8 @@ This is an evidence-based continuation plan, not a replacement for `requirements
 
 Active continuation issues: [measured geometry #1](https://github.com/RBNebula/Rack-Studio/issues/1), [installation state machine #2](https://github.com/RBNebula/Rack-Studio/issues/2), and [cable collision/slack/fixings #3](https://github.com/RBNebula/Rack-Studio/issues/3). Inspect these before creating overlapping work.
 
+Immediate verification priority: [resolve the failing Linux Chromium baseline #4](https://github.com/RBNebula/Rack-Studio/issues/4). The full local Edge suite passes, but Linux CI has six observed failures and a cancelled incomplete run. Do not treat the cross-platform browser baseline as accepted.
+
 | Priority/area | Existing foundation | Outstanding work / acceptance target |
 | --- | --- | --- |
 | 1. Rack geometry and depth | Variable inclusive U sections, independent screw planes/exterior dimensions, solid members and covers | Obtain measured frame/enclosure sections and clearances; validate transitions and adjacent-rack structure against that data |

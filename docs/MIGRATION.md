@@ -27,7 +27,7 @@ All source assets, screenshot evidence, examples, package manifests, lockfile an
 | `node scripts/validate-examples.mjs` | PASS: 13 project fixtures and three library exports; modelling example's four cable routes valid |
 | `pnpm format:check` | Existing failure in `src/engineering/routing.ts`; retained without source reformatting |
 | Current browser suite | PASS: 29/29 workflows, 7.5 minutes, Edge 156.0.4314.42, headless 1600×1000/software WebGL; `validation/migration-browser-results.txt` |
-| Workflow syntax/execution | YAML parsed by Prettier; hosted run started and passed install/type/lint/unit/build. Browser outcome is tracked on the [live Actions page](https://github.com/RBNebula/Rack-Studio/actions/workflows/ci.yml) and reported in the final handover |
+| Workflow syntax/execution | YAML parsed by Prettier; Linux install/type/lint/302 unit tests/build PASS. Browser CI is failing: six failed and sixteen passed before the 20-minute limit cancelled [run 40227251797](https://github.com/RBNebula/Rack-Studio/actions/runs/40227251797). See `TESTING.md`; subsequent runs stop at the first failure and retain traces, with no failure suppression |
 | Initial GitHub upload and SHA comparison | PASS: local HEAD, remote main and separate GitHub clone all `01f49391863746324ae8bcef1354b68e66ed61fd` |
 | Separate GitHub clone, locked install and build | PASS: fresh GitHub clone into ignored `.migration-local/github-verification`, `pnpm install --frozen-lockfile` then `pnpm check`; 302 tests and production build pass with unchanged tracked files; logs in `validation/migration-fresh-install.txt` and `validation/migration-fresh-checks.txt` |
 

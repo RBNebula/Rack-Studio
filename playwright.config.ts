@@ -7,11 +7,13 @@ export default defineConfig({
   fullyParallel: false,
   workers: 1,
   forbidOnly: Boolean(process.env.CI),
+  maxFailures: process.env.CI ? 1 : undefined,
   reporter: 'list',
   use: {
     baseURL: 'http://127.0.0.1:5173',
     viewport: { width: 1600, height: 1000 },
     headless: true,
+    trace: process.env.CI ? 'retain-on-failure' : 'off',
     launchOptions: {
       ...(channel === 'chromium' ? {} : { channel }),
       args: ['--enable-webgl', '--use-angle=swiftshader', '--enable-unsafe-swiftshader'],

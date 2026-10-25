@@ -25,12 +25,12 @@ Snapshot: 25 October 2026. Milestone: preserve the working lacing-bar/rear-place
 | Project storage/undo | Implemented and verified | IndexedDB save/recovery/autosave, revision guard, JSON portability and atomic undo/redo tested. Hosted collaboration/version merging planned |
 | Adjacent racks/modelling | Partially implemented | Origins, cross-rack links, assemblies, measuring and hide/isolate work; rack rotation and full empty-frame overlap prevention remain open |
 | Browser performance | Implemented but not fully tested | Lazy scene/designer and cached analysis; synthetic geometric smoke fixture. Full FPS/memory/stress acceptance is unverified |
-| Automated tests | Implemented and verified | 302 numeric/state tests baseline; 29 historical Edge workflows. Full controlled visual regression and coverage instrumentation are absent |
-| Repository/CI/cloud readiness | Implemented and verified for local checkout/setup | GitHub push and SHA comparison, independent clone/install/check, shared instructions, PR workflow and Linux CI configuration verified. Cloud account environment connection remains the owner's next step; hosted browser outcome is on the live Actions page. Main branch protection is disabled |
+| Automated tests | Implemented; Linux browser baseline known to be broken | 302 numeric/state tests and all 29 current local Edge workflows pass. Linux Chromium run has six observed failures and did not finish before the time limit; see `TESTING.md`. Full controlled visual regression and coverage instrumentation are absent |
+| Repository/CI/cloud readiness | Partially implemented | GitHub push/SHA, independent clone/install/check, shared instructions and PR workflow verified. Linux install/type/lint/unit/build pass; browser CI fails and needs diagnosis. Cloud account connection remains the owner's next step. Main branch protection is disabled |
 | Hosted backend/team features | Planned | No accounts, authorisation service, shared inventory or project backend; static frontend deployment is not private project hosting |
 
 ## Next work
 
-First review the migration/CI evidence and keep `main` stable. The next product task should obtain and record the missing rack/device/support measurements, then add numeric and browser checks for the measured fit. This gates meaningful installation-animation and cable-dynamics work. Continue the priorities in `ROADMAP.md` on separate reviewed branches.
+First resolve the Linux browser baseline using the CI trace/diagnostics and keep `main` stable. The next product task should obtain and record the missing rack/device/support measurements, then add numeric and browser checks for the measured fit. This gates meaningful installation-animation and cable-dynamics work. Continue the priorities in `ROADMAP.md` on separate reviewed branches.
 
 No application behavior was intentionally changed for the migration. Test tooling gains a cross-platform browser choice; runtime source remains preserved. Update this file after major work with the actual subsystem outcome, commands/results and remaining uncertainty.

@@ -1,0 +1,58 @@
+Rack Studio lacing bar and rear placement · 24 October 2026
+Command: RACK_TEST_URL=http://127.0.0.1:5174 node node_modules/@playwright/test/cli.js test
+Frozen production: index-18QnjpoI.js / Scene-DuiHiMVa.js / ModelDesigner-Ce3irH7p.js
+Edge 156.0.4314.42 · 1600 x 1000 · headless software WebGL
+All 29 workflows passed with assertions for no uncaught page errors. New coverage includes native front/rear library drops in a vertically translated stepped rack, explicit mounting-face selection, precise placement defaults, lacing bar addition/editing and JSON round-trip. Top/3D captures reviewed.
+
+[WebServer] (node:27492) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+
+Running 29 tests using 1 worker
+
+(node:26376) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ok  1 tests\connector-rotation.spec.ts:28:1 › front/rear connector rotation, save-as-new, library edits and rotated native port connections persist (10.2s)
+Construction QA: Microsoft Edge 156.0.4314.42, 1600 × 1000, software WebGL.
+  ok  2 tests\construction.spec.ts:58:1 › exterior envelope, rail planes and rail profile stay independently configurable through save and reload (2.8s)
+  ok  3 tests\construction.spec.ts:107:1 › explicit structural channels require entered geometry and retain their identity and provisional evidence (3.1s)
+  ok  4 tests\construction.spec.ts:192:1 › generic shelf depth, usable depth and entered supports survive front and rear placements (6.7s)
+  ok  5 tests\construction.spec.ts:303:1 › pending shelf supports block saving and inactive supports stay absent when generation is disabled (4.0s)
+  ok  6 tests\device-rails.spec.ts:5:1 › sliding rails preserve cable identity, service extension and saved geometry (12.7s)
+  ok  7 tests\generic-switch.spec.ts:108:1 › generic single-row switch adds to an existing library, connects RJ45/SFP/AC and preserves edited ports (24.1s)
+  ok  8 tests\lacing-bar.spec.ts:66:1 › native rear and front library drops follow the selected mounting face in a translated stepped rack (5.6s)
+  ok  9 tests\lacing-bar.spec.ts:113:1 › existing projects can add, edit, place and round-trip a lacing bar without replacing their equipment (2.1s)
+  ok 10 tests\model-designer.spec.ts:4:1 › isolated device designer, face drag/drop, library persistence and tray stretching (3.6s)
+  ok 11 tests\model-save-as-new.spec.ts:12:1 › save as new preserves the source and its cables, edits only the copy and survives undo and reload (4.2s)
+  ok 12 tests\modelling.spec.ts:55:1 › direct guide dragging, tray rotation/free placement, duplication, alignment, visibility and measurement (18.0s)
+  ok 13 tests\modelling.spec.ts:134:1 › adjacent racks retain independent layouts and portable assemblies remap all identities (9.6s)
+  ok 14 tests\modelling.spec.ts:182:1 › attached clips, shared bundle paths and a movable 3D vehicle endpoint retain real cable records (18.3s)
+Mounting QA: Microsoft Edge 156.0.4314.42, 1600 × 1000, software WebGL.
+Mounting view front U18: rendered U-label pitch 25.6 → 155.6 px.
+  ok 15 tests\mounting.spec.ts:158:1 › front patch panel and switch expose their rack ears against the mounting rails (9.9s)
+Mounting view front U6: rendered U-label pitch 25.6 → 117.0 px.
+  ok 16 tests\mounting.spec.ts:175:1 › a 1U shelf mounts at the front with ears while its centre remains open (10.2s)
+Mounting view rear U10: rendered U-label pitch 28.9 → 53.6 px.
+  ok 17 tests\mounting.spec.ts:187:1 › a 1U shelf mounts at the rear and retains its mounting face after local save and reload (5.7s)
+Photographed PC QA: Microsoft Edge 156.0.4314.42, 1600 × 1000, software WebGL.
+PC view front U8: rendered U pitch 21.9 → 55.1 px.
+PC view rear U8: rendered U pitch 21.9 → 55.1 px.
+PC view front oblique U8: rendered U pitch 21.9 → 54.5 px.
+  ok 18 tests\user-rack-pc.spec.ts:193:1 › photographed PC places at either rack face and preserves measured dimensions and front/rear ports (1.4m)
+  ok 19 tests\user-rack-pc.spec.ts:263:1 › a PC library import adds the photographed model to an existing rack without changing old devices or cables (4.9s)
+  ok 20 tests\user-rack-pc.spec.ts:326:1 › a photographed rear network port connects through the UI and retains identity after a PC move and save/reload (7.3s)
+Visual-reference QA: Microsoft Edge 156.0.4314.42, 1600 × 1000, software WebGL.
+  ok 21 tests\visual-references.spec.ts:147:1 › flat reference rack has independent top and base panels whose settings persist (4.2s)
+Reference plate view front: rendered U pitch 25.4 → 52.4 px.
+Reference plate view rear oblique: rendered U pitch 28.1 → 73.8 px.
+  ok 22 tests\visual-references.spec.ts:207:1 › solid and perforated blanks place at both faces and preserve editable sheet geometry and identities (16.8s)
+  ok 23 tests\wiring.spec.ts:26:1 › surface waypoints, line traversal, port wiring and ordered reusable links persist (15.7s)
+Browser QA: Microsoft Edge 156.0.4314.42, 1600 × 1000, software WebGL.
+Installed drag U16: rendered grid samples [{"x":952.4036254882812,"y":423.37255859375},{"x":925.49609375,"y":445.424560546875},{"x":925.49609375,"y":445.424560546875},{"x":925.49609375,"y":445.424560546875},{"x":925.49609375,"y":445.424560546875},{"x":925.49609375,"y":445.424560546875}].
+  ok 24 tests\workflows.spec.ts:131:1 › actual library drag, occupied drop, precise placement, undo/redo and camera controls (7.9s)
+  ok 25 tests\workflows.spec.ts:189:1 › custom definition, port editing and embedded image survive a real local save/reload (2.3s)
+  ok 26 tests\workflows.spec.ts:251:1 › connections, master schedule, external length, reserve, CSV and project reopen stay consistent (3.6s)
+  ok 27 tests\workflows.spec.ts:394:1 › new rack dimensions and inclusive depth sections persist while invalid overlapping sections are rejected (3.1s)
+  ok 28 tests\workflows.spec.ts:437:1 › a storage failure preserves the current project when New is requested (1.5s)
+  ok 29 tests\workflows.spec.ts:471:1 › imported power cable follows an existing curved run through UI edits and reload (2.1s)
+
+  29 passed (5.1m)

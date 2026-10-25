@@ -1,0 +1,49 @@
+# Testing Rack Studio
+
+Use Node 24 and pnpm 11.25.0; install with `pnpm install --frozen-lockfile`. The manifest also permits compatible Node 22.13+ and 26+ lines. No runtime secrets or environment file is required.
+
+## Commands
+
+| Command | What it checks |
+| --- | --- |
+| `pnpm typecheck` | TypeScript strict checking with no emitted files |
+| `pnpm lint` | Existing ESLint/TypeScript/React hook rules |
+| `pnpm test` | Vitest `src/**/*.test.ts` using the Node environment; baseline 302 tests in 23 files |
+| `pnpm build` | Typecheck then Vite production bundle in ignored `dist/` |
+| `pnpm check` | Typecheck, lint, unit/integration tests and build, stopping on failure |
+| `pnpm test:e2e` | All real-pointer Playwright workflows in `tests/` |
+| `pnpm exec playwright test tests/lacing-bar.spec.ts` | Example targeted browser run |
+| `pnpm format:check` | Existing Prettier check; separate from CI check, report any existing failures |
+| `node scripts/validate-examples.mjs` | Parse portable project/library examples and validate references/placement; writes `docs/validation/example-integrity.txt` |
+| `node scripts/benchmark.mjs` | Existing synthetic geometric smoke benchmark, not full browser FPS/stress acceptance |
+
+`scripts/verify.mjs` is an alternative sequential verifier that writes `docs/validation/latest-checks.txt`; it has per-command 120-second limits. Do not use generated historical evidence as a substitute for rerunning relevant checks.
+
+## Browser setup
+
+On Windows the existing default is installed Microsoft Edge (`msedge`). On Linux the default is bundled Chromium. Install it and its Linux system dependencies before testing:
+
+```sh
+pnpm exec playwright install --with-deps chromium
+pnpm test:e2e
+```
+
+For Windows bundled Chromium, run `pnpm exec playwright install chromium`, then `$env:RACK_BROWSER_CHANNEL='chromium'` and `pnpm test:e2e`. `RACK_BROWSER_CHANNEL` selects a supported Playwright browser channel; the special value `chromium` uses the bundled browser. CI explicitly selects it. Browser execution requires process-launch, loopback and WebGL support; SwiftShader launch arguments support software rendering.
+
+`playwright.config.ts` runs one worker, 1600×1000 headless, and starts Vite at `http://127.0.0.1:5173`. With `CI=true` an existing server is not reused and focused tests are rejected; retries are not added. Free port 5173 before a CI-style run. Most specs accept optional `RACK_TEST_URL` (e.g. `http://127.0.0.1:5174`) to target a separately started immutable production preview. The configured webServer still starts/checks 5173. Use the default URL for a uniform full-suite run.
+
+Browser workflows cover placement, shelves, construction, persistence/recovery, port connections, designer/tray controls, rails, wiring, modelling/assemblies, generic switch, copy-as-new, rotation and lacing/rear placement. Tests write screenshots under `docs/screenshots/`; preserve/review existing evidence before accepting updates. These are workflow captures, not an automated pixel-comparison regression suite. CI screenshots are ephemeral and do not change repository commits.
+
+## Geometry and collision validation
+
+Pure tests cover U grids/sections, chassis/ear/rail contact on both faces, shelf bearing and independent construction, oriented geometry/attachments, rail travel, port transforms/rotation, obstacles and routing, guides/shared runs, length breakdowns, continuous cut allocation, schema integrity and atomic state changes. For geometry changes assert contact versus penetration numerically, both front/rear transforms, stable IDs and unchanged dependent schedules. Inspect appropriate browser views as well. Rendered holes may use conservative solid collision proxies; never infer physical passage from appearance alone.
+
+## Baseline, failures and coverage
+
+The 25 October migration's pre-change `pnpm check` passes: 302 tests across 23 files, typecheck, lint and build. See `MIGRATION.md` for browser/final/fresh-checkout evidence and actual GitHub Actions outcome. Previous accepted 29-workflow Edge run is retained in `validation/lacing-bar-browser-results.txt` and must be distinguished from current runs. Any environment-related execution failure must be reported separately from application assertions.
+
+No instrumented coverage percentage is configured or measured, and no coverage threshold should be invented. Gaps include complete global cable interaction/physical dynamics, surveyed hardware, install/fastener animations, full section 21 end-to-end acceptance, calibrated visual baselines and full browser FPS/memory stress tests. Existing `benchmarks/geometric-smoke.json` is limited synthetic evidence. Extend meaningful domain and browser coverage alongside new behavior.
+
+The migration's optional `pnpm format:check` fails on existing formatting in `src/engineering/routing.ts`. That source is preserved byte-for-byte; the required type/lint/unit/build checks pass. Formatting is not silently added as a passing CI gate. Browser execution also emits existing Three.js deprecation warnings for `Clock` and `PCFSoftShadowMap`; record failures separately from these warnings.
+
+The `Validate` GitHub workflow runs locked installation, typecheck, lint, unit/integration tests, production build and Chromium workflows on main pushes/PRs, with dependency-store caching, one Linux job and no failure suppression. It can also be started manually. A successful upload is not a test result.

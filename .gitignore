@@ -1,0 +1,23 @@
+node_modules/
+.pnpm-store/
+dist/
+test-results/
+playwright-report/
+*.log
+.DS_Store
+
+# Local credentials, private projects, generated state and migration backups
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+*.p12
+*.pfx
+*.tsbuildinfo
+.cache/
+coverage/
+.migration-local/
+.local-projects/
+# Retained local delivery archive duplicates an older application snapshot
+handover/

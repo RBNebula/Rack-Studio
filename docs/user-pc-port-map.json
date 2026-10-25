@@ -1,0 +1,479 @@
+{
+  "schemaVersion": 1,
+  "sourceOriginalSize": [
+    5712,
+    3213
+  ],
+  "workingCoordinateSize": [
+    2048,
+    1152
+  ],
+  "quadOrder": [
+    "top-left",
+    "top-right",
+    "bottom-right",
+    "bottom-left"
+  ],
+  "front": {
+    "filename": "IMG_9051.JPG",
+    "quad2048": [
+      [
+        315,
+        471
+      ],
+      [
+        1778,
+        492
+      ],
+      [
+        1767,
+        630
+      ],
+      [
+        321,
+        614
+      ]
+    ],
+    "quadOriginal": [
+      [
+        878.6,
+        1313.6
+      ],
+      [
+        4959,
+        1372.2
+      ],
+      [
+        4928.3,
+        1757.1
+      ],
+      [
+        895.3,
+        1712.5
+      ]
+    ]
+  },
+  "rear": {
+    "filename": "IMG_9058.JPG",
+    "quad2048": [
+      [
+        207,
+        449
+      ],
+      [
+        1896,
+        442
+      ],
+      [
+        1878,
+        594
+      ],
+      [
+        215,
+        612
+      ]
+    ],
+    "quadOriginal": [
+      [
+        577.3,
+        1252.3
+      ],
+      [
+        5288.1,
+        1232.8
+      ],
+      [
+        5237.9,
+        1656.7
+      ],
+      [
+        599.6,
+        1706.9
+      ]
+    ]
+  },
+  "dimensions": {
+    "depthMm": 381,
+    "chassisWidthMm": 431.8,
+    "earWidthMm": 482.6,
+    "heightU": 1,
+    "physicalHeightMm": 43,
+    "physicalHeightEvidence": "provisional"
+  },
+  "ports": [
+    {
+      "id": "front-usb-top",
+      "surface": "front",
+      "connector": "USB-A",
+      "pixel2048": [
+        990,
+        514
+      ],
+      "pixelOriginal": [
+        2761.2,
+        1433.6
+      ],
+      "uv": [
+        0.453204,
+        0.234602
+      ],
+      "positionXYmm": [
+        20.2,
+        32.9
+      ]
+    },
+    {
+      "id": "front-usb-bottom",
+      "surface": "front",
+      "connector": "USB-A",
+      "pixel2048": [
+        990,
+        542
+      ],
+      "pixelOriginal": [
+        2761.2,
+        1511.7
+      ],
+      "uv": [
+        0.453476,
+        0.432813
+      ],
+      "positionXYmm": [
+        20.1,
+        24.4
+      ]
+    },
+    {
+      "id": "rear-power",
+      "surface": "rear",
+      "connector": "IEC C14",
+      "pixel2048": [
+        337,
+        546
+      ],
+      "pixelOriginal": [
+        939.9,
+        1522.8
+      ],
+      "uv": [
+        0.070044,
+        0.597444
+      ],
+      "positionXYmm": [
+        -185.7,
+        17.3
+      ]
+    },
+    {
+      "id": "rear-usb-left-top",
+      "surface": "rear",
+      "connector": "USB-A",
+      "pixel2048": [
+        733,
+        485
+      ],
+      "pixelOriginal": [
+        2044.4,
+        1352.7
+      ],
+      "uv": [
+        0.296335,
+        0.236367
+      ],
+      "positionXYmm": [
+        -87.9,
+        32.8
+      ]
+    },
+    {
+      "id": "rear-usb-left-bottom",
+      "surface": "rear",
+      "connector": "USB-A",
+      "pixel2048": [
+        734,
+        511
+      ],
+      "pixelOriginal": [
+        2047.2,
+        1425.2
+      ],
+      "uv": [
+        0.296962,
+        0.398405
+      ],
+      "positionXYmm": [
+        -87.7,
+        25.9
+      ]
+    },
+    {
+      "id": "rear-ps2",
+      "surface": "rear",
+      "connector": "PS/2",
+      "pixel2048": [
+        736,
+        551
+      ],
+      "pixelOriginal": [
+        2052.8,
+        1536.8
+      ],
+      "uv": [
+        0.2982,
+        0.649397
+      ],
+      "positionXYmm": [
+        -87.1,
+        15.1
+      ]
+    },
+    {
+      "id": "rear-video-top",
+      "surface": "rear",
+      "connector": "DisplayPort — user annotated",
+      "pixel2048": [
+        808,
+        527
+      ],
+      "pixelOriginal": [
+        2253.6,
+        1469.8
+      ],
+      "uv": [
+        0.340072,
+        0.502007
+      ],
+      "positionXYmm": [
+        -69.1,
+        21.4
+      ]
+    },
+    {
+      "id": "rear-video-bottom",
+      "surface": "rear",
+      "connector": "HDMI — user annotated",
+      "pixel2048": [
+        808,
+        564
+      ],
+      "pixelOriginal": [
+        2253.6,
+        1573
+      ],
+      "uv": [
+        0.340302,
+        0.735504
+      ],
+      "positionXYmm": [
+        -69,
+        11.4
+      ]
+    },
+    {
+      "id": "rear-vga",
+      "surface": "rear",
+      "connector": "VGA",
+      "pixel2048": [
+        916,
+        552
+      ],
+      "pixelOriginal": [
+        2554.8,
+        1539.6
+      ],
+      "uv": [
+        0.403754,
+        0.665463
+      ],
+      "positionXYmm": [
+        -41.6,
+        14.4
+      ]
+    },
+    {
+      "id": "rear-usb-middle-top",
+      "surface": "rear",
+      "connector": "USB-A",
+      "pixel2048": [
+        1025,
+        528
+      ],
+      "pixelOriginal": [
+        2858.8,
+        1472.6
+      ],
+      "uv": [
+        0.468007,
+        0.518717
+      ],
+      "positionXYmm": [
+        -13.8,
+        20.7
+      ]
+    },
+    {
+      "id": "rear-usb-middle-bottom",
+      "surface": "rear",
+      "connector": "USB-A",
+      "pixel2048": [
+        1025,
+        562
+      ],
+      "pixelOriginal": [
+        2858.8,
+        1567.5
+      ],
+      "uv": [
+        0.468663,
+        0.735311
+      ],
+      "positionXYmm": [
+        -13.5,
+        11.4
+      ]
+    },
+    {
+      "id": "rear-rj45",
+      "surface": "rear",
+      "connector": "RJ45",
+      "pixel2048": [
+        1120,
+        486
+      ],
+      "pixelOriginal": [
+        3123.8,
+        1355.5
+      ],
+      "uv": [
+        0.52372,
+        0.256729
+      ],
+      "positionXYmm": [
+        10.2,
+        32
+      ]
+    },
+    {
+      "id": "rear-usb-lan-top",
+      "surface": "rear",
+      "connector": "USB-A",
+      "pixel2048": [
+        1121,
+        532
+      ],
+      "pixelOriginal": [
+        3126.5,
+        1483.8
+      ],
+      "uv": [
+        0.525471,
+        0.548902
+      ],
+      "positionXYmm": [
+        11,
+        19.4
+      ]
+    },
+    {
+      "id": "rear-usb-lan-bottom",
+      "surface": "rear",
+      "connector": "USB-A",
+      "pixel2048": [
+        1122,
+        565
+      ],
+      "pixelOriginal": [
+        3129.3,
+        1575.8
+      ],
+      "uv": [
+        0.526907,
+        0.760229
+      ],
+      "positionXYmm": [
+        11.6,
+        10.3
+      ]
+    },
+    {
+      "id": "rear-audio-blue",
+      "surface": "rear",
+      "connector": "3.5 mm",
+      "pixel2048": [
+        1254,
+        468
+      ],
+      "pixelOriginal": [
+        3497.5,
+        1305.3
+      ],
+      "uv": [
+        0.603635,
+        0.147501
+      ],
+      "positionXYmm": [
+        44.7,
+        36.7
+      ]
+    },
+    {
+      "id": "rear-audio-green",
+      "surface": "rear",
+      "connector": "3.5 mm",
+      "pixel2048": [
+        1254,
+        510
+      ],
+      "pixelOriginal": [
+        3497.5,
+        1422.4
+      ],
+      "uv": [
+        0.605032,
+        0.414708
+      ],
+      "positionXYmm": [
+        45.4,
+        25.2
+      ]
+    },
+    {
+      "id": "rear-audio-pink",
+      "surface": "rear",
+      "connector": "3.5 mm",
+      "pixel2048": [
+        1254,
+        550
+      ],
+      "pixelOriginal": [
+        3497.5,
+        1534
+      ],
+      "uv": [
+        0.606374,
+        0.671332
+      ],
+      "positionXYmm": [
+        45.9,
+        14.1
+      ]
+    }
+  ],
+  "coordinateEvidence": "Photo-derived manual digitization; unverified; several millimetres of planning uncertainty with no validated error bound.",
+  "dimensionEvidence": {
+    "depth": "user-entered",
+    "chassisWidth": "user-entered",
+    "earWidth": "user-entered",
+    "heightU": "user-confirmed",
+    "physicalHeight": "provisional"
+  },
+  "coordinateContract": {
+    "x": "Front x=(0.5-u)*431.8; rear x=(u-0.5)*431.8",
+    "y": "Y=(1-v)*43 from chassis bottom",
+    "z": "Rear face at local Z=381. Front at model fascia plane; ear/fascia thickness is unmeasured.",
+    "normals": {
+      "front": [0, 0, -1],
+      "rear": [0, 0, 1]
+    }
+  }
+}

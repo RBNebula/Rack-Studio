@@ -1,0 +1,2 @@
+minimumReleaseAgeExclude:
+  - zustand@5.0.16

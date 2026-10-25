@@ -1,0 +1,19 @@
+Portable example integrity · 25 October 2026
+Command: node scripts/validate-examples.mjs
+blanking-plates-reference.rack.json: parsed, references valid, 5 placements valid
+communications-rack.rack.json: parsed, references valid, 6 placements valid
+configurable-construction.rack.json: parsed, references valid, 1 placements valid
+flat-rack-reference.rack.json: parsed, references valid, 0 placements valid
+generic-switch-24.rack.json: parsed, references valid, 1 placements valid
+geometric-stress.rack.json: parsed, references valid, 40 placements valid
+lacing-bars.rack.json: parsed, references valid, 2 placements valid
+modelling-workspace.rack.json: parsed, references valid, 3 placements valid
+modelling-workspace.rack.json: all 4 cable routes geometrically valid; bend specifications remain provisional
+pc-sliding-rails.rack.json: parsed, references valid, 1 placements valid
+route-follow.rack.json: parsed, references valid, 3 placements valid
+stepped-rack.rack.json: parsed, references valid, 6 placements valid
+user-rack-pc.rack.json: parsed, references valid, 1 placements valid
+wiring-guides.rack.json: parsed, references valid, 2 placements valid
+user-rack-pc.library.json: schema valid; identical to the standalone project definition
+generic-switch-24.library.json: schema valid; identical to the standalone project definition
+lacing-bars.library.json: schema valid; identical to the standalone project definition

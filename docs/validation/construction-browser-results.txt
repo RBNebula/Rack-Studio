@@ -1,0 +1,56 @@
+[WebServer] (node:23940) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+
+Running 13 tests using 1 worker
+
+(node:16860) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+Construction QA: Microsoft Edge 155.0.4283.62, 1600 × 1000, software WebGL.
+  ok  1 tests\construction.spec.ts:58:1 › exterior envelope, rail planes and rail profile stay independently configurable through save and reload (3.3s)
+  ok  2 tests\construction.spec.ts:107:1 › explicit structural channels require entered geometry and retain their identity and provisional evidence (3.0s)
+  ok  3 tests\construction.spec.ts:192:1 › generic shelf depth, usable depth and entered supports survive front and rear placements (6.0s)
+  ok  4 tests\construction.spec.ts:303:1 › pending shelf supports block saving and inactive supports stay absent when generation is disabled (4.4s)
+Mounting QA: Microsoft Edge 155.0.4283.62, 1600 × 1000, software WebGL.
+Mounting view front U18: rendered U-label pitch 25.6 → 157.3 px.
+  ok  5 tests\mounting.spec.ts:143:1 › front patch panel and switch expose their rack ears against the mounting rails (10.1s)
+Mounting view front U6: rendered U-label pitch 25.6 → 117.3 px.
+  ok  6 tests\mounting.spec.ts:160:1 › a 1U shelf mounts at the front with ears while its centre remains open (9.3s)
+Mounting view rear U10: rendered U-label pitch 28.9 → 53.7 px.
+  ok  7 tests\mounting.spec.ts:172:1 › a 1U shelf mounts at the rear and retains its mounting face after local save and reload (5.8s)
+Browser QA: Microsoft Edge 155.0.4283.62, 1600 × 1000, software WebGL.
+Installed drag U16: rendered grid samples [{"x":952.4036254882812,"y":423.37255859375},{"x":925.49609375,"y":445.424560546875},{"x":925.49609375,"y":445.424560546875},{"x":925.49609375,"y":445.424560546875},{"x":925.49609375,"y":445.424560546875},{"x":925.49609375,"y":445.424560546875}].
+  ok  8 tests\workflows.spec.ts:131:1 › actual library drag, occupied drop, precise placement, undo/redo and camera controls (7.0s)
+  ok  9 tests\workflows.spec.ts:189:1 › custom definition, port editing and embedded image survive a real local save/reload (3.0s)
+  ok 10 tests\workflows.spec.ts:251:1 › connections, master schedule, external length, reserve, CSV and project reopen stay consistent (4.1s)
+  ok 11 tests\workflows.spec.ts:394:1 › new rack dimensions and inclusive depth sections persist while invalid overlapping sections are rejected (3.5s)
+  ok 12 tests\workflows.spec.ts:437:1 › a storage failure preserves the current project when New is requested (1.4s)
+  ok 13 tests\workflows.spec.ts:471:1 › imported power cable follows an existing curved run through UI edits and reload (2.1s)
+
+  13 passed (1.1m)
+
+Validation boundary
+Target: http://127.0.0.1:5174 (local Vite production preview, not the incidental test webServer on 5173).
+Served entry verified through HTTP: /assets/index-DK4Tbvo0.js
+Built scene bundle: Scene-C4oPIO3D.js
+Runtime: Node v24.22.1; Playwright 1.64.1; Microsoft Edge 155.0.4283.62.
+Viewport: 1600 x 1000; headless software WebGL / SwiftShader.
+Command: RACK_TEST_URL=http://127.0.0.1:5174 node node_modules/@playwright/test/cli.js test tests/workflows.spec.ts tests/mounting.spec.ts tests/construction.spec.ts --reporter=list
+Final result: all 13 workflows passed, process exit 0; per-test pageerror fixtures reported zero uncaught JavaScript errors.
+
+Construction coverage
+- Exterior depth, front screw-plane position, front-to-rear spacing and rail profile dimensions edited independently through the real UI, exported, saved locally and reloaded.
+- New structural member geometry starts empty; missing values are rejected without inserting a member. Explicit channel dimensions, orientation and provisional evidence persist with the member ID. Explicit frame mode renders the entered member and rails without generic framing.
+- Generic 1U shelf changed to 2U, 350 mm overall and 300 mm usable depth, with explicitly entered support geometry; independent front and rear placements and definition data persist after reload.
+- Pending shelf support draft blocks definition saving. An inactive stored support is not turned into active geometry when parametric generation is disabled.
+
+Actual rendered screenshots reviewed from this build
+- docs/screenshots/construction-independent-rails.png: independent rail face width and thickness visible beside the provisional rack.
+- docs/screenshots/construction-explicit-channel.png: open channel and independent rails visible; generic frame removed in explicit mode; provisional member badge shown.
+- docs/screenshots/construction-shelf-definition.png: entered shelf support position and size visible, with example status and hardware verification limitation.
+- docs/screenshots/construction-shelf-placements.png: two open shelf assemblies on opposite mounting faces; rear position retained after reload.
+The existing mounting and workflow screenshots were also regenerated by this run. These are actual browser screenshots, with no image editing or application-store mutation.
+
+Harness correction evidence
+An initial field lookup used exact label text where a wrapped hint or select/textarea content changed label matching. Selectors now use accessible roles and the intended field name; assertions are unchanged.
+The original pointer drag helper also sampled the U labels during the Front/Orthographic camera transition. Actual animation-frame reads measured U16 moving from x952.4036/y423.3726 to x925.4961/y445.4246. The helper now requires four consecutive stable rendered frames before deriving real mouse coordinates. The final run log above captured this transition, then passed the original U15 movement assertion. Three isolated diagnostic repeats also passed. No application code changed for this harness correction.
+These browser checks verify these workflows; they do not establish load ratings, measured rack construction, full cable physics or full product acceptance.

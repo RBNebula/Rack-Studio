@@ -1,0 +1,14 @@
+Wiring milestone verification · 23 October 2026
+Production preview: http://127.0.0.1:5174; frozen dist served throughout the final run.
+Microsoft Edge 155.0.4283.62, 1600x1000, headless software WebGL.
+Assets: index-BKjmA7MQ.js; Scene-Dq8qTNDs.js; ModelDesigner-CVc2lzs7.js; FaceFeatures-6jeaSQuy.js.
+TypeScript, ESLint, 260 unit/integration tests in19files and production build: passed. See latest-checks.txt.
+Full Edge suite:21passed in4.0minutes. See wiring-browser-results.txt. No uncaught JavaScript errors.
+Actual native canvas port clicks created a compatible cable with stable endpoints, numeric0label and unset supplied length.
+Actual front/rear post surface clicks produced centreline offsets Z=-10mm and Z=810mm for the0/800mm planes.
+Shift-click + second click created one reusable line. Ordered links, reversal, cancellation, unlink, export and local reload passed.
+Pure routing tests enforce straight A-to-B traversal and reject blocked line detours; shared guide edits resolve dynamically for each cable.
+Rail contact checks cover front/rear devices: far plate on exposed far face; near plate on internal face clear of seated ear; no post/ear penetration.
+Ten portable projects parse and validate references/placements; PC library matches its project. See example-integrity.txt.
+Viewport capture wiring-guides.png visually reviewed. Rails remain provisional; guides are world-fixed planning constraints, not physical clips or cable dynamics.
+Original brief SHA256: D83A86A537EA47053156439743E52550B4B31FFD8CC82B87A60875232B64A9C5 (unchanged and matches attachment).

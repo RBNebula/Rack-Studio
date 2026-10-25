@@ -1,0 +1,53 @@
+[WebServer] (node:13352) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+
+Running 15 tests using 1 worker
+
+(node:25128) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+Construction QA: Microsoft Edge 155.0.4283.62, 1600 × 1000, software WebGL.
+  ok  1 tests\construction.spec.ts:58:1 › exterior envelope, rail planes and rail profile stay independently configurable through save and reload (3.2s)
+  ok  2 tests\construction.spec.ts:107:1 › explicit structural channels require entered geometry and retain their identity and provisional evidence (3.0s)
+  ok  3 tests\construction.spec.ts:192:1 › generic shelf depth, usable depth and entered supports survive front and rear placements (5.8s)
+  ok  4 tests\construction.spec.ts:303:1 › pending shelf supports block saving and inactive supports stay absent when generation is disabled (3.8s)
+Mounting QA: Microsoft Edge 155.0.4283.62, 1600 × 1000, software WebGL.
+Mounting view front U18: rendered U-label pitch 25.6 → 156.9 px.
+  ok  5 tests\mounting.spec.ts:143:1 › front patch panel and switch expose their rack ears against the mounting rails (9.7s)
+Mounting view front U6: rendered U-label pitch 25.6 → 114.3 px.
+  ok  6 tests\mounting.spec.ts:160:1 › a 1U shelf mounts at the front with ears while its centre remains open (10.3s)
+Mounting view rear U10: rendered U-label pitch 28.9 → 53.7 px.
+  ok  7 tests\mounting.spec.ts:172:1 › a 1U shelf mounts at the rear and retains its mounting face after local save and reload (5.6s)
+Visual-reference QA: Microsoft Edge 155.0.4283.62, 1600 × 1000, software WebGL.
+  ok  8 tests\visual-references.spec.ts:147:1 › flat reference rack has independent top and base panels whose settings persist (4.6s)
+Reference plate view front: rendered U pitch 25.4 → 52.4 px.
+Reference plate view rear oblique: rendered U pitch 28.1 → 73.7 px.
+  ok  9 tests\visual-references.spec.ts:207:1 › solid and perforated blanks place at both faces and preserve editable sheet geometry and identities (16.4s)
+Browser QA: Microsoft Edge 155.0.4283.62, 1600 × 1000, software WebGL.
+Installed drag U16: rendered grid samples [{"x":952.4036254882812,"y":423.37255859375},{"x":925.49609375,"y":445.424560546875},{"x":925.49609375,"y":445.424560546875},{"x":925.49609375,"y":445.424560546875},{"x":925.49609375,"y":445.424560546875},{"x":925.49609375,"y":445.424560546875}].
+  ok 10 tests\workflows.spec.ts:131:1 › actual library drag, occupied drop, precise placement, undo/redo and camera controls (7.5s)
+  ok 11 tests\workflows.spec.ts:189:1 › custom definition, port editing and embedded image survive a real local save/reload (3.1s)
+  ok 12 tests\workflows.spec.ts:251:1 › connections, master schedule, external length, reserve, CSV and project reopen stay consistent (4.1s)
+  ok 13 tests\workflows.spec.ts:394:1 › new rack dimensions and inclusive depth sections persist while invalid overlapping sections are rejected (3.5s)
+  ok 14 tests\workflows.spec.ts:437:1 › a storage failure preserves the current project when New is requested (1.5s)
+  ok 15 tests\workflows.spec.ts:471:1 › imported power cable follows an existing curved run through UI edits and reload (2.2s)
+
+  15 passed (1.4m)
+
+Final production visual-reference QA context — 23 October 2026
+Target: http://127.0.0.1:5174 (root-owned Vite production preview)
+Command: $env:RACK_TEST_URL='http://127.0.0.1:5174'; node node_modules/@playwright/test/cli.js test --reporter=list
+Result: 15 passed (1.4m); all four browser spec files, one worker; zero uncaught JavaScript errors in the automatic page-error fixtures.
+Runtime: Node v24.22.1; Microsoft Edge 155.0.4283.62; headless; 1600 × 1000 viewport; software WebGL via SwiftShader.
+Production assets: index-CFts5oMT.js (481028 bytes), Scene-BEWzlLmD.js (976568 bytes), index-BEql6s74.css, Scene-aJ4UGACU.css.
+Reference project input: examples/flat-rack-reference.rack.json, imported through the actual header file input.
+New workflow 1: one-section provisional 20U flat 800 mm envelope / 700 mm rail spacing; top/base panels toggle independently; disabled panel configuration survives local save/reload; re-enabled 3 mm panels survive save/reload without changing sections, rails or members.
+New workflow 2: provisional solid and perforated plates have no ports; round-hole pitch changes to 9 mm through the editor; 1U solid/perforated front and rear plus 2U/4U front plates place successfully; sheet configuration and immutable device/definition IDs persist through export and local save/reload.
+Existing 13 workflows also pass: construction independence, explicit structural members, configurable shelf supports, front/rear mounting contact, real pointer placement, project/library persistence, cable schedules/CSV, failed-storage preservation and existing-run following.
+
+Actual rendered screenshots, captured by Playwright from the canvas element with real orbit, zoom and pan input:
+- docs/screenshots/reference-flat-rack.png
+- docs/screenshots/reference-blanks-front.png
+- docs/screenshots/reference-blanks-rear.png
+All three screenshots were reopened and visually inspected against the four user-supplied reference photographs. No image generation or raster editing was used.
+Visual review: the empty rack is an uninterrupted rectangular four-post frame with open sides, broad top/base panels and a common black finish. The modest raised camera angle exposes the roof while keeping the whole frame visible. Solid plates have clean unlettered sheet faces, integral end ears and slotted fixing openings. Perforated plates show staggered circular openings through which the scene behind is visible; folds and flush mounting contact are visible in the rear oblique view. Some openings appear dark where opposite-face equipment or structural members are physically behind them. This is real scene occlusion rather than a solid generic chassis backing.
+Limits: the photographs establish form only. Sheet, slot, perforation and construction dimensions remain provisional examples. Rack rail hole locations remain surface centre markers, not drilled apertures or validated cage-nut hardware. Small plate perforations/slots remain closed conservative collision envelopes for cable routing. Browser and visual checks do not certify manufacturing fit, load capacity or calibration to the photographed products.

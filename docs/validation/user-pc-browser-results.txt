@@ -1,0 +1,66 @@
+[WebServer] (node:2644) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+
+Running 18 tests using 1 worker
+
+(node:5668) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+Construction QA: Microsoft Edge 155.0.4283.62, 1600 × 1000, software WebGL.
+  ok  1 tests\construction.spec.ts:58:1 › exterior envelope, rail planes and rail profile stay independently configurable through save and reload (3.3s)
+  ok  2 tests\construction.spec.ts:107:1 › explicit structural channels require entered geometry and retain their identity and provisional evidence (3.1s)
+  ok  3 tests\construction.spec.ts:192:1 › generic shelf depth, usable depth and entered supports survive front and rear placements (5.8s)
+  ok  4 tests\construction.spec.ts:303:1 › pending shelf supports block saving and inactive supports stay absent when generation is disabled (3.8s)
+Mounting QA: Microsoft Edge 155.0.4283.62, 1600 × 1000, software WebGL.
+Mounting view front U18: rendered U-label pitch 25.6 → 155.6 px.
+  ok  5 tests\mounting.spec.ts:158:1 › front patch panel and switch expose their rack ears against the mounting rails (10.0s)
+Mounting view front U6: rendered U-label pitch 25.6 → 117.0 px.
+  ok  6 tests\mounting.spec.ts:175:1 › a 1U shelf mounts at the front with ears while its centre remains open (11.2s)
+Mounting view rear U10: rendered U-label pitch 28.9 → 53.7 px.
+  ok  7 tests\mounting.spec.ts:187:1 › a 1U shelf mounts at the rear and retains its mounting face after local save and reload (5.5s)
+Photographed PC QA: Microsoft Edge 155.0.4283.62, 1600 × 1000, software WebGL.
+PC view front U8: rendered U pitch 21.9 → 55.1 px.
+PC view rear U8: rendered U pitch 21.9 → 55.1 px.
+PC view front oblique U8: rendered U pitch 21.9 → 54.5 px.
+  ok  8 tests\user-rack-pc.spec.ts:193:1 › photographed PC places at either rack face and preserves measured dimensions and front/rear ports (1.4m)
+  ok  9 tests\user-rack-pc.spec.ts:263:1 › a PC library import adds the photographed model to an existing rack without changing old devices or cables (3.1s)
+  ok 10 tests\user-rack-pc.spec.ts:326:1 › a photographed rear network port connects through the UI and retains identity after a PC move and save/reload (7.5s)
+Visual-reference QA: Microsoft Edge 155.0.4283.62, 1600 × 1000, software WebGL.
+  ok 11 tests\visual-references.spec.ts:147:1 › flat reference rack has independent top and base panels whose settings persist (4.0s)
+Reference plate view front: rendered U pitch 25.4 → 52.4 px.
+Reference plate view rear oblique: rendered U pitch 28.1 → 73.8 px.
+  ok 12 tests\visual-references.spec.ts:207:1 › solid and perforated blanks place at both faces and preserve editable sheet geometry and identities (16.4s)
+Browser QA: Microsoft Edge 155.0.4283.62, 1600 × 1000, software WebGL.
+Installed drag U16: rendered grid samples [{"x":925.49609375,"y":445.424560546875},{"x":925.49609375,"y":445.424560546875},{"x":925.49609375,"y":445.424560546875},{"x":925.49609375,"y":445.424560546875},{"x":925.49609375,"y":445.424560546875}].
+  ok 13 tests\workflows.spec.ts:131:1 › actual library drag, occupied drop, precise placement, undo/redo and camera controls (7.2s)
+  ok 14 tests\workflows.spec.ts:189:1 › custom definition, port editing and embedded image survive a real local save/reload (3.3s)
+  ok 15 tests\workflows.spec.ts:251:1 › connections, master schedule, external length, reserve, CSV and project reopen stay consistent (4.2s)
+  ok 16 tests\workflows.spec.ts:394:1 › new rack dimensions and inclusive depth sections persist while invalid overlapping sections are rejected (3.4s)
+  ok 17 tests\workflows.spec.ts:437:1 › a storage failure preserves the current project when New is requested (1.5s)
+  ok 18 tests\workflows.spec.ts:471:1 › imported power cable follows an existing curved run through UI edits and reload (2.1s)
+
+  18 passed (3.0m)
+
+Final photographed-PC production QA context - 23 October 2026
+Target: http://127.0.0.1:5174 (root-owned Vite production preview)
+Production assets: index-DPKCVIUb.js (488209 bytes), Scene-C9T7V07D.js (986298 bytes), index-BEql6s74.css, Scene-aJ4UGACU.css.
+Runtime: Node v24.22.1; Microsoft Edge 155.0.4283.62; headless; 1600 x 1000 viewport; software WebGL through SwiftShader.
+Execution: approved outside the restricted sandbox, disposable browser contexts, local loopback only. The Playwright-owned dev server on 5173 is a configuration prerequisite; all five spec files use RACK_TEST_URL and the tests target the frozen production preview on 5174.
+Exact PowerShell command:
+$env:RACK_TEST_URL = 'http://127.0.0.1:5174'
+node node_modules/@playwright/test/cli.js test --reporter=list 2>&1 | Tee-Object -FilePath docs/validation/user-pc-browser-results.txt
+exit $LASTEXITCODE
+Final result: 18 passed (3.0m), exit 0, all five browser spec files, one worker. Zero uncaught JavaScript errors in automatic page-error fixtures; no ignored failures or retries in this accepted run.
+
+New photographed-PC workflows:
+1. A new project's reusable User rack PC definition exposes the user-entered 381 mm depth, 431.8 mm chassis width and 482.6 mm ear width, confirmed 1U allocation and provisional 43 mm physical height. Changing Solid geometry to explicit components selects Generic and disables the incompatible photo appearance; restoring box geometry and Photographed rack PC saves successfully. Front U8 and rear U12 placements preserve their device IDs, full definition, 17 port identities and coordinates through actual JSON download and local save/reload. Front USB stack, 15 rear sockets, the unconfirmed upper video connector, and rear RJ45 [10.2,32,381] are checked.
+2. An older route-follow project imports the standalone PC library through the expanded Device Library file input, places the imported PC at front U10, and preserves the original equipment, definitions and cable identities/data. The new definition's 17 ports and appearance survive export and local save/reload.
+3. A PC rear RJ45 connects to a generic switch through the Connections UI. Moving the PC U8 to U9 retains the immutable endpoints and cable identity, recalculates a valid route, and survives local save/reload and CSV export with a known required length.
+All 15 earlier construction, mounting, visual-reference, placement, connectivity, persistence, schedule and failure-recovery workflows also pass.
+
+Actual rendered screenshots captured in the accepted run and reopened for visual review:
+- docs/screenshots/user-pc-front.png: black perforated fascia, correctly positioned vertical USB pair, status/button strip, integral ears and both handles. Full width, 200-pixel browser capture strip, 55.1 pixels per U.
+- docs/screenshots/user-pc-rear.png: silver rear face, IEC inlet and fan on the left, motherboard I/O centrally, coloured audio jacks and perforated expansion cover on the right. Full width, 200-pixel browser capture strip, 55.1 pixels per U.
+- docs/screenshots/user-pc-oblique.png: actual full canvas view of the silver chassis/lid, side studs, black fascia and handles, with flush ear contact visible. 54.5 pixels per U.
+All camera changes use real accessible view/orthographic controls, wheel events, orbit and right-button pan gestures. Read-only DOM projection measurements wait for actual animation-frame stability before framing; no test mutates the application store. The two face images are direct browser clips, with no raster editing or generated imagery. The PC uses code-native geometry rather than source-photo textures.
+Earlier preparation-only failures were test issues: fixed-duration camera waits could leave U labels outside the frame under software WebGL, and the disabled-option matcher did not reflect the native option attribute. Frame stability is now measured and the actual native disabled attribute is checked. The final run above includes the resolved workflows.
+Limits: this is browser/visual functional QA, not a rendering-FPS benchmark or real-hardware fit certification. Physical height, port XY centres, ear thickness, handles, stud dimensions and socket detail remain editable provisional estimates; 1U is confirmed, and the supplied width/depth are user-entered. Small vents/socket openings remain conservative collision envelopes for cable routing. No manufacturer/model or load/support certification is inferred from the photographs.

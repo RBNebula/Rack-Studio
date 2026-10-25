@@ -1,0 +1,3 @@
+﻿"Cable number","Source · port","Destination · port","Purpose","Cable type","Supply type","Model route (mm)","Manual external (mm)","End A allowance (mm)","End B allowance (mm)","Termination total (mm)","Required (mm)","Validation"
+"0","PC 1 · Ethernet","Network switch 1 · Rear uplink","PC network uplink","Cat6A","preterminated",1037.73,"",0,0,0,1037.73,"Unverified model"
+"1","Patch panel 1 · Port 1","User position 1 · Network port 1","Operator workstation network","Cat6A","bulk",1111.83,5500,60,60,120,6740,"Unverified model"

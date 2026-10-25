@@ -1,0 +1,3033 @@
+{
+  "schemaVersion": 1,
+  "id": "generic-switch-24-reference",
+  "name": "Generic 24-port switch · single-row reference",
+  "revision": 0,
+  "updatedAt": "2026-10-24T12:00:00.000Z",
+  "rack": {
+    "id": "rack-1",
+    "name": "Basic flat 19-inch rack · provisional",
+    "heightU": 20,
+    "outerWidthMm": 600,
+    "clearWidthMm": 450,
+    "railCentersMm": 465.1,
+    "frontInsetMm": 50,
+    "frameMm": 20,
+    "railWidthMm": 10,
+    "railThicknessMm": 10,
+    "frameStyle": "generic",
+    "endPanels": {
+      "top": true,
+      "base": true,
+      "thicknessMm": 2
+    },
+    "depthMeaning": "external",
+    "fixedFace": "front",
+    "holeType": "square",
+    "evidence": "example",
+    "color": "#242629",
+    "sections": [
+      {
+        "id": "flat",
+        "startU": 1,
+        "endU": 20,
+        "overallDepthMm": 800,
+        "frontRailZMm": 0,
+        "rearRailZMm": 700
+      }
+    ],
+    "members": [],
+    "showPanels": false
+  },
+  "definitions": [
+    {
+      "id": "def-switch",
+      "name": "24-port network switch",
+      "manufacturer": "Generic example",
+      "model": "Illustrative geometry",
+      "category": "Network switches",
+      "widthMm": 430,
+      "heightU": 1,
+      "heightMm": 42.95,
+      "depthMm": 280,
+      "faceWidthMm": 482.6,
+      "earThicknessMm": 2,
+      "shelf": null,
+      "plate": null,
+      "appearance": null,
+      "mounting": "direct",
+      "bodyMode": "box",
+      "color": "#475967",
+      "evidence": "example",
+      "source": "Configurable example; no manufacturer specification supplied.",
+      "massKg": null,
+      "railMinMm": null,
+      "railMaxMm": null,
+      "screwOffsetsMm": [
+        6.35,
+        38.1
+      ],
+      "ports": [
+        {
+          "id": "p1",
+          "name": "Port 1",
+          "connector": "RJ45",
+          "surface": "front",
+          "position": [
+            -178,
+            21,
+            -2
+          ],
+          "direction": [
+            0,
+            0,
+            -1
+          ],
+          "multiple": false
+        },
+        {
+          "id": "p2",
+          "name": "Port 2",
+          "connector": "RJ45",
+          "surface": "front",
+          "position": [
+            -162.5,
+            21,
+            -2
+          ],
+          "direction": [
+            0,
+            0,
+            -1
+          ],
+          "multiple": false
+        },
+        {
+          "id": "p3",
+          "name": "Port 3",
+          "connector": "RJ45",
+          "surface": "front",
+          "position": [
+            -147,
+            21,
+            -2
+          ],
+          "direction": [
+            0,
+            0,
+            -1
+          ],
+          "multiple": false
+        },
+        {
+          "id": "p4",
+          "name": "Port 4",
+          "connector": "RJ45",
+          "surface": "front",
+          "position": [
+            -131.5,
+            21,
+            -2
+          ],
+          "direction": [
+            0,
+            0,
+            -1
+          ],
+          "multiple": false
+        },
+        {
+          "id": "p5",
+          "name": "Port 5",
+          "connector": "RJ45",
+          "surface": "front",
+          "position": [
+            -116,
+            21,
+            -2
+          ],
+          "direction": [
+            0,
+            0,
+            -1
+          ],
+          "multiple": false
+        },
+        {
+          "id": "p6",
+          "name": "Port 6",
+          "connector": "RJ45",
+          "surface": "front",
+          "position": [
+            -100.5,
+            21,
+            -2
+          ],
+          "direction": [
+            0,
+            0,
+            -1
+          ],
+          "multiple": false
+        },
+        {
+          "id": "p7",
+          "name": "Port 7",
+          "connector": "RJ45",
+          "surface": "front",
+          "position": [
+            -85,
+            21,
+            -2
+          ],
+          "direction": [
+            0,
+            0,
+            -1
+          ],
+          "multiple": false
+        },
+        {
+          "id": "p8",
+          "name": "Port 8",
+          "connector": "RJ45",
+          "surface": "front",
+          "position": [
+            -69.5,
+            21,
+            -2
+          ],
+          "direction": [
+            0,
+            0,
+            -1
+          ],
+          "multiple": false
+        },
+        {
+          "id": "p9",
+          "name": "Port 9",
+          "connector": "RJ45",
+          "surface": "front",
+          "position": [
+            -54,
+            21,
+            -2
+          ],
+          "direction": [
+            0,
+            0,
+            -1
+          ],
+          "multiple": false
+        },
+        {
+          "id": "p10",
+          "name": "Port 10",
+          "connector": "RJ45",
+          "surface": "front",
+          "position": [
+            -38.5,
+            21,
+            -2
+          ],
+          "direction": [
+            0,
+            0,
+            -1
+          ],
+          "multiple": false
+        },
+        {
+          "id": "p11",
+          "name": "Port 11",
+          "connector": "RJ45",
+          "surface": "front",
+          "position": [
+            -23,
+            21,
+            -2
+          ],
+          "direction": [
+            0,
+            0,
+            -1
+          ],
+          "multiple": false
+        },
+        {
+          "id": "p12",
+          "name": "Port 12",
+          "connector": "RJ45",
+          "surface": "front",
+          "position": [
+            -7.5,
+            21,
+            -2
+          ],
+          "direction": [
+            0,
+            0,
+            -1
+          ],
+          "multiple": false
+        },
+        {
+          "id": "p13",
+          "name": "Port 13",
+          "connector": "RJ45",
+          "surface": "front",
+          "position": [
+            8,
+            21,
+            -2
+          ],
+          "direction": [
+            0,
+            0,
+            -1
+          ],
+          "multiple": false
+        },
+        {
+          "id": "p14",
+          "name": "Port 14",
+          "connector": "RJ45",
+          "surface": "front",
+          "position": [
+            23.5,
+            21,
+            -2
+          ],
+          "direction": [
+            0,
+            0,
+            -1
+          ],
+          "multiple": false
+        },
+        {
+          "id": "p15",
+          "name": "Port 15",
+          "connector": "RJ45",
+          "surface": "front",
+          "position": [
+            39,
+            21,
+            -2
+          ],
+          "direction": [
+            0,
+            0,
+            -1
+          ],
+          "multiple": false
+        },
+        {
+          "id": "p16",
+          "name": "Port 16",
+          "connector": "RJ45",
+          "surface": "front",
+          "position": [
+            54.5,
+            21,
+            -2
+          ],
+          "direction": [
+            0,
+            0,
+            -1
+          ],
+          "multiple": false
+        },
+        {
+          "id": "p17",
+          "name": "Port 17",
+          "connector": "RJ45",
+          "surface": "front",
+          "position": [
+            70,
+            21,
+            -2
+          ],
+          "direction": [
+            0,
+            0,
+            -1
+          ],
+          "multiple": false
+        },
+        {
+          "id": "p18",
+          "name": "Port 18",
+          "connector": "RJ45",
+          "surface": "front",
+          "position": [
+            85.5,
+            21,
+            -2
+          ],
+          "direction": [
+            0,
+            0,
+            -1
+          ],
+          "multiple": false
+        },
+        {
+          "id": "p19",
+          "name": "Port 19",
+          "connector": "RJ45",
+          "surface": "front",
+          "position": [
+            101,
+            21,
+            -2
+          ],
+          "direction": [
+            0,
+            0,
+            -1
+          ],
+          "multiple": false
+        },
+        {
+          "id": "p20",
+          "name": "Port 20",
+          "connector": "RJ45",
+          "surface": "front",
+          "position": [
+            116.5,
+            21,
+            -2
+          ],
+          "direction": [
+            0,
+            0,
+            -1
+          ],
+          "multiple": false
+        },
+        {
+          "id": "p21",
+          "name": "Port 21",
+          "connector": "RJ45",
+          "surface": "front",
+          "position": [
+            132,
+            21,
+            -2
+          ],
+          "direction": [
+            0,
+            0,
+            -1
+          ],
+          "multiple": false
+        },
+        {
+          "id": "p22",
+          "name": "Port 22",
+          "connector": "RJ45",
+          "surface": "front",
+          "position": [
+            147.5,
+            21,
+            -2
+          ],
+          "direction": [
+            0,
+            0,
+            -1
+          ],
+          "multiple": false
+        },
+        {
+          "id": "p23",
+          "name": "Port 23",
+          "connector": "RJ45",
+          "surface": "front",
+          "position": [
+            163,
+            21,
+            -2
+          ],
+          "direction": [
+            0,
+            0,
+            -1
+          ],
+          "multiple": false
+        },
+        {
+          "id": "p24",
+          "name": "Port 24",
+          "connector": "RJ45",
+          "surface": "front",
+          "position": [
+            178.5,
+            21,
+            -2
+          ],
+          "direction": [
+            0,
+            0,
+            -1
+          ],
+          "multiple": false
+        },
+        {
+          "id": "uplink",
+          "name": "Rear uplink",
+          "connector": "RJ45",
+          "surface": "rear",
+          "position": [
+            150,
+            21,
+            282
+          ],
+          "direction": [
+            0,
+            0,
+            1
+          ],
+          "multiple": false
+        }
+      ],
+      "parts": [],
+      "frontImage": null,
+      "rearImage": null
+    },
+    {
+      "id": "def-patch",
+      "name": "24-port patch panel",
+      "manufacturer": "Generic example",
+      "model": "Illustrative geometry",
+      "category": "Patch panels",
+      "widthMm": 430,
+      "heightU": 1,
+      "heightMm": 42.95,
+      "depthMm": 90,
+      "faceWidthMm": 482.6,
+      "earThicknessMm": 2,
+      "shelf": null,
+      "plate": null,
+      "appearance": null,
+      "mounting": "direct",
+      "bodyMode": "box",
+      "color": "#283540",
+      "evidence": "example",
+      "source": "Configurable example; no manufacturer specification supplied.",
+      "massKg": null,
+      "railMinMm": null,
+      "railMaxMm": null,
+      "screwOffsetsMm": [
+        6.35,
+        38.1
+      ],
+      "ports": [
+        {
+          "id": "p1",
+          "name": "Port 1",
+          "connector": "RJ45",
+          "surface": "front",
+          "position": [
+            -178,
+            21,
+            -2
+          ],
+          "direction": [
+            0,
+            0,
+            -1
+          ],
+          "multiple": false
+        },
+        {
+          "id": "p2",
+          "name": "Port 2",
+          "connector": "RJ45",
+          "surface": "front",
+          "position": [
+            -162.5,
+            21,
+            -2
+          ],
+          "direction": [
+            0,
+            0,
+            -1
+          ],
+          "multiple": false
+        },
+        {
+          "id": "p3",
+          "name": "Port 3",
+          "connector": "RJ45",
+          "surface": "front",
+          "position": [
+            -147,
+            21,
+            -2
+          ],
+          "direction": [
+            0,
+            0,
+            -1
+          ],
+          "multiple": false
+        },
+        {
+          "id": "p4",
+          "name": "Port 4",
+          "connector": "RJ45",
+          "surface": "front",
+          "position": [
+            -131.5,
+            21,
+            -2
+          ],
+          "direction": [
+            0,
+            0,
+            -1
+          ],
+          "multiple": false
+        },
+        {
+          "id": "p5",
+          "name": "Port 5",
+          "connector": "RJ45",
+          "surface": "front",
+          "position": [
+            -116,
+            21,
+            -2
+          ],
+          "direction": [
+            0,
+            0,
+            -1
+          ],
+          "multiple": false
+        },
+        {
+          "id": "p6",
+          "name": "Port 6",
+          "connector": "RJ45",
+          "surface": "front",
+          "position": [
+            -100.5,
+            21,
+            -2
+          ],
+          "direction": [
+            0,
+            0,
+            -1
+          ],
+          "multiple": false
+        },
+        {
+          "id": "p7",
+          "name": "Port 7",
+          "connector": "RJ45",
+          "surface": "front",
+          "position": [
+            -85,
+            21,
+            -2
+          ],
+          "direction": [
+            0,
+            0,
+            -1
+          ],
+          "multiple": false
+        },
+        {
+          "id": "p8",
+          "name": "Port 8",
+          "connector": "RJ45",
+          "surface": "front",
+          "position": [
+            -69.5,
+            21,
+            -2
+          ],
+          "direction": [
+            0,
+            0,
+            -1
+          ],
+          "multiple": false
+        },
+        {
+          "id": "p9",
+          "name": "Port 9",
+          "connector": "RJ45",
+          "surface": "front",
+          "position": [
+            -54,
+            21,
+            -2
+          ],
+          "direction": [
+            0,
+            0,
+            -1
+          ],
+          "multiple": false
+        },
+        {
+          "id": "p10",
+          "name": "Port 10",
+          "connector": "RJ45",
+          "surface": "front",
+          "position": [
+            -38.5,
+            21,
+            -2
+          ],
+          "direction": [
+            0,
+            0,
+            -1
+          ],
+          "multiple": false
+        },
+        {
+          "id": "p11",
+          "name": "Port 11",
+          "connector": "RJ45",
+          "surface": "front",
+          "position": [
+            -23,
+            21,
+            -2
+          ],
+          "direction": [
+            0,
+            0,
+            -1
+          ],
+          "multiple": false
+        },
+        {
+          "id": "p12",
+          "name": "Port 12",
+          "connector": "RJ45",
+          "surface": "front",
+          "position": [
+            -7.5,
+            21,
+            -2
+          ],
+          "direction": [
+            0,
+            0,
+            -1
+          ],
+          "multiple": false
+        },
+        {
+          "id": "p13",
+          "name": "Port 13",
+          "connector": "RJ45",
+          "surface": "front",
+          "position": [
+            8,
+            21,
+            -2
+          ],
+          "direction": [
+            0,
+            0,
+            -1
+          ],
+          "multiple": false
+        },
+        {
+          "id": "p14",
+          "name": "Port 14",
+          "connector": "RJ45",
+          "surface": "front",
+          "position": [
+            23.5,
+            21,
+            -2
+          ],
+          "direction": [
+            0,
+            0,
+            -1
+          ],
+          "multiple": false
+        },
+        {
+          "id": "p15",
+          "name": "Port 15",
+          "connector": "RJ45",
+          "surface": "front",
+          "position": [
+            39,
+            21,
+            -2
+          ],
+          "direction": [
+            0,
+            0,
+            -1
+          ],
+          "multiple": false
+        },
+        {
+          "id": "p16",
+          "name": "Port 16",
+          "connector": "RJ45",
+          "surface": "front",
+          "position": [
+            54.5,
+            21,
+            -2
+          ],
+          "direction": [
+            0,
+            0,
+            -1
+          ],
+          "multiple": false
+        },
+        {
+          "id": "p17",
+          "name": "Port 17",
+          "connector": "RJ45",
+          "surface": "front",
+          "position": [
+            70,
+            21,
+            -2
+          ],
+          "direction": [
+            0,
+            0,
+            -1
+          ],
+          "multiple": false
+        },
+        {
+          "id": "p18",
+          "name": "Port 18",
+          "connector": "RJ45",
+          "surface": "front",
+          "position": [
+            85.5,
+            21,
+            -2
+          ],
+          "direction": [
+            0,
+            0,
+            -1
+          ],
+          "multiple": false
+        },
+        {
+          "id": "p19",
+          "name": "Port 19",
+          "connector": "RJ45",
+          "surface": "front",
+          "position": [
+            101,
+            21,
+            -2
+          ],
+          "direction": [
+            0,
+            0,
+            -1
+          ],
+          "multiple": false
+        },
+        {
+          "id": "p20",
+          "name": "Port 20",
+          "connector": "RJ45",
+          "surface": "front",
+          "position": [
+            116.5,
+            21,
+            -2
+          ],
+          "direction": [
+            0,
+            0,
+            -1
+          ],
+          "multiple": false
+        },
+        {
+          "id": "p21",
+          "name": "Port 21",
+          "connector": "RJ45",
+          "surface": "front",
+          "position": [
+            132,
+            21,
+            -2
+          ],
+          "direction": [
+            0,
+            0,
+            -1
+          ],
+          "multiple": false
+        },
+        {
+          "id": "p22",
+          "name": "Port 22",
+          "connector": "RJ45",
+          "surface": "front",
+          "position": [
+            147.5,
+            21,
+            -2
+          ],
+          "direction": [
+            0,
+            0,
+            -1
+          ],
+          "multiple": false
+        },
+        {
+          "id": "p23",
+          "name": "Port 23",
+          "connector": "RJ45",
+          "surface": "front",
+          "position": [
+            163,
+            21,
+            -2
+          ],
+          "direction": [
+            0,
+            0,
+            -1
+          ],
+          "multiple": false
+        },
+        {
+          "id": "p24",
+          "name": "Port 24",
+          "connector": "RJ45",
+          "surface": "front",
+          "position": [
+            178.5,
+            21,
+            -2
+          ],
+          "direction": [
+            0,
+            0,
+            -1
+          ],
+          "multiple": false
+        }
+      ],
+      "parts": [],
+      "frontImage": null,
+      "rearImage": null
+    },
+    {
+      "id": "def-server",
+      "name": "2U rack server",
+      "manufacturer": "Generic example",
+      "model": "Illustrative geometry",
+      "category": "Servers",
+      "widthMm": 430,
+      "heightU": 2,
+      "heightMm": 87.4,
+      "depthMm": 620,
+      "faceWidthMm": 482.6,
+      "earThicknessMm": 2,
+      "shelf": null,
+      "plate": null,
+      "appearance": null,
+      "mounting": "rails",
+      "bodyMode": "box",
+      "color": "#64717e",
+      "evidence": "example",
+      "source": "Configurable example; no manufacturer specification supplied.",
+      "massKg": null,
+      "railMinMm": 600,
+      "railMaxMm": 900,
+      "screwOffsetsMm": [
+        6.35,
+        82.55000000000001
+      ],
+      "ports": [
+        {
+          "id": "net",
+          "name": "Ethernet",
+          "connector": "RJ45",
+          "surface": "rear",
+          "position": [
+            155,
+            24,
+            622
+          ],
+          "direction": [
+            0,
+            0,
+            1
+          ],
+          "multiple": false
+        },
+        {
+          "id": "power",
+          "name": "IEC power",
+          "connector": "IEC-C14",
+          "surface": "rear",
+          "position": [
+            -145,
+            24,
+            622
+          ],
+          "direction": [
+            0,
+            0,
+            1
+          ],
+          "multiple": false
+        }
+      ],
+      "parts": [],
+      "frontImage": null,
+      "rearImage": null
+    },
+    {
+      "id": "def-shelf",
+      "name": "2U vented shelf",
+      "manufacturer": "Generic example",
+      "model": "Illustrative geometry",
+      "category": "Shelves",
+      "widthMm": 440,
+      "heightU": 2,
+      "heightMm": 88.9,
+      "depthMm": 450,
+      "faceWidthMm": 482.6,
+      "earThicknessMm": 2,
+      "shelf": {
+        "usableWidthMm": 432,
+        "usableDepthMm": 450,
+        "floorThicknessMm": 4,
+        "wallThicknessMm": 4,
+        "supportMode": "front-only",
+        "supports": []
+      },
+      "plate": null,
+      "appearance": null,
+      "mounting": "shelf",
+      "bodyMode": "box",
+      "color": "#374552",
+      "evidence": "example",
+      "source": "Provisional generic 19-inch shelf. Overall and usable depth, U height, walls and additional supports are independently configurable; no real shelf or load rating has been verified.",
+      "massKg": null,
+      "railMinMm": null,
+      "railMaxMm": null,
+      "screwOffsetsMm": [
+        6.35,
+        82.55000000000001
+      ],
+      "ports": [],
+      "parts": [],
+      "frontImage": null,
+      "rearImage": null
+    },
+    {
+      "id": "def-shelf-1",
+      "name": "1U vented shelf",
+      "manufacturer": "Generic example",
+      "model": "Illustrative geometry",
+      "category": "Shelves",
+      "widthMm": 440,
+      "heightU": 1,
+      "heightMm": 44.45,
+      "depthMm": 450,
+      "faceWidthMm": 482.6,
+      "earThicknessMm": 2,
+      "shelf": {
+        "usableWidthMm": 432,
+        "usableDepthMm": 450,
+        "floorThicknessMm": 4,
+        "wallThicknessMm": 4,
+        "supportMode": "front-only",
+        "supports": []
+      },
+      "plate": null,
+      "appearance": null,
+      "mounting": "shelf",
+      "bodyMode": "box",
+      "color": "#374552",
+      "evidence": "example",
+      "source": "Provisional generic 19-inch shelf. Overall and usable depth, U height, walls and additional supports are independently configurable; no real shelf or load rating has been verified.",
+      "massKg": null,
+      "railMinMm": null,
+      "railMaxMm": null,
+      "screwOffsetsMm": [
+        6.35,
+        38.1
+      ],
+      "ports": [],
+      "parts": [],
+      "frontImage": null,
+      "rearImage": null
+    },
+    {
+      "id": "def-pc",
+      "name": "Compact computer",
+      "manufacturer": "Generic example",
+      "model": "Illustrative geometry",
+      "category": "Computers",
+      "widthMm": 300,
+      "heightU": 2,
+      "heightMm": 60,
+      "depthMm": 300,
+      "faceWidthMm": 300,
+      "earThicknessMm": 2,
+      "shelf": null,
+      "plate": null,
+      "appearance": null,
+      "mounting": "freestanding",
+      "bodyMode": "box",
+      "color": "#465668",
+      "evidence": "example",
+      "source": "Configurable example; no manufacturer specification supplied.",
+      "massKg": null,
+      "railMinMm": null,
+      "railMaxMm": null,
+      "screwOffsetsMm": [],
+      "ports": [
+        {
+          "id": "net",
+          "name": "Ethernet",
+          "connector": "RJ45",
+          "surface": "rear",
+          "position": [
+            110,
+            24,
+            302
+          ],
+          "direction": [
+            0,
+            0,
+            1
+          ],
+          "multiple": false
+        },
+        {
+          "id": "usb",
+          "name": "USB-C",
+          "connector": "USB-C",
+          "surface": "rear",
+          "position": [
+            80,
+            24,
+            302
+          ],
+          "direction": [
+            0,
+            0,
+            1
+          ],
+          "multiple": false
+        }
+      ],
+      "parts": [
+        {
+          "id": "lid",
+          "name": "Example overhanging lid",
+          "position": [
+            0,
+            59,
+            145
+          ],
+          "size": [
+            320,
+            4,
+            310
+          ]
+        }
+      ],
+      "frontImage": null,
+      "rearImage": null
+    },
+    {
+      "id": "def-pdu",
+      "name": "1U power distribution",
+      "manufacturer": "Generic example",
+      "model": "Illustrative geometry",
+      "category": "Power equipment",
+      "widthMm": 430,
+      "heightU": 1,
+      "heightMm": 42.95,
+      "depthMm": 45,
+      "faceWidthMm": 482.6,
+      "earThicknessMm": 2,
+      "shelf": null,
+      "plate": null,
+      "appearance": null,
+      "mounting": "direct",
+      "bodyMode": "box",
+      "color": "#222e3b",
+      "evidence": "example",
+      "source": "Configurable example; no manufacturer specification supplied.",
+      "massKg": null,
+      "railMinMm": null,
+      "railMaxMm": null,
+      "screwOffsetsMm": [
+        6.35,
+        38.1
+      ],
+      "ports": [
+        {
+          "id": "iec1",
+          "name": "Outlet 1",
+          "connector": "IEC-C13",
+          "surface": "front",
+          "position": [
+            -160,
+            22,
+            -2
+          ],
+          "direction": [
+            0,
+            0,
+            -1
+          ],
+          "multiple": false
+        },
+        {
+          "id": "iec2",
+          "name": "Outlet 2",
+          "connector": "IEC-C13",
+          "surface": "front",
+          "position": [
+            -96,
+            22,
+            -2
+          ],
+          "direction": [
+            0,
+            0,
+            -1
+          ],
+          "multiple": false
+        },
+        {
+          "id": "iec3",
+          "name": "Outlet 3",
+          "connector": "IEC-C13",
+          "surface": "front",
+          "position": [
+            -32,
+            22,
+            -2
+          ],
+          "direction": [
+            0,
+            0,
+            -1
+          ],
+          "multiple": false
+        },
+        {
+          "id": "iec4",
+          "name": "Outlet 4",
+          "connector": "IEC-C13",
+          "surface": "front",
+          "position": [
+            32,
+            22,
+            -2
+          ],
+          "direction": [
+            0,
+            0,
+            -1
+          ],
+          "multiple": false
+        },
+        {
+          "id": "iec5",
+          "name": "Outlet 5",
+          "connector": "IEC-C13",
+          "surface": "front",
+          "position": [
+            96,
+            22,
+            -2
+          ],
+          "direction": [
+            0,
+            0,
+            -1
+          ],
+          "multiple": false
+        },
+        {
+          "id": "iec6",
+          "name": "Outlet 6",
+          "connector": "IEC-C13",
+          "surface": "front",
+          "position": [
+            160,
+            22,
+            -2
+          ],
+          "direction": [
+            0,
+            0,
+            -1
+          ],
+          "multiple": false
+        }
+      ],
+      "parts": [],
+      "frontImage": null,
+      "rearImage": null
+    },
+    {
+      "id": "def-av",
+      "name": "AVoIP encoder",
+      "manufacturer": "Generic example",
+      "model": "Illustrative geometry",
+      "category": "AVoIP equipment",
+      "widthMm": 430,
+      "heightU": 1,
+      "heightMm": 42.95,
+      "depthMm": 200,
+      "faceWidthMm": 482.6,
+      "earThicknessMm": 2,
+      "shelf": null,
+      "plate": null,
+      "appearance": null,
+      "mounting": "direct",
+      "bodyMode": "box",
+      "color": "#315162",
+      "evidence": "example",
+      "source": "Configurable example; no manufacturer specification supplied.",
+      "massKg": null,
+      "railMinMm": null,
+      "railMaxMm": null,
+      "screwOffsetsMm": [
+        6.35,
+        38.1
+      ],
+      "ports": [
+        {
+          "id": "net",
+          "name": "Network",
+          "connector": "RJ45",
+          "surface": "front",
+          "position": [
+            -100,
+            21,
+            -2
+          ],
+          "direction": [
+            0,
+            0,
+            -1
+          ],
+          "multiple": false
+        },
+        {
+          "id": "hdmi",
+          "name": "HDMI",
+          "connector": "HDMI",
+          "surface": "front",
+          "position": [
+            50,
+            21,
+            -2
+          ],
+          "direction": [
+            0,
+            0,
+            -1
+          ],
+          "multiple": false
+        }
+      ],
+      "parts": [],
+      "frontImage": null,
+      "rearImage": null
+    },
+    {
+      "id": "def-manager",
+      "name": "1U horizontal manager",
+      "manufacturer": "Generic example",
+      "model": "Illustrative geometry",
+      "category": "Cable management",
+      "widthMm": 430,
+      "heightU": 1,
+      "heightMm": 42.95,
+      "depthMm": 75,
+      "faceWidthMm": 482.6,
+      "earThicknessMm": 2,
+      "shelf": null,
+      "plate": null,
+      "appearance": null,
+      "mounting": "direct",
+      "bodyMode": "box",
+      "color": "#354350",
+      "evidence": "example",
+      "source": "Configurable example; no manufacturer specification supplied.",
+      "massKg": null,
+      "railMinMm": null,
+      "railMaxMm": null,
+      "screwOffsetsMm": [
+        6.35,
+        38.1
+      ],
+      "ports": [],
+      "parts": [],
+      "frontImage": null,
+      "rearImage": null
+    },
+    {
+      "id": "def-blank-1",
+      "name": "1U blank plate",
+      "manufacturer": "Generic example",
+      "model": "Illustrative geometry",
+      "category": "Custom equipment",
+      "widthMm": 430,
+      "heightU": 1,
+      "heightMm": 42.95,
+      "depthMm": 10,
+      "faceWidthMm": 482.6,
+      "earThicknessMm": 1.5,
+      "shelf": null,
+      "plate": {
+        "style": "solid",
+        "thicknessMm": 1.5,
+        "returnDepthMm": 10,
+        "edgeMarginMm": 5,
+        "holeDiameterMm": 4,
+        "holePitchMm": 7,
+        "mountingCentersMm": 465.1,
+        "slotWidthMm": 10,
+        "slotHeightMm": 6
+      },
+      "appearance": null,
+      "mounting": "direct",
+      "bodyMode": "parts",
+      "color": "#252a2d",
+      "evidence": "example",
+      "source": "Generic folded solid blank based on user photographs. Nominal 19-inch interface; sheet thickness, return depth and slotted mounting dimensions are provisional examples, not measured from the photos.",
+      "massKg": null,
+      "railMinMm": null,
+      "railMaxMm": null,
+      "screwOffsetsMm": [
+        6.35,
+        38.1
+      ],
+      "ports": [],
+      "parts": [],
+      "frontImage": null,
+      "rearImage": null
+    },
+    {
+      "id": "def-blank-2",
+      "name": "2U blank plate",
+      "manufacturer": "Generic example",
+      "model": "Illustrative geometry",
+      "category": "Custom equipment",
+      "widthMm": 430,
+      "heightU": 2,
+      "heightMm": 87.4,
+      "depthMm": 10,
+      "faceWidthMm": 482.6,
+      "earThicknessMm": 1.5,
+      "shelf": null,
+      "plate": {
+        "style": "solid",
+        "thicknessMm": 1.5,
+        "returnDepthMm": 10,
+        "edgeMarginMm": 5,
+        "holeDiameterMm": 4,
+        "holePitchMm": 7,
+        "mountingCentersMm": 465.1,
+        "slotWidthMm": 10,
+        "slotHeightMm": 6
+      },
+      "appearance": null,
+      "mounting": "direct",
+      "bodyMode": "parts",
+      "color": "#252a2d",
+      "evidence": "example",
+      "source": "Generic folded solid blank based on user photographs. Nominal 19-inch interface; sheet thickness, return depth and slotted mounting dimensions are provisional examples, not measured from the photos.",
+      "massKg": null,
+      "railMinMm": null,
+      "railMaxMm": null,
+      "screwOffsetsMm": [
+        6.35,
+        82.55000000000001
+      ],
+      "ports": [],
+      "parts": [],
+      "frontImage": null,
+      "rearImage": null
+    },
+    {
+      "id": "def-blank-3",
+      "name": "3U blank plate",
+      "manufacturer": "Generic example",
+      "model": "Illustrative geometry",
+      "category": "Custom equipment",
+      "widthMm": 430,
+      "heightU": 3,
+      "heightMm": 131.85000000000002,
+      "depthMm": 10,
+      "faceWidthMm": 482.6,
+      "earThicknessMm": 1.5,
+      "shelf": null,
+      "plate": {
+        "style": "solid",
+        "thicknessMm": 1.5,
+        "returnDepthMm": 10,
+        "edgeMarginMm": 5,
+        "holeDiameterMm": 4,
+        "holePitchMm": 7,
+        "mountingCentersMm": 465.1,
+        "slotWidthMm": 10,
+        "slotHeightMm": 6
+      },
+      "appearance": null,
+      "mounting": "direct",
+      "bodyMode": "parts",
+      "color": "#252a2d",
+      "evidence": "example",
+      "source": "Generic folded solid blank based on user photographs. Nominal 19-inch interface; sheet thickness, return depth and slotted mounting dimensions are provisional examples, not measured from the photos.",
+      "massKg": null,
+      "railMinMm": null,
+      "railMaxMm": null,
+      "screwOffsetsMm": [
+        6.35,
+        127.00000000000003
+      ],
+      "ports": [],
+      "parts": [],
+      "frontImage": null,
+      "rearImage": null
+    },
+    {
+      "id": "def-blank-4",
+      "name": "4U blank plate",
+      "manufacturer": "Generic example",
+      "model": "Illustrative geometry",
+      "category": "Custom equipment",
+      "widthMm": 430,
+      "heightU": 4,
+      "heightMm": 176.3,
+      "depthMm": 10,
+      "faceWidthMm": 482.6,
+      "earThicknessMm": 1.5,
+      "shelf": null,
+      "plate": {
+        "style": "solid",
+        "thicknessMm": 1.5,
+        "returnDepthMm": 10,
+        "edgeMarginMm": 5,
+        "holeDiameterMm": 4,
+        "holePitchMm": 7,
+        "mountingCentersMm": 465.1,
+        "slotWidthMm": 10,
+        "slotHeightMm": 6
+      },
+      "appearance": null,
+      "mounting": "direct",
+      "bodyMode": "parts",
+      "color": "#252a2d",
+      "evidence": "example",
+      "source": "Generic folded solid blank based on user photographs. Nominal 19-inch interface; sheet thickness, return depth and slotted mounting dimensions are provisional examples, not measured from the photos.",
+      "massKg": null,
+      "railMinMm": null,
+      "railMaxMm": null,
+      "screwOffsetsMm": [
+        6.35,
+        171.45000000000002
+      ],
+      "ports": [],
+      "parts": [],
+      "frontImage": null,
+      "rearImage": null
+    },
+    {
+      "id": "def-mesh-1",
+      "name": "1U mesh blank plate",
+      "manufacturer": "Generic example",
+      "model": "Illustrative geometry",
+      "category": "Custom equipment",
+      "widthMm": 430,
+      "heightU": 1,
+      "heightMm": 42.95,
+      "depthMm": 10,
+      "faceWidthMm": 482.6,
+      "earThicknessMm": 1.5,
+      "shelf": null,
+      "plate": {
+        "style": "perforated",
+        "thicknessMm": 1.5,
+        "returnDepthMm": 10,
+        "edgeMarginMm": 5,
+        "holeDiameterMm": 4,
+        "holePitchMm": 7,
+        "mountingCentersMm": 465.1,
+        "slotWidthMm": 10,
+        "slotHeightMm": 6
+      },
+      "appearance": null,
+      "mounting": "direct",
+      "bodyMode": "parts",
+      "color": "#252a2d",
+      "evidence": "example",
+      "source": "Generic perforated folded blank based on user photographs. Circular perforations and mounting slots are visible geometry; collision checks conservatively treat the sheet as closed. Dimensions are provisional examples.",
+      "massKg": null,
+      "railMinMm": null,
+      "railMaxMm": null,
+      "screwOffsetsMm": [
+        6.35,
+        38.1
+      ],
+      "ports": [],
+      "parts": [],
+      "frontImage": null,
+      "rearImage": null
+    },
+    {
+      "id": "def-mesh-2",
+      "name": "2U mesh blank plate",
+      "manufacturer": "Generic example",
+      "model": "Illustrative geometry",
+      "category": "Custom equipment",
+      "widthMm": 430,
+      "heightU": 2,
+      "heightMm": 87.4,
+      "depthMm": 10,
+      "faceWidthMm": 482.6,
+      "earThicknessMm": 1.5,
+      "shelf": null,
+      "plate": {
+        "style": "perforated",
+        "thicknessMm": 1.5,
+        "returnDepthMm": 10,
+        "edgeMarginMm": 5,
+        "holeDiameterMm": 4,
+        "holePitchMm": 7,
+        "mountingCentersMm": 465.1,
+        "slotWidthMm": 10,
+        "slotHeightMm": 6
+      },
+      "appearance": null,
+      "mounting": "direct",
+      "bodyMode": "parts",
+      "color": "#252a2d",
+      "evidence": "example",
+      "source": "Generic perforated folded blank based on user photographs. Circular perforations and mounting slots are visible geometry; collision checks conservatively treat the sheet as closed. Dimensions are provisional examples.",
+      "massKg": null,
+      "railMinMm": null,
+      "railMaxMm": null,
+      "screwOffsetsMm": [
+        6.35,
+        82.55000000000001
+      ],
+      "ports": [],
+      "parts": [],
+      "frontImage": null,
+      "rearImage": null
+    },
+    {
+      "id": "def-mesh-3",
+      "name": "3U mesh blank plate",
+      "manufacturer": "Generic example",
+      "model": "Illustrative geometry",
+      "category": "Custom equipment",
+      "widthMm": 430,
+      "heightU": 3,
+      "heightMm": 131.85000000000002,
+      "depthMm": 10,
+      "faceWidthMm": 482.6,
+      "earThicknessMm": 1.5,
+      "shelf": null,
+      "plate": {
+        "style": "perforated",
+        "thicknessMm": 1.5,
+        "returnDepthMm": 10,
+        "edgeMarginMm": 5,
+        "holeDiameterMm": 4,
+        "holePitchMm": 7,
+        "mountingCentersMm": 465.1,
+        "slotWidthMm": 10,
+        "slotHeightMm": 6
+      },
+      "appearance": null,
+      "mounting": "direct",
+      "bodyMode": "parts",
+      "color": "#252a2d",
+      "evidence": "example",
+      "source": "Generic perforated folded blank based on user photographs. Circular perforations and mounting slots are visible geometry; collision checks conservatively treat the sheet as closed. Dimensions are provisional examples.",
+      "massKg": null,
+      "railMinMm": null,
+      "railMaxMm": null,
+      "screwOffsetsMm": [
+        6.35,
+        127.00000000000003
+      ],
+      "ports": [],
+      "parts": [],
+      "frontImage": null,
+      "rearImage": null
+    },
+    {
+      "id": "def-mesh-4",
+      "name": "4U mesh blank plate",
+      "manufacturer": "Generic example",
+      "model": "Illustrative geometry",
+      "category": "Custom equipment",
+      "widthMm": 430,
+      "heightU": 4,
+      "heightMm": 176.3,
+      "depthMm": 10,
+      "faceWidthMm": 482.6,
+      "earThicknessMm": 1.5,
+      "shelf": null,
+      "plate": {
+        "style": "perforated",
+        "thicknessMm": 1.5,
+        "returnDepthMm": 10,
+        "edgeMarginMm": 5,
+        "holeDiameterMm": 4,
+        "holePitchMm": 7,
+        "mountingCentersMm": 465.1,
+        "slotWidthMm": 10,
+        "slotHeightMm": 6
+      },
+      "appearance": null,
+      "mounting": "direct",
+      "bodyMode": "parts",
+      "color": "#252a2d",
+      "evidence": "example",
+      "source": "Generic perforated folded blank based on user photographs. Circular perforations and mounting slots are visible geometry; collision checks conservatively treat the sheet as closed. Dimensions are provisional examples.",
+      "massKg": null,
+      "railMinMm": null,
+      "railMaxMm": null,
+      "screwOffsetsMm": [
+        6.35,
+        171.45000000000002
+      ],
+      "ports": [],
+      "parts": [],
+      "frontImage": null,
+      "rearImage": null
+    },
+    {
+      "id": "def-brush",
+      "name": "1U brush plate",
+      "manufacturer": "Generic example",
+      "model": "Illustrative geometry",
+      "category": "Cable management",
+      "widthMm": 430,
+      "heightU": 1,
+      "heightMm": 42.95,
+      "depthMm": 10,
+      "faceWidthMm": 482.6,
+      "earThicknessMm": 2,
+      "shelf": null,
+      "plate": null,
+      "appearance": null,
+      "mounting": "direct",
+      "bodyMode": "parts",
+      "color": "#344150",
+      "evidence": "example",
+      "source": "Generic open brush plate. Border dimensions and 402×28 mm opening are configurable examples, not a manufacturer specification. Flexible bristles are not simulated.",
+      "massKg": null,
+      "railMinMm": null,
+      "railMaxMm": null,
+      "screwOffsetsMm": [
+        6.35,
+        38.1
+      ],
+      "ports": [],
+      "parts": [
+        {
+          "id": "top",
+          "name": "Upper strip",
+          "position": [
+            0,
+            39,
+            5
+          ],
+          "size": [
+            430,
+            7,
+            10
+          ]
+        },
+        {
+          "id": "bottom",
+          "name": "Lower strip",
+          "position": [
+            0,
+            4,
+            5
+          ],
+          "size": [
+            430,
+            7,
+            10
+          ]
+        },
+        {
+          "id": "left",
+          "name": "Left border",
+          "position": [
+            -208,
+            21.5,
+            5
+          ],
+          "size": [
+            14,
+            28,
+            10
+          ]
+        },
+        {
+          "id": "right",
+          "name": "Right border",
+          "position": [
+            208,
+            21.5,
+            5
+          ],
+          "size": [
+            14,
+            28,
+            10
+          ]
+        }
+      ],
+      "frontImage": null,
+      "rearImage": null
+    },
+    {
+      "id": "def-user-rack-pc",
+      "name": "User rack PC · 1U",
+      "manufacturer": "",
+      "model": "",
+      "category": "Computers",
+      "widthMm": 431.8,
+      "heightU": 1,
+      "heightMm": 43,
+      "depthMm": 381,
+      "faceWidthMm": 482.6,
+      "earThicknessMm": null,
+      "shelf": null,
+      "plate": null,
+      "appearance": "user-rack-pc",
+      "mounting": "direct",
+      "bodyMode": "box",
+      "color": "#a5acb1",
+      "evidence": "user-entered",
+      "source": "User-measured: 15 in / 381 mm from mounting-ear contact plane to rear fascia; chassis 17 in / 431.8 mm wide, 19 in / 482.6 mm across ears. User-confirmed 1U; physical height 43 mm is PROVISIONAL, exact height to follow. Ports are editable photo-plane estimates from IMG_9051.JPG / IMG_9058.JPG, with rear checked against IMG_9057.JPG. Ear thickness unknown (2 mm preview), ear holes, socket sizes/recess, handles and side-stud envelopes are provisional. Manufacturer/model, mass, support/rail kit and load rating unknown. Direct mounting describes the ear datum, not a support certification. User annotated rear photo confirms DisplayPort above HDMI, five USB 2.0 ports, one USB 3.0 port and 1G Ethernet. Port centres remain photo estimates. See docs/user-pc-reference.md.",
+      "massKg": null,
+      "railMinMm": null,
+      "railMaxMm": null,
+      "screwOffsetsMm": [
+        6.35,
+        38.1
+      ],
+      "ports": [
+        {
+          "id": "front-usb-top",
+          "name": "Front USB-A · upper",
+          "connector": "USB-A",
+          "surface": "front",
+          "position": [
+            20.2,
+            32.9,
+            -2
+          ],
+          "direction": [
+            0,
+            0,
+            -1
+          ],
+          "multiple": false,
+          "widthMm": 12,
+          "heightMm": 4.5,
+          "visualColor": "#2364ba",
+          "evidence": "example",
+          "source": "Photo-derived estimate from user IMG_9051.JPG / IMG_9058.JPG, rectified to 431.8 mm width and provisional 43 mm height. XY centres and socket sizes are editable, unmeasured; see docs/user-pc-port-map.json. Rear connector identities and protocol labels follow the subsequent user-annotated rear photo. Front USB speed remains unconfirmed."
+        },
+        {
+          "id": "front-usb-bottom",
+          "name": "Front USB-A · lower",
+          "connector": "USB-A",
+          "surface": "front",
+          "position": [
+            20.1,
+            24.4,
+            -2
+          ],
+          "direction": [
+            0,
+            0,
+            -1
+          ],
+          "multiple": false,
+          "widthMm": 12,
+          "heightMm": 4.5,
+          "visualColor": "#2364ba",
+          "evidence": "example",
+          "source": "Photo-derived estimate from user IMG_9051.JPG / IMG_9058.JPG, rectified to 431.8 mm width and provisional 43 mm height. XY centres and socket sizes are editable, unmeasured; see docs/user-pc-port-map.json. Rear connector identities and protocol labels follow the subsequent user-annotated rear photo. Front USB speed remains unconfirmed."
+        },
+        {
+          "id": "rear-power",
+          "name": "Rear power · C14 inlet",
+          "connector": "IEC-C14",
+          "surface": "rear",
+          "position": [
+            -185.7,
+            17.3,
+            381
+          ],
+          "direction": [
+            0,
+            0,
+            1
+          ],
+          "multiple": false,
+          "widthMm": 23,
+          "heightMm": 29,
+          "visualColor": "#171b20",
+          "evidence": "example",
+          "source": "Photo-derived estimate from user IMG_9051.JPG / IMG_9058.JPG, rectified to 431.8 mm width and provisional 43 mm height. XY centres and socket sizes are editable, unmeasured; see docs/user-pc-port-map.json. Rear connector identities and protocol labels follow the subsequent user-annotated rear photo. Front USB speed remains unconfirmed."
+        },
+        {
+          "id": "rear-usb-left-top",
+          "name": "rear-usb-left-top · USB 2.0",
+          "connector": "USB-A",
+          "protocol": "USB 2.0",
+          "surface": "rear",
+          "position": [
+            -87.9,
+            32.8,
+            381
+          ],
+          "direction": [
+            0,
+            0,
+            1
+          ],
+          "multiple": false,
+          "widthMm": 12,
+          "heightMm": 4.5,
+          "visualColor": "#171b20",
+          "evidence": "example",
+          "source": "Photo-derived estimate from user IMG_9051.JPG / IMG_9058.JPG, rectified to 431.8 mm width and provisional 43 mm height. XY centres and socket sizes are editable, unmeasured; see docs/user-pc-port-map.json. Rear connector identities and protocol labels follow the subsequent user-annotated rear photo. Front USB speed remains unconfirmed."
+        },
+        {
+          "id": "rear-usb-left-bottom",
+          "name": "rear-usb-left-bottom · USB 2.0",
+          "connector": "USB-A",
+          "protocol": "USB 2.0",
+          "surface": "rear",
+          "position": [
+            -87.7,
+            25.9,
+            381
+          ],
+          "direction": [
+            0,
+            0,
+            1
+          ],
+          "multiple": false,
+          "widthMm": 12,
+          "heightMm": 4.5,
+          "visualColor": "#171b20",
+          "evidence": "example",
+          "source": "Photo-derived estimate from user IMG_9051.JPG / IMG_9058.JPG, rectified to 431.8 mm width and provisional 43 mm height. XY centres and socket sizes are editable, unmeasured; see docs/user-pc-port-map.json. Rear connector identities and protocol labels follow the subsequent user-annotated rear photo. Front USB speed remains unconfirmed."
+        },
+        {
+          "id": "rear-ps2",
+          "name": "Rear PS/2",
+          "connector": "PS/2",
+          "surface": "rear",
+          "position": [
+            -87.1,
+            15.1,
+            381
+          ],
+          "direction": [
+            0,
+            0,
+            1
+          ],
+          "multiple": false,
+          "widthMm": 9,
+          "heightMm": 9,
+          "visualColor": "#709e78",
+          "evidence": "example",
+          "source": "Photo-derived estimate from user IMG_9051.JPG / IMG_9058.JPG, rectified to 431.8 mm width and provisional 43 mm height. XY centres and socket sizes are editable, unmeasured; see docs/user-pc-port-map.json. Rear connector identities and protocol labels follow the subsequent user-annotated rear photo. Front USB speed remains unconfirmed."
+        },
+        {
+          "id": "rear-video-top",
+          "name": "Rear DisplayPort",
+          "connector": "DisplayPort",
+          "surface": "rear",
+          "position": [
+            -69.1,
+            21.4,
+            381
+          ],
+          "direction": [
+            0,
+            0,
+            1
+          ],
+          "multiple": false,
+          "widthMm": 14,
+          "heightMm": 5,
+          "visualColor": "#171b20",
+          "evidence": "example",
+          "source": "Photo-derived estimate from user IMG_9051.JPG / IMG_9058.JPG, rectified to 431.8 mm width and provisional 43 mm height. XY centres and socket sizes are editable, unmeasured; see docs/user-pc-port-map.json. Rear connector identities and protocol labels follow the subsequent user-annotated rear photo. Front USB speed remains unconfirmed."
+        },
+        {
+          "id": "rear-video-bottom",
+          "name": "Rear video · lower, HDMI-shaped",
+          "connector": "HDMI",
+          "surface": "rear",
+          "position": [
+            -69,
+            11.4,
+            381
+          ],
+          "direction": [
+            0,
+            0,
+            1
+          ],
+          "multiple": false,
+          "widthMm": 14,
+          "heightMm": 5,
+          "visualColor": "#171b20",
+          "evidence": "example",
+          "source": "Photo-derived estimate from user IMG_9051.JPG / IMG_9058.JPG, rectified to 431.8 mm width and provisional 43 mm height. XY centres and socket sizes are editable, unmeasured; see docs/user-pc-port-map.json. Rear connector identities and protocol labels follow the subsequent user-annotated rear photo. Front USB speed remains unconfirmed."
+        },
+        {
+          "id": "rear-vga",
+          "name": "Rear VGA",
+          "connector": "VGA",
+          "surface": "rear",
+          "position": [
+            -41.6,
+            14.4,
+            381
+          ],
+          "direction": [
+            0,
+            0,
+            1
+          ],
+          "multiple": false,
+          "widthMm": 18,
+          "heightMm": 8,
+          "visualColor": "#303f56",
+          "evidence": "example",
+          "source": "Photo-derived estimate from user IMG_9051.JPG / IMG_9058.JPG, rectified to 431.8 mm width and provisional 43 mm height. XY centres and socket sizes are editable, unmeasured; see docs/user-pc-port-map.json. Rear connector identities and protocol labels follow the subsequent user-annotated rear photo. Front USB speed remains unconfirmed."
+        },
+        {
+          "id": "rear-usb-middle-top",
+          "name": "Rear USB 3.0",
+          "connector": "USB-A",
+          "protocol": "USB 3.0",
+          "surface": "rear",
+          "position": [
+            -13.8,
+            20.7,
+            381
+          ],
+          "direction": [
+            0,
+            0,
+            1
+          ],
+          "multiple": false,
+          "widthMm": 12,
+          "heightMm": 4.5,
+          "visualColor": "#2364ba",
+          "evidence": "example",
+          "source": "Photo-derived estimate from user IMG_9051.JPG / IMG_9058.JPG, rectified to 431.8 mm width and provisional 43 mm height. XY centres and socket sizes are editable, unmeasured; see docs/user-pc-port-map.json. Rear connector identities and protocol labels follow the subsequent user-annotated rear photo. Front USB speed remains unconfirmed."
+        },
+        {
+          "id": "rear-usb-middle-bottom",
+          "name": "rear-usb-middle-bottom · USB 2.0",
+          "connector": "USB-A",
+          "protocol": "USB 2.0",
+          "surface": "rear",
+          "position": [
+            -13.5,
+            11.4,
+            381
+          ],
+          "direction": [
+            0,
+            0,
+            1
+          ],
+          "multiple": false,
+          "widthMm": 12,
+          "heightMm": 4.5,
+          "visualColor": "#171b20",
+          "evidence": "example",
+          "source": "Photo-derived estimate from user IMG_9051.JPG / IMG_9058.JPG, rectified to 431.8 mm width and provisional 43 mm height. XY centres and socket sizes are editable, unmeasured; see docs/user-pc-port-map.json. Rear connector identities and protocol labels follow the subsequent user-annotated rear photo. Front USB speed remains unconfirmed."
+        },
+        {
+          "id": "rear-rj45",
+          "name": "Rear 1G Ethernet · RJ45",
+          "connector": "RJ45",
+          "protocol": "1G Ethernet",
+          "surface": "rear",
+          "position": [
+            10.2,
+            32,
+            381
+          ],
+          "direction": [
+            0,
+            0,
+            1
+          ],
+          "multiple": false,
+          "widthMm": 14,
+          "heightMm": 12,
+          "visualColor": "#171b20",
+          "evidence": "example",
+          "source": "Photo-derived estimate from user IMG_9051.JPG / IMG_9058.JPG, rectified to 431.8 mm width and provisional 43 mm height. XY centres and socket sizes are editable, unmeasured; see docs/user-pc-port-map.json. Rear connector identities and protocol labels follow the subsequent user-annotated rear photo. Front USB speed remains unconfirmed."
+        },
+        {
+          "id": "rear-usb-lan-top",
+          "name": "rear-usb-lan-top · USB 2.0",
+          "connector": "USB-A",
+          "protocol": "USB 2.0",
+          "surface": "rear",
+          "position": [
+            11,
+            19.4,
+            381
+          ],
+          "direction": [
+            0,
+            0,
+            1
+          ],
+          "multiple": false,
+          "widthMm": 12,
+          "heightMm": 4.5,
+          "visualColor": "#171b20",
+          "evidence": "example",
+          "source": "Photo-derived estimate from user IMG_9051.JPG / IMG_9058.JPG, rectified to 431.8 mm width and provisional 43 mm height. XY centres and socket sizes are editable, unmeasured; see docs/user-pc-port-map.json. Rear connector identities and protocol labels follow the subsequent user-annotated rear photo. Front USB speed remains unconfirmed."
+        },
+        {
+          "id": "rear-usb-lan-bottom",
+          "name": "rear-usb-lan-bottom · USB 2.0",
+          "connector": "USB-A",
+          "protocol": "USB 2.0",
+          "surface": "rear",
+          "position": [
+            11.6,
+            10.3,
+            381
+          ],
+          "direction": [
+            0,
+            0,
+            1
+          ],
+          "multiple": false,
+          "widthMm": 12,
+          "heightMm": 4.5,
+          "visualColor": "#171b20",
+          "evidence": "example",
+          "source": "Photo-derived estimate from user IMG_9051.JPG / IMG_9058.JPG, rectified to 431.8 mm width and provisional 43 mm height. XY centres and socket sizes are editable, unmeasured; see docs/user-pc-port-map.json. Rear connector identities and protocol labels follow the subsequent user-annotated rear photo. Front USB speed remains unconfirmed."
+        },
+        {
+          "id": "rear-audio-blue",
+          "name": "Rear audio · blue jack",
+          "connector": "3.5mm",
+          "surface": "rear",
+          "position": [
+            44.7,
+            36.7,
+            381
+          ],
+          "direction": [
+            0,
+            0,
+            1
+          ],
+          "multiple": false,
+          "widthMm": 7,
+          "heightMm": 7,
+          "visualColor": "#52a9d3",
+          "evidence": "example",
+          "source": "Photo-derived estimate from user IMG_9051.JPG / IMG_9058.JPG, rectified to 431.8 mm width and provisional 43 mm height. XY centres and socket sizes are editable, unmeasured; see docs/user-pc-port-map.json. Rear connector identities and protocol labels follow the subsequent user-annotated rear photo. Front USB speed remains unconfirmed."
+        },
+        {
+          "id": "rear-audio-green",
+          "name": "Rear audio · green jack",
+          "connector": "3.5mm",
+          "surface": "rear",
+          "position": [
+            45.4,
+            25.2,
+            381
+          ],
+          "direction": [
+            0,
+            0,
+            1
+          ],
+          "multiple": false,
+          "widthMm": 7,
+          "heightMm": 7,
+          "visualColor": "#a1c76c",
+          "evidence": "example",
+          "source": "Photo-derived estimate from user IMG_9051.JPG / IMG_9058.JPG, rectified to 431.8 mm width and provisional 43 mm height. XY centres and socket sizes are editable, unmeasured; see docs/user-pc-port-map.json. Rear connector identities and protocol labels follow the subsequent user-annotated rear photo. Front USB speed remains unconfirmed."
+        },
+        {
+          "id": "rear-audio-pink",
+          "name": "Rear audio · pink jack",
+          "connector": "3.5mm",
+          "surface": "rear",
+          "position": [
+            45.9,
+            14.1,
+            381
+          ],
+          "direction": [
+            0,
+            0,
+            1
+          ],
+          "multiple": false,
+          "widthMm": 7,
+          "heightMm": 7,
+          "visualColor": "#db678f",
+          "evidence": "example",
+          "source": "Photo-derived estimate from user IMG_9051.JPG / IMG_9058.JPG, rectified to 431.8 mm width and provisional 43 mm height. XY centres and socket sizes are editable, unmeasured; see docs/user-pc-port-map.json. Rear connector identities and protocol labels follow the subsequent user-annotated rear photo. Front USB speed remains unconfirmed."
+        }
+      ],
+      "parts": [
+        {
+          "id": "handle-left",
+          "name": "left handle · provisional envelope",
+          "position": [
+            -231,
+            21.5,
+            -12
+          ],
+          "size": [
+            12,
+            32,
+            24
+          ]
+        },
+        {
+          "id": "side-stud-left-1",
+          "name": "left side stud 1 · provisional envelope",
+          "position": [
+            -218.5,
+            21.5,
+            55
+          ],
+          "size": [
+            5.2,
+            8,
+            8
+          ]
+        },
+        {
+          "id": "side-stud-left-2",
+          "name": "left side stud 2 · provisional envelope",
+          "position": [
+            -218.5,
+            21.5,
+            143
+          ],
+          "size": [
+            5.2,
+            8,
+            8
+          ]
+        },
+        {
+          "id": "side-stud-left-3",
+          "name": "left side stud 3 · provisional envelope",
+          "position": [
+            -218.5,
+            21.5,
+            231
+          ],
+          "size": [
+            5.2,
+            8,
+            8
+          ]
+        },
+        {
+          "id": "side-stud-left-4",
+          "name": "left side stud 4 · provisional envelope",
+          "position": [
+            -218.5,
+            21.5,
+            319
+          ],
+          "size": [
+            5.2,
+            8,
+            8
+          ]
+        },
+        {
+          "id": "handle-right",
+          "name": "right handle · provisional envelope",
+          "position": [
+            231,
+            21.5,
+            -12
+          ],
+          "size": [
+            12,
+            32,
+            24
+          ]
+        },
+        {
+          "id": "side-stud-right-1",
+          "name": "right side stud 1 · provisional envelope",
+          "position": [
+            218.5,
+            21.5,
+            55
+          ],
+          "size": [
+            5.2,
+            8,
+            8
+          ]
+        },
+        {
+          "id": "side-stud-right-2",
+          "name": "right side stud 2 · provisional envelope",
+          "position": [
+            218.5,
+            21.5,
+            143
+          ],
+          "size": [
+            5.2,
+            8,
+            8
+          ]
+        },
+        {
+          "id": "side-stud-right-3",
+          "name": "right side stud 3 · provisional envelope",
+          "position": [
+            218.5,
+            21.5,
+            231
+          ],
+          "size": [
+            5.2,
+            8,
+            8
+          ]
+        },
+        {
+          "id": "side-stud-right-4",
+          "name": "right side stud 4 · provisional envelope",
+          "position": [
+            218.5,
+            21.5,
+            319
+          ],
+          "size": [
+            5.2,
+            8,
+            8
+          ]
+        }
+      ],
+      "frontImage": null,
+      "rearImage": null
+    },
+    {
+      "id": "def-generic-switch-24",
+      "name": "Generic 24-port switch · 1U",
+      "manufacturer": "",
+      "model": "",
+      "category": "Network switches",
+      "widthMm": 442.4,
+      "heightU": 1,
+      "heightMm": 43.7,
+      "depthMm": 325,
+      "faceWidthMm": 482.6,
+      "earThicknessMm": 2,
+      "shelf": null,
+      "plate": null,
+      "appearance": "generic-switch-24",
+      "mounting": "direct",
+      "bodyMode": "box",
+      "color": "#b8bdc2",
+      "evidence": "example",
+      "source": "Generic editable layout inspired by the user-supplied silver switch photograph. PROVISIONAL: chassis 442.4 × 325 × 43.7 mm, 2 mm ears and all connector centres/sizes. Photo annotations do not verify an ear-to-rear datum. No manufacturer, link speed, PoE capability or optical module is inferred.",
+      "massKg": null,
+      "railMinMm": null,
+      "railMaxMm": null,
+      "screwOffsetsMm": [
+        6.35,
+        38.1
+      ],
+      "ports": [
+        {
+          "id": "p1",
+          "name": "Ethernet 1",
+          "connector": "RJ45",
+          "surface": "front",
+          "position": [
+            194,
+            20.5,
+            -2
+          ],
+          "direction": [
+            0,
+            0,
+            -1
+          ],
+          "multiple": false,
+          "widthMm": 14,
+          "heightMm": 12.5,
+          "evidence": "example",
+          "source": "Generic editable layout inspired by the user-supplied silver switch photograph. PROVISIONAL: chassis 442.4 × 325 × 43.7 mm, 2 mm ears and all connector centres/sizes. Photo annotations do not verify an ear-to-rear datum. No manufacturer, link speed, PoE capability or optical module is inferred."
+        },
+        {
+          "id": "p2",
+          "name": "Ethernet 2",
+          "connector": "RJ45",
+          "surface": "front",
+          "position": [
+            179,
+            20.5,
+            -2
+          ],
+          "direction": [
+            0,
+            0,
+            -1
+          ],
+          "multiple": false,
+          "widthMm": 14,
+          "heightMm": 12.5,
+          "evidence": "example",
+          "source": "Generic editable layout inspired by the user-supplied silver switch photograph. PROVISIONAL: chassis 442.4 × 325 × 43.7 mm, 2 mm ears and all connector centres/sizes. Photo annotations do not verify an ear-to-rear datum. No manufacturer, link speed, PoE capability or optical module is inferred."
+        },
+        {
+          "id": "p3",
+          "name": "Ethernet 3",
+          "connector": "RJ45",
+          "surface": "front",
+          "position": [
+            164,
+            20.5,
+            -2
+          ],
+          "direction": [
+            0,
+            0,
+            -1
+          ],
+          "multiple": false,
+          "widthMm": 14,
+          "heightMm": 12.5,
+          "evidence": "example",
+          "source": "Generic editable layout inspired by the user-supplied silver switch photograph. PROVISIONAL: chassis 442.4 × 325 × 43.7 mm, 2 mm ears and all connector centres/sizes. Photo annotations do not verify an ear-to-rear datum. No manufacturer, link speed, PoE capability or optical module is inferred."
+        },
+        {
+          "id": "p4",
+          "name": "Ethernet 4",
+          "connector": "RJ45",
+          "surface": "front",
+          "position": [
+            149,
+            20.5,
+            -2
+          ],
+          "direction": [
+            0,
+            0,
+            -1
+          ],
+          "multiple": false,
+          "widthMm": 14,
+          "heightMm": 12.5,
+          "evidence": "example",
+          "source": "Generic editable layout inspired by the user-supplied silver switch photograph. PROVISIONAL: chassis 442.4 × 325 × 43.7 mm, 2 mm ears and all connector centres/sizes. Photo annotations do not verify an ear-to-rear datum. No manufacturer, link speed, PoE capability or optical module is inferred."
+        },
+        {
+          "id": "p5",
+          "name": "Ethernet 5",
+          "connector": "RJ45",
+          "surface": "front",
+          "position": [
+            134,
+            20.5,
+            -2
+          ],
+          "direction": [
+            0,
+            0,
+            -1
+          ],
+          "multiple": false,
+          "widthMm": 14,
+          "heightMm": 12.5,
+          "evidence": "example",
+          "source": "Generic editable layout inspired by the user-supplied silver switch photograph. PROVISIONAL: chassis 442.4 × 325 × 43.7 mm, 2 mm ears and all connector centres/sizes. Photo annotations do not verify an ear-to-rear datum. No manufacturer, link speed, PoE capability or optical module is inferred."
+        },
+        {
+          "id": "p6",
+          "name": "Ethernet 6",
+          "connector": "RJ45",
+          "surface": "front",
+          "position": [
+            119,
+            20.5,
+            -2
+          ],
+          "direction": [
+            0,
+            0,
+            -1
+          ],
+          "multiple": false,
+          "widthMm": 14,
+          "heightMm": 12.5,
+          "evidence": "example",
+          "source": "Generic editable layout inspired by the user-supplied silver switch photograph. PROVISIONAL: chassis 442.4 × 325 × 43.7 mm, 2 mm ears and all connector centres/sizes. Photo annotations do not verify an ear-to-rear datum. No manufacturer, link speed, PoE capability or optical module is inferred."
+        },
+        {
+          "id": "p7",
+          "name": "Ethernet 7",
+          "connector": "RJ45",
+          "surface": "front",
+          "position": [
+            104,
+            20.5,
+            -2
+          ],
+          "direction": [
+            0,
+            0,
+            -1
+          ],
+          "multiple": false,
+          "widthMm": 14,
+          "heightMm": 12.5,
+          "evidence": "example",
+          "source": "Generic editable layout inspired by the user-supplied silver switch photograph. PROVISIONAL: chassis 442.4 × 325 × 43.7 mm, 2 mm ears and all connector centres/sizes. Photo annotations do not verify an ear-to-rear datum. No manufacturer, link speed, PoE capability or optical module is inferred."
+        },
+        {
+          "id": "p8",
+          "name": "Ethernet 8",
+          "connector": "RJ45",
+          "surface": "front",
+          "position": [
+            89,
+            20.5,
+            -2
+          ],
+          "direction": [
+            0,
+            0,
+            -1
+          ],
+          "multiple": false,
+          "widthMm": 14,
+          "heightMm": 12.5,
+          "evidence": "example",
+          "source": "Generic editable layout inspired by the user-supplied silver switch photograph. PROVISIONAL: chassis 442.4 × 325 × 43.7 mm, 2 mm ears and all connector centres/sizes. Photo annotations do not verify an ear-to-rear datum. No manufacturer, link speed, PoE capability or optical module is inferred."
+        },
+        {
+          "id": "p9",
+          "name": "Ethernet 9",
+          "connector": "RJ45",
+          "surface": "front",
+          "position": [
+            74,
+            20.5,
+            -2
+          ],
+          "direction": [
+            0,
+            0,
+            -1
+          ],
+          "multiple": false,
+          "widthMm": 14,
+          "heightMm": 12.5,
+          "evidence": "example",
+          "source": "Generic editable layout inspired by the user-supplied silver switch photograph. PROVISIONAL: chassis 442.4 × 325 × 43.7 mm, 2 mm ears and all connector centres/sizes. Photo annotations do not verify an ear-to-rear datum. No manufacturer, link speed, PoE capability or optical module is inferred."
+        },
+        {
+          "id": "p10",
+          "name": "Ethernet 10",
+          "connector": "RJ45",
+          "surface": "front",
+          "position": [
+            59,
+            20.5,
+            -2
+          ],
+          "direction": [
+            0,
+            0,
+            -1
+          ],
+          "multiple": false,
+          "widthMm": 14,
+          "heightMm": 12.5,
+          "evidence": "example",
+          "source": "Generic editable layout inspired by the user-supplied silver switch photograph. PROVISIONAL: chassis 442.4 × 325 × 43.7 mm, 2 mm ears and all connector centres/sizes. Photo annotations do not verify an ear-to-rear datum. No manufacturer, link speed, PoE capability or optical module is inferred."
+        },
+        {
+          "id": "p11",
+          "name": "Ethernet 11",
+          "connector": "RJ45",
+          "surface": "front",
+          "position": [
+            44,
+            20.5,
+            -2
+          ],
+          "direction": [
+            0,
+            0,
+            -1
+          ],
+          "multiple": false,
+          "widthMm": 14,
+          "heightMm": 12.5,
+          "evidence": "example",
+          "source": "Generic editable layout inspired by the user-supplied silver switch photograph. PROVISIONAL: chassis 442.4 × 325 × 43.7 mm, 2 mm ears and all connector centres/sizes. Photo annotations do not verify an ear-to-rear datum. No manufacturer, link speed, PoE capability or optical module is inferred."
+        },
+        {
+          "id": "p12",
+          "name": "Ethernet 12",
+          "connector": "RJ45",
+          "surface": "front",
+          "position": [
+            29,
+            20.5,
+            -2
+          ],
+          "direction": [
+            0,
+            0,
+            -1
+          ],
+          "multiple": false,
+          "widthMm": 14,
+          "heightMm": 12.5,
+          "evidence": "example",
+          "source": "Generic editable layout inspired by the user-supplied silver switch photograph. PROVISIONAL: chassis 442.4 × 325 × 43.7 mm, 2 mm ears and all connector centres/sizes. Photo annotations do not verify an ear-to-rear datum. No manufacturer, link speed, PoE capability or optical module is inferred."
+        },
+        {
+          "id": "p13",
+          "name": "Ethernet 13",
+          "connector": "RJ45",
+          "surface": "front",
+          "position": [
+            14,
+            20.5,
+            -2
+          ],
+          "direction": [
+            0,
+            0,
+            -1
+          ],
+          "multiple": false,
+          "widthMm": 14,
+          "heightMm": 12.5,
+          "evidence": "example",
+          "source": "Generic editable layout inspired by the user-supplied silver switch photograph. PROVISIONAL: chassis 442.4 × 325 × 43.7 mm, 2 mm ears and all connector centres/sizes. Photo annotations do not verify an ear-to-rear datum. No manufacturer, link speed, PoE capability or optical module is inferred."
+        },
+        {
+          "id": "p14",
+          "name": "Ethernet 14",
+          "connector": "RJ45",
+          "surface": "front",
+          "position": [
+            -1,
+            20.5,
+            -2
+          ],
+          "direction": [
+            0,
+            0,
+            -1
+          ],
+          "multiple": false,
+          "widthMm": 14,
+          "heightMm": 12.5,
+          "evidence": "example",
+          "source": "Generic editable layout inspired by the user-supplied silver switch photograph. PROVISIONAL: chassis 442.4 × 325 × 43.7 mm, 2 mm ears and all connector centres/sizes. Photo annotations do not verify an ear-to-rear datum. No manufacturer, link speed, PoE capability or optical module is inferred."
+        },
+        {
+          "id": "p15",
+          "name": "Ethernet 15",
+          "connector": "RJ45",
+          "surface": "front",
+          "position": [
+            -16,
+            20.5,
+            -2
+          ],
+          "direction": [
+            0,
+            0,
+            -1
+          ],
+          "multiple": false,
+          "widthMm": 14,
+          "heightMm": 12.5,
+          "evidence": "example",
+          "source": "Generic editable layout inspired by the user-supplied silver switch photograph. PROVISIONAL: chassis 442.4 × 325 × 43.7 mm, 2 mm ears and all connector centres/sizes. Photo annotations do not verify an ear-to-rear datum. No manufacturer, link speed, PoE capability or optical module is inferred."
+        },
+        {
+          "id": "p16",
+          "name": "Ethernet 16",
+          "connector": "RJ45",
+          "surface": "front",
+          "position": [
+            -31,
+            20.5,
+            -2
+          ],
+          "direction": [
+            0,
+            0,
+            -1
+          ],
+          "multiple": false,
+          "widthMm": 14,
+          "heightMm": 12.5,
+          "evidence": "example",
+          "source": "Generic editable layout inspired by the user-supplied silver switch photograph. PROVISIONAL: chassis 442.4 × 325 × 43.7 mm, 2 mm ears and all connector centres/sizes. Photo annotations do not verify an ear-to-rear datum. No manufacturer, link speed, PoE capability or optical module is inferred."
+        },
+        {
+          "id": "p17",
+          "name": "Ethernet 17",
+          "connector": "RJ45",
+          "surface": "front",
+          "position": [
+            -46,
+            20.5,
+            -2
+          ],
+          "direction": [
+            0,
+            0,
+            -1
+          ],
+          "multiple": false,
+          "widthMm": 14,
+          "heightMm": 12.5,
+          "evidence": "example",
+          "source": "Generic editable layout inspired by the user-supplied silver switch photograph. PROVISIONAL: chassis 442.4 × 325 × 43.7 mm, 2 mm ears and all connector centres/sizes. Photo annotations do not verify an ear-to-rear datum. No manufacturer, link speed, PoE capability or optical module is inferred."
+        },
+        {
+          "id": "p18",
+          "name": "Ethernet 18",
+          "connector": "RJ45",
+          "surface": "front",
+          "position": [
+            -61,
+            20.5,
+            -2
+          ],
+          "direction": [
+            0,
+            0,
+            -1
+          ],
+          "multiple": false,
+          "widthMm": 14,
+          "heightMm": 12.5,
+          "evidence": "example",
+          "source": "Generic editable layout inspired by the user-supplied silver switch photograph. PROVISIONAL: chassis 442.4 × 325 × 43.7 mm, 2 mm ears and all connector centres/sizes. Photo annotations do not verify an ear-to-rear datum. No manufacturer, link speed, PoE capability or optical module is inferred."
+        },
+        {
+          "id": "p19",
+          "name": "Ethernet 19",
+          "connector": "RJ45",
+          "surface": "front",
+          "position": [
+            -76,
+            20.5,
+            -2
+          ],
+          "direction": [
+            0,
+            0,
+            -1
+          ],
+          "multiple": false,
+          "widthMm": 14,
+          "heightMm": 12.5,
+          "evidence": "example",
+          "source": "Generic editable layout inspired by the user-supplied silver switch photograph. PROVISIONAL: chassis 442.4 × 325 × 43.7 mm, 2 mm ears and all connector centres/sizes. Photo annotations do not verify an ear-to-rear datum. No manufacturer, link speed, PoE capability or optical module is inferred."
+        },
+        {
+          "id": "p20",
+          "name": "Ethernet 20",
+          "connector": "RJ45",
+          "surface": "front",
+          "position": [
+            -91,
+            20.5,
+            -2
+          ],
+          "direction": [
+            0,
+            0,
+            -1
+          ],
+          "multiple": false,
+          "widthMm": 14,
+          "heightMm": 12.5,
+          "evidence": "example",
+          "source": "Generic editable layout inspired by the user-supplied silver switch photograph. PROVISIONAL: chassis 442.4 × 325 × 43.7 mm, 2 mm ears and all connector centres/sizes. Photo annotations do not verify an ear-to-rear datum. No manufacturer, link speed, PoE capability or optical module is inferred."
+        },
+        {
+          "id": "p21",
+          "name": "Ethernet 21",
+          "connector": "RJ45",
+          "surface": "front",
+          "position": [
+            -106,
+            20.5,
+            -2
+          ],
+          "direction": [
+            0,
+            0,
+            -1
+          ],
+          "multiple": false,
+          "widthMm": 14,
+          "heightMm": 12.5,
+          "evidence": "example",
+          "source": "Generic editable layout inspired by the user-supplied silver switch photograph. PROVISIONAL: chassis 442.4 × 325 × 43.7 mm, 2 mm ears and all connector centres/sizes. Photo annotations do not verify an ear-to-rear datum. No manufacturer, link speed, PoE capability or optical module is inferred."
+        },
+        {
+          "id": "p22",
+          "name": "Ethernet 22",
+          "connector": "RJ45",
+          "surface": "front",
+          "position": [
+            -121,
+            20.5,
+            -2
+          ],
+          "direction": [
+            0,
+            0,
+            -1
+          ],
+          "multiple": false,
+          "widthMm": 14,
+          "heightMm": 12.5,
+          "evidence": "example",
+          "source": "Generic editable layout inspired by the user-supplied silver switch photograph. PROVISIONAL: chassis 442.4 × 325 × 43.7 mm, 2 mm ears and all connector centres/sizes. Photo annotations do not verify an ear-to-rear datum. No manufacturer, link speed, PoE capability or optical module is inferred."
+        },
+        {
+          "id": "p23",
+          "name": "Ethernet 23",
+          "connector": "RJ45",
+          "surface": "front",
+          "position": [
+            -136,
+            20.5,
+            -2
+          ],
+          "direction": [
+            0,
+            0,
+            -1
+          ],
+          "multiple": false,
+          "widthMm": 14,
+          "heightMm": 12.5,
+          "evidence": "example",
+          "source": "Generic editable layout inspired by the user-supplied silver switch photograph. PROVISIONAL: chassis 442.4 × 325 × 43.7 mm, 2 mm ears and all connector centres/sizes. Photo annotations do not verify an ear-to-rear datum. No manufacturer, link speed, PoE capability or optical module is inferred."
+        },
+        {
+          "id": "p24",
+          "name": "Ethernet 24",
+          "connector": "RJ45",
+          "surface": "front",
+          "position": [
+            -151,
+            20.5,
+            -2
+          ],
+          "direction": [
+            0,
+            0,
+            -1
+          ],
+          "multiple": false,
+          "widthMm": 14,
+          "heightMm": 12.5,
+          "evidence": "example",
+          "source": "Generic editable layout inspired by the user-supplied silver switch photograph. PROVISIONAL: chassis 442.4 × 325 × 43.7 mm, 2 mm ears and all connector centres/sizes. Photo annotations do not verify an ear-to-rear datum. No manufacturer, link speed, PoE capability or optical module is inferred."
+        },
+        {
+          "id": "sfp1",
+          "name": "SFP 1 · cage",
+          "connector": "SFP",
+          "surface": "front",
+          "position": [
+            -184,
+            20.5,
+            -2
+          ],
+          "direction": [
+            0,
+            0,
+            -1
+          ],
+          "multiple": false,
+          "widthMm": 14,
+          "heightMm": 9.5,
+          "evidence": "example",
+          "source": "Generic editable layout inspired by the user-supplied silver switch photograph. PROVISIONAL: chassis 442.4 × 325 × 43.7 mm, 2 mm ears and all connector centres/sizes. Photo annotations do not verify an ear-to-rear datum. No manufacturer, link speed, PoE capability or optical module is inferred."
+        },
+        {
+          "id": "sfp2",
+          "name": "SFP 2 · cage",
+          "connector": "SFP",
+          "surface": "front",
+          "position": [
+            -204,
+            20.5,
+            -2
+          ],
+          "direction": [
+            0,
+            0,
+            -1
+          ],
+          "multiple": false,
+          "widthMm": 14,
+          "heightMm": 9.5,
+          "evidence": "example",
+          "source": "Generic editable layout inspired by the user-supplied silver switch photograph. PROVISIONAL: chassis 442.4 × 325 × 43.7 mm, 2 mm ears and all connector centres/sizes. Photo annotations do not verify an ear-to-rear datum. No manufacturer, link speed, PoE capability or optical module is inferred."
+        },
+        {
+          "id": "power",
+          "name": "AC power input · IEC C14",
+          "connector": "IEC-C14",
+          "surface": "rear",
+          "position": [
+            185,
+            21.85,
+            325
+          ],
+          "direction": [
+            0,
+            0,
+            1
+          ],
+          "multiple": false,
+          "widthMm": 28,
+          "heightMm": 20,
+          "evidence": "example",
+          "source": "Generic editable layout inspired by the user-supplied silver switch photograph. PROVISIONAL: chassis 442.4 × 325 × 43.7 mm, 2 mm ears and all connector centres/sizes. Photo annotations do not verify an ear-to-rear datum. No manufacturer, link speed, PoE capability or optical module is inferred."
+        }
+      ],
+      "parts": [],
+      "frontImage": null,
+      "rearImage": null
+    }
+  ],
+  "devices": [
+    {
+      "id": "generic-switch-1",
+      "definitionId": "def-generic-switch-24",
+      "name": "Generic switch 1",
+      "startU": 8,
+      "face": "front",
+      "supportId": null,
+      "installation": "installed"
+    }
+  ],
+  "cables": [],
+  "exits": [],
+  "destinations": [],
+  "accessories": [],
+  "looms": [],
+  "products": [
+    {
+      "id": "cat6a-blue",
+      "name": "Cat6A blue · example",
+      "type": "Cat6A",
+      "color": "Blue",
+      "manufacturer": "Unspecified",
+      "partNumber": "",
+      "reelLengthMm": 305000,
+      "wastePerCutMm": 0
+    }
+  ],
+  "stock": [],
+  "settings": {
+    "reservePercent": 0,
+    "reserveFixedMm": 0,
+    "contingencyPercent": 0,
+    "cablePrefix": "",
+    "scheduleColumns": [
+      "id",
+      "source",
+      "destination",
+      "purpose",
+      "type",
+      "supply",
+      "route",
+      "external",
+      "terminationA",
+      "terminationB",
+      "terminationTotal",
+      "required",
+      "status"
+    ],
+    "author": "",
+    "notes": "Generic visual reference from user-provided switch photo: 24 RJ45 in one front row, two front SFP cages, one rear IEC C14 AC inlet. No touchscreen, Etherlighting or DC backup. Chassis 442.4 × 325 × 43.7 mm, ear gauge and connector datums are editable PROVISIONAL values, not verified specifications of a Ubiquiti product. Existing temporary switch definitions are retained for saved cable compatibility."
+  }
+}

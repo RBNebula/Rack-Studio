@@ -1,0 +1,602 @@
+[
+  {
+    "id": "def-generic-switch-24",
+    "name": "Generic 24-port switch · 1U",
+    "manufacturer": "",
+    "model": "",
+    "category": "Network switches",
+    "widthMm": 442.4,
+    "heightU": 1,
+    "heightMm": 43.7,
+    "depthMm": 325,
+    "faceWidthMm": 482.6,
+    "earThicknessMm": 2,
+    "shelf": null,
+    "plate": null,
+    "appearance": "generic-switch-24",
+    "mounting": "direct",
+    "bodyMode": "box",
+    "color": "#b8bdc2",
+    "evidence": "example",
+    "source": "Generic editable layout inspired by the user-supplied silver switch photograph. PROVISIONAL: chassis 442.4 × 325 × 43.7 mm, 2 mm ears and all connector centres/sizes. Photo annotations do not verify an ear-to-rear datum. No manufacturer, link speed, PoE capability or optical module is inferred.",
+    "massKg": null,
+    "railMinMm": null,
+    "railMaxMm": null,
+    "screwOffsetsMm": [
+      6.35,
+      38.1
+    ],
+    "ports": [
+      {
+        "id": "p1",
+        "name": "Ethernet 1",
+        "connector": "RJ45",
+        "surface": "front",
+        "position": [
+          194,
+          20.5,
+          -2
+        ],
+        "direction": [
+          0,
+          0,
+          -1
+        ],
+        "multiple": false,
+        "widthMm": 14,
+        "heightMm": 12.5,
+        "evidence": "example",
+        "source": "Generic editable layout inspired by the user-supplied silver switch photograph. PROVISIONAL: chassis 442.4 × 325 × 43.7 mm, 2 mm ears and all connector centres/sizes. Photo annotations do not verify an ear-to-rear datum. No manufacturer, link speed, PoE capability or optical module is inferred."
+      },
+      {
+        "id": "p2",
+        "name": "Ethernet 2",
+        "connector": "RJ45",
+        "surface": "front",
+        "position": [
+          179,
+          20.5,
+          -2
+        ],
+        "direction": [
+          0,
+          0,
+          -1
+        ],
+        "multiple": false,
+        "widthMm": 14,
+        "heightMm": 12.5,
+        "evidence": "example",
+        "source": "Generic editable layout inspired by the user-supplied silver switch photograph. PROVISIONAL: chassis 442.4 × 325 × 43.7 mm, 2 mm ears and all connector centres/sizes. Photo annotations do not verify an ear-to-rear datum. No manufacturer, link speed, PoE capability or optical module is inferred."
+      },
+      {
+        "id": "p3",
+        "name": "Ethernet 3",
+        "connector": "RJ45",
+        "surface": "front",
+        "position": [
+          164,
+          20.5,
+          -2
+        ],
+        "direction": [
+          0,
+          0,
+          -1
+        ],
+        "multiple": false,
+        "widthMm": 14,
+        "heightMm": 12.5,
+        "evidence": "example",
+        "source": "Generic editable layout inspired by the user-supplied silver switch photograph. PROVISIONAL: chassis 442.4 × 325 × 43.7 mm, 2 mm ears and all connector centres/sizes. Photo annotations do not verify an ear-to-rear datum. No manufacturer, link speed, PoE capability or optical module is inferred."
+      },
+      {
+        "id": "p4",
+        "name": "Ethernet 4",
+        "connector": "RJ45",
+        "surface": "front",
+        "position": [
+          149,
+          20.5,
+          -2
+        ],
+        "direction": [
+          0,
+          0,
+          -1
+        ],
+        "multiple": false,
+        "widthMm": 14,
+        "heightMm": 12.5,
+        "evidence": "example",
+        "source": "Generic editable layout inspired by the user-supplied silver switch photograph. PROVISIONAL: chassis 442.4 × 325 × 43.7 mm, 2 mm ears and all connector centres/sizes. Photo annotations do not verify an ear-to-rear datum. No manufacturer, link speed, PoE capability or optical module is inferred."
+      },
+      {
+        "id": "p5",
+        "name": "Ethernet 5",
+        "connector": "RJ45",
+        "surface": "front",
+        "position": [
+          134,
+          20.5,
+          -2
+        ],
+        "direction": [
+          0,
+          0,
+          -1
+        ],
+        "multiple": false,
+        "widthMm": 14,
+        "heightMm": 12.5,
+        "evidence": "example",
+        "source": "Generic editable layout inspired by the user-supplied silver switch photograph. PROVISIONAL: chassis 442.4 × 325 × 43.7 mm, 2 mm ears and all connector centres/sizes. Photo annotations do not verify an ear-to-rear datum. No manufacturer, link speed, PoE capability or optical module is inferred."
+      },
+      {
+        "id": "p6",
+        "name": "Ethernet 6",
+        "connector": "RJ45",
+        "surface": "front",
+        "position": [
+          119,
+          20.5,
+          -2
+        ],
+        "direction": [
+          0,
+          0,
+          -1
+        ],
+        "multiple": false,
+        "widthMm": 14,
+        "heightMm": 12.5,
+        "evidence": "example",
+        "source": "Generic editable layout inspired by the user-supplied silver switch photograph. PROVISIONAL: chassis 442.4 × 325 × 43.7 mm, 2 mm ears and all connector centres/sizes. Photo annotations do not verify an ear-to-rear datum. No manufacturer, link speed, PoE capability or optical module is inferred."
+      },
+      {
+        "id": "p7",
+        "name": "Ethernet 7",
+        "connector": "RJ45",
+        "surface": "front",
+        "position": [
+          104,
+          20.5,
+          -2
+        ],
+        "direction": [
+          0,
+          0,
+          -1
+        ],
+        "multiple": false,
+        "widthMm": 14,
+        "heightMm": 12.5,
+        "evidence": "example",
+        "source": "Generic editable layout inspired by the user-supplied silver switch photograph. PROVISIONAL: chassis 442.4 × 325 × 43.7 mm, 2 mm ears and all connector centres/sizes. Photo annotations do not verify an ear-to-rear datum. No manufacturer, link speed, PoE capability or optical module is inferred."
+      },
+      {
+        "id": "p8",
+        "name": "Ethernet 8",
+        "connector": "RJ45",
+        "surface": "front",
+        "position": [
+          89,
+          20.5,
+          -2
+        ],
+        "direction": [
+          0,
+          0,
+          -1
+        ],
+        "multiple": false,
+        "widthMm": 14,
+        "heightMm": 12.5,
+        "evidence": "example",
+        "source": "Generic editable layout inspired by the user-supplied silver switch photograph. PROVISIONAL: chassis 442.4 × 325 × 43.7 mm, 2 mm ears and all connector centres/sizes. Photo annotations do not verify an ear-to-rear datum. No manufacturer, link speed, PoE capability or optical module is inferred."
+      },
+      {
+        "id": "p9",
+        "name": "Ethernet 9",
+        "connector": "RJ45",
+        "surface": "front",
+        "position": [
+          74,
+          20.5,
+          -2
+        ],
+        "direction": [
+          0,
+          0,
+          -1
+        ],
+        "multiple": false,
+        "widthMm": 14,
+        "heightMm": 12.5,
+        "evidence": "example",
+        "source": "Generic editable layout inspired by the user-supplied silver switch photograph. PROVISIONAL: chassis 442.4 × 325 × 43.7 mm, 2 mm ears and all connector centres/sizes. Photo annotations do not verify an ear-to-rear datum. No manufacturer, link speed, PoE capability or optical module is inferred."
+      },
+      {
+        "id": "p10",
+        "name": "Ethernet 10",
+        "connector": "RJ45",
+        "surface": "front",
+        "position": [
+          59,
+          20.5,
+          -2
+        ],
+        "direction": [
+          0,
+          0,
+          -1
+        ],
+        "multiple": false,
+        "widthMm": 14,
+        "heightMm": 12.5,
+        "evidence": "example",
+        "source": "Generic editable layout inspired by the user-supplied silver switch photograph. PROVISIONAL: chassis 442.4 × 325 × 43.7 mm, 2 mm ears and all connector centres/sizes. Photo annotations do not verify an ear-to-rear datum. No manufacturer, link speed, PoE capability or optical module is inferred."
+      },
+      {
+        "id": "p11",
+        "name": "Ethernet 11",
+        "connector": "RJ45",
+        "surface": "front",
+        "position": [
+          44,
+          20.5,
+          -2
+        ],
+        "direction": [
+          0,
+          0,
+          -1
+        ],
+        "multiple": false,
+        "widthMm": 14,
+        "heightMm": 12.5,
+        "evidence": "example",
+        "source": "Generic editable layout inspired by the user-supplied silver switch photograph. PROVISIONAL: chassis 442.4 × 325 × 43.7 mm, 2 mm ears and all connector centres/sizes. Photo annotations do not verify an ear-to-rear datum. No manufacturer, link speed, PoE capability or optical module is inferred."
+      },
+      {
+        "id": "p12",
+        "name": "Ethernet 12",
+        "connector": "RJ45",
+        "surface": "front",
+        "position": [
+          29,
+          20.5,
+          -2
+        ],
+        "direction": [
+          0,
+          0,
+          -1
+        ],
+        "multiple": false,
+        "widthMm": 14,
+        "heightMm": 12.5,
+        "evidence": "example",
+        "source": "Generic editable layout inspired by the user-supplied silver switch photograph. PROVISIONAL: chassis 442.4 × 325 × 43.7 mm, 2 mm ears and all connector centres/sizes. Photo annotations do not verify an ear-to-rear datum. No manufacturer, link speed, PoE capability or optical module is inferred."
+      },
+      {
+        "id": "p13",
+        "name": "Ethernet 13",
+        "connector": "RJ45",
+        "surface": "front",
+        "position": [
+          14,
+          20.5,
+          -2
+        ],
+        "direction": [
+          0,
+          0,
+          -1
+        ],
+        "multiple": false,
+        "widthMm": 14,
+        "heightMm": 12.5,
+        "evidence": "example",
+        "source": "Generic editable layout inspired by the user-supplied silver switch photograph. PROVISIONAL: chassis 442.4 × 325 × 43.7 mm, 2 mm ears and all connector centres/sizes. Photo annotations do not verify an ear-to-rear datum. No manufacturer, link speed, PoE capability or optical module is inferred."
+      },
+      {
+        "id": "p14",
+        "name": "Ethernet 14",
+        "connector": "RJ45",
+        "surface": "front",
+        "position": [
+          -1,
+          20.5,
+          -2
+        ],
+        "direction": [
+          0,
+          0,
+          -1
+        ],
+        "multiple": false,
+        "widthMm": 14,
+        "heightMm": 12.5,
+        "evidence": "example",
+        "source": "Generic editable layout inspired by the user-supplied silver switch photograph. PROVISIONAL: chassis 442.4 × 325 × 43.7 mm, 2 mm ears and all connector centres/sizes. Photo annotations do not verify an ear-to-rear datum. No manufacturer, link speed, PoE capability or optical module is inferred."
+      },
+      {
+        "id": "p15",
+        "name": "Ethernet 15",
+        "connector": "RJ45",
+        "surface": "front",
+        "position": [
+          -16,
+          20.5,
+          -2
+        ],
+        "direction": [
+          0,
+          0,
+          -1
+        ],
+        "multiple": false,
+        "widthMm": 14,
+        "heightMm": 12.5,
+        "evidence": "example",
+        "source": "Generic editable layout inspired by the user-supplied silver switch photograph. PROVISIONAL: chassis 442.4 × 325 × 43.7 mm, 2 mm ears and all connector centres/sizes. Photo annotations do not verify an ear-to-rear datum. No manufacturer, link speed, PoE capability or optical module is inferred."
+      },
+      {
+        "id": "p16",
+        "name": "Ethernet 16",
+        "connector": "RJ45",
+        "surface": "front",
+        "position": [
+          -31,
+          20.5,
+          -2
+        ],
+        "direction": [
+          0,
+          0,
+          -1
+        ],
+        "multiple": false,
+        "widthMm": 14,
+        "heightMm": 12.5,
+        "evidence": "example",
+        "source": "Generic editable layout inspired by the user-supplied silver switch photograph. PROVISIONAL: chassis 442.4 × 325 × 43.7 mm, 2 mm ears and all connector centres/sizes. Photo annotations do not verify an ear-to-rear datum. No manufacturer, link speed, PoE capability or optical module is inferred."
+      },
+      {
+        "id": "p17",
+        "name": "Ethernet 17",
+        "connector": "RJ45",
+        "surface": "front",
+        "position": [
+          -46,
+          20.5,
+          -2
+        ],
+        "direction": [
+          0,
+          0,
+          -1
+        ],
+        "multiple": false,
+        "widthMm": 14,
+        "heightMm": 12.5,
+        "evidence": "example",
+        "source": "Generic editable layout inspired by the user-supplied silver switch photograph. PROVISIONAL: chassis 442.4 × 325 × 43.7 mm, 2 mm ears and all connector centres/sizes. Photo annotations do not verify an ear-to-rear datum. No manufacturer, link speed, PoE capability or optical module is inferred."
+      },
+      {
+        "id": "p18",
+        "name": "Ethernet 18",
+        "connector": "RJ45",
+        "surface": "front",
+        "position": [
+          -61,
+          20.5,
+          -2
+        ],
+        "direction": [
+          0,
+          0,
+          -1
+        ],
+        "multiple": false,
+        "widthMm": 14,
+        "heightMm": 12.5,
+        "evidence": "example",
+        "source": "Generic editable layout inspired by the user-supplied silver switch photograph. PROVISIONAL: chassis 442.4 × 325 × 43.7 mm, 2 mm ears and all connector centres/sizes. Photo annotations do not verify an ear-to-rear datum. No manufacturer, link speed, PoE capability or optical module is inferred."
+      },
+      {
+        "id": "p19",
+        "name": "Ethernet 19",
+        "connector": "RJ45",
+        "surface": "front",
+        "position": [
+          -76,
+          20.5,
+          -2
+        ],
+        "direction": [
+          0,
+          0,
+          -1
+        ],
+        "multiple": false,
+        "widthMm": 14,
+        "heightMm": 12.5,
+        "evidence": "example",
+        "source": "Generic editable layout inspired by the user-supplied silver switch photograph. PROVISIONAL: chassis 442.4 × 325 × 43.7 mm, 2 mm ears and all connector centres/sizes. Photo annotations do not verify an ear-to-rear datum. No manufacturer, link speed, PoE capability or optical module is inferred."
+      },
+      {
+        "id": "p20",
+        "name": "Ethernet 20",
+        "connector": "RJ45",
+        "surface": "front",
+        "position": [
+          -91,
+          20.5,
+          -2
+        ],
+        "direction": [
+          0,
+          0,
+          -1
+        ],
+        "multiple": false,
+        "widthMm": 14,
+        "heightMm": 12.5,
+        "evidence": "example",
+        "source": "Generic editable layout inspired by the user-supplied silver switch photograph. PROVISIONAL: chassis 442.4 × 325 × 43.7 mm, 2 mm ears and all connector centres/sizes. Photo annotations do not verify an ear-to-rear datum. No manufacturer, link speed, PoE capability or optical module is inferred."
+      },
+      {
+        "id": "p21",
+        "name": "Ethernet 21",
+        "connector": "RJ45",
+        "surface": "front",
+        "position": [
+          -106,
+          20.5,
+          -2
+        ],
+        "direction": [
+          0,
+          0,
+          -1
+        ],
+        "multiple": false,
+        "widthMm": 14,
+        "heightMm": 12.5,
+        "evidence": "example",
+        "source": "Generic editable layout inspired by the user-supplied silver switch photograph. PROVISIONAL: chassis 442.4 × 325 × 43.7 mm, 2 mm ears and all connector centres/sizes. Photo annotations do not verify an ear-to-rear datum. No manufacturer, link speed, PoE capability or optical module is inferred."
+      },
+      {
+        "id": "p22",
+        "name": "Ethernet 22",
+        "connector": "RJ45",
+        "surface": "front",
+        "position": [
+          -121,
+          20.5,
+          -2
+        ],
+        "direction": [
+          0,
+          0,
+          -1
+        ],
+        "multiple": false,
+        "widthMm": 14,
+        "heightMm": 12.5,
+        "evidence": "example",
+        "source": "Generic editable layout inspired by the user-supplied silver switch photograph. PROVISIONAL: chassis 442.4 × 325 × 43.7 mm, 2 mm ears and all connector centres/sizes. Photo annotations do not verify an ear-to-rear datum. No manufacturer, link speed, PoE capability or optical module is inferred."
+      },
+      {
+        "id": "p23",
+        "name": "Ethernet 23",
+        "connector": "RJ45",
+        "surface": "front",
+        "position": [
+          -136,
+          20.5,
+          -2
+        ],
+        "direction": [
+          0,
+          0,
+          -1
+        ],
+        "multiple": false,
+        "widthMm": 14,
+        "heightMm": 12.5,
+        "evidence": "example",
+        "source": "Generic editable layout inspired by the user-supplied silver switch photograph. PROVISIONAL: chassis 442.4 × 325 × 43.7 mm, 2 mm ears and all connector centres/sizes. Photo annotations do not verify an ear-to-rear datum. No manufacturer, link speed, PoE capability or optical module is inferred."
+      },
+      {
+        "id": "p24",
+        "name": "Ethernet 24",
+        "connector": "RJ45",
+        "surface": "front",
+        "position": [
+          -151,
+          20.5,
+          -2
+        ],
+        "direction": [
+          0,
+          0,
+          -1
+        ],
+        "multiple": false,
+        "widthMm": 14,
+        "heightMm": 12.5,
+        "evidence": "example",
+        "source": "Generic editable layout inspired by the user-supplied silver switch photograph. PROVISIONAL: chassis 442.4 × 325 × 43.7 mm, 2 mm ears and all connector centres/sizes. Photo annotations do not verify an ear-to-rear datum. No manufacturer, link speed, PoE capability or optical module is inferred."
+      },
+      {
+        "id": "sfp1",
+        "name": "SFP 1 · cage",
+        "connector": "SFP",
+        "surface": "front",
+        "position": [
+          -184,
+          20.5,
+          -2
+        ],
+        "direction": [
+          0,
+          0,
+          -1
+        ],
+        "multiple": false,
+        "widthMm": 14,
+        "heightMm": 9.5,
+        "evidence": "example",
+        "source": "Generic editable layout inspired by the user-supplied silver switch photograph. PROVISIONAL: chassis 442.4 × 325 × 43.7 mm, 2 mm ears and all connector centres/sizes. Photo annotations do not verify an ear-to-rear datum. No manufacturer, link speed, PoE capability or optical module is inferred."
+      },
+      {
+        "id": "sfp2",
+        "name": "SFP 2 · cage",
+        "connector": "SFP",
+        "surface": "front",
+        "position": [
+          -204,
+          20.5,
+          -2
+        ],
+        "direction": [
+          0,
+          0,
+          -1
+        ],
+        "multiple": false,
+        "widthMm": 14,
+        "heightMm": 9.5,
+        "evidence": "example",
+        "source": "Generic editable layout inspired by the user-supplied silver switch photograph. PROVISIONAL: chassis 442.4 × 325 × 43.7 mm, 2 mm ears and all connector centres/sizes. Photo annotations do not verify an ear-to-rear datum. No manufacturer, link speed, PoE capability or optical module is inferred."
+      },
+      {
+        "id": "power",
+        "name": "AC power input · IEC C14",
+        "connector": "IEC-C14",
+        "surface": "rear",
+        "position": [
+          185,
+          21.85,
+          325
+        ],
+        "direction": [
+          0,
+          0,
+          1
+        ],
+        "multiple": false,
+        "widthMm": 28,
+        "heightMm": 20,
+        "evidence": "example",
+        "source": "Generic editable layout inspired by the user-supplied silver switch photograph. PROVISIONAL: chassis 442.4 × 325 × 43.7 mm, 2 mm ears and all connector centres/sizes. Photo annotations do not verify an ear-to-rear datum. No manufacturer, link speed, PoE capability or optical module is inferred."
+      }
+    ],
+    "parts": [],
+    "frontImage": null,
+    "rearImage": null
+  }
+]

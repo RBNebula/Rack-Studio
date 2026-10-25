@@ -1,0 +1,26 @@
+{
+  "date": "2026-10-23",
+  "scope": "Synthetic geometric planning smoke benchmark. Does not meet full stress acceptance: no physics, constrained looms, complex imported geometry, browser FPS or memory instrumentation.",
+  "environment": {
+    "node": "v24.22.1",
+    "os": "win32 10.0.26200",
+    "cpu": "AMD Ryzen 7 7800X3D 8-Core Processor           ",
+    "logicalCores": 8,
+    "memoryGiB": 63
+  },
+  "counts": {
+    "rackU": 42,
+    "devices": 40,
+    "ports": 240,
+    "cables": 100,
+    "validRoutes": 100
+  },
+  "timingsMs": {
+    "routingLengthsAndProcurement": 138.12670000000003,
+    "cachedScheduleCsv": 0.9528999999999996
+  },
+  "bytes": {
+    "project": 111287,
+    "csv": 11286
+  }
+}

@@ -1,0 +1,17 @@
+Rack Studio save-as-new patch · 24 October 2026
+Command: RACK_TEST_URL=http://127.0.0.1:5174 node node_modules/@playwright/test/cli.js test tests/model-designer.spec.ts tests/model-save-as-new.spec.ts
+Frozen production: index-DHPoaWJ0.js / ModelDesigner-BuuLCXt_.js / Scene-CfldTSSD.js
+Edge 155.0.4283.62 · 1600 x 1000 · headless software WebGL
+Two affected workflows pass, including original/cable preservation, copy-only saves, distinct names/IDs, cancellation, undo/redo and persistence.
+
+[WebServer] (node:30996) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+
+Running 2 tests using 1 worker
+
+(node:31200) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ok 1 tests\model-designer.spec.ts:4:1 › isolated device designer, face drag/drop, library persistence and tray stretching (5.0s)
+  ok 2 tests\model-save-as-new.spec.ts:12:1 › save as new preserves the source and its cables, edits only the copy and survives undo and reload (6.0s)
+
+  2 passed (12.5s)

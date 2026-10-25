@@ -1,0 +1,40 @@
+Rack Studio browser validation · 22 October 2026
+
+Target: http://127.0.0.1:5174 (immutable local production build)
+Production assets: index-M_lDXF-B.js; Scene-BZqftBUc.js
+Runtime: Node.js 24.19.0 on Windows
+Browser: Microsoft Edge 155.0.4283.62, headless Chromium channel msedge
+Viewport: 1600 x 1000
+WebGL: software SwiftShader (--enable-webgl --use-angle=swiftshader --enable-unsafe-swiftshader)
+Execution: outside the restricted sandbox, using a disposable browser profile and local loopback only
+
+PowerShell command:
+$env:RACK_TEST_URL = 'http://127.0.0.1:5174'
+node node_modules/@playwright/test/cli.js test tests/workflows.spec.ts --reporter=list
+
+Observed final result (exit 0):
+Running 6 tests using 1 worker
+
+PASS  actual library drag, occupied drop, precise placement, undo/redo and camera controls (7.8s)
+PASS  custom definition, port editing and embedded image survive a real local save/reload (3.4s)
+PASS  connections, master schedule, external length, reserve, CSV and project reopen stay consistent (3.7s)
+PASS  new rack dimensions and inclusive depth sections persist while invalid overlapping sections are rejected (3.5s)
+PASS  a storage failure preserves the current project when New is requested (1.4s)
+PASS  imported power cable follows an existing curved run through UI edits and reload (2.0s)
+
+6 passed (22.6s)
+Uncaught JavaScript errors: 0; each test asserts that its captured pageerror list is empty.
+
+Tests use actual controls, native pointer drags and downloaded/exported data. The storage failure test deliberately replaces indexedDB.open to throw at the browser storage boundary; no test edits the application store directly.
+
+Generated screenshots (actual running application, 1600 x 1000):
+docs/screenshots/rack-designer.png
+docs/screenshots/rack-placement.png
+docs/screenshots/custom-rack.png
+docs/screenshots/cable-schedule.png
+docs/screenshots/procurement.png
+docs/screenshots/cable-follow.png
+
+Representative screenshot review checked rack/port alignment, readable labels and panels, actual followed cable curvature, schedule and procurement layout. Some tables/panels intentionally scroll; captured illustrative geometry is not a verified physical installation. This is manual visual review, not a controlled visual regression baseline or browser FPS measurement.
+
+Earlier failures were investigated, not ignored: an actual nested label-root teardown error was fixed in Scene; source-label selectors were updated to use accessible comboboxes and changed engineering field labels. The final recorded run above passed against the final production bundle.

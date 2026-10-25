@@ -1,0 +1,28 @@
+.reference-card {
+  background: #fafcfc;
+  cursor: default;
+  border-style: dashed;
+}
+.reference-card > h3 {
+  font-size: 12px;
+  margin: 12px 0 7px;
+  line-height: 1.4;
+  color: #4b6572;
+}
+.reference-card > .badge {
+  font-size: 8px;
+  white-space: normal;
+  line-height: 1.4;
+}
+.reference-card > p {
+  font-size: 9px;
+  line-height: 1.6;
+  color: #8c9ba4;
+}
+.reference-card > .button {
+  font-size: 9px;
+  min-height: 28px;
+  padding: 5px 7px;
+  background: #fff;
+  color: #547c7e;
+}

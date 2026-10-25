@@ -1,0 +1,163 @@
+$ playwright test
+[WebServer] (node:24840) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+
+Running 29 tests using 1 worker
+
+(node:13000) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+[WebServer] 19:30:30 [vite] (client) [console.warn] THREE.Clock: This module has been deprecated. Please use THREE.Timer instead.
+[WebServer] 19:30:31 [vite] (client) [console.warn] THREE.WebGLShadowMap: PCFSoftShadowMap has been removed. Using PCFShadowMap instead.
+[WebServer] 19:30:33 [vite] (client) [console.warn] THREE.Clock: This module has been deprecated. Please use THREE.Timer instead.
+[WebServer] 19:30:37 [vite] (client) [console.warn] THREE.Clock: This module has been deprecated. Please use THREE.Timer instead.
+[WebServer] 19:30:38 [vite] (client) [console.warn] THREE.WebGLShadowMap: PCFSoftShadowMap has been removed. Using PCFShadowMap instead.
+  ok  1 tests\connector-rotation.spec.ts:28:1 › front/rear connector rotation, save-as-new, library edits and rotated native port connections persist (17.2s)
+Construction QA: Microsoft Edge 156.0.4314.42, 1600 × 1000, software WebGL.
+[WebServer] 19:30:47 [vite] (client) [console.warn] THREE.Clock: This module has been deprecated. Please use THREE.Timer instead.
+[WebServer] 19:30:47 [vite] (client) [console.warn] THREE.WebGLShadowMap: PCFSoftShadowMap has been removed. Using PCFShadowMap instead.
+[WebServer] 19:30:51 [vite] (client) [console.warn] THREE.Clock: This module has been deprecated. Please use THREE.Timer instead.
+[WebServer] 19:30:52 [vite] (client) [console.warn] THREE.WebGLShadowMap: PCFSoftShadowMap has been removed. Using PCFShadowMap instead.
+  ok  2 tests\construction.spec.ts:58:1 › exterior envelope, rail planes and rail profile stay independently configurable through save and reload (5.8s)
+[WebServer] 19:30:53 [vite] (client) [console.warn] THREE.Clock: This module has been deprecated. Please use THREE.Timer instead.
+[WebServer] 19:30:53 [vite] (client) [console.warn] THREE.WebGLShadowMap: PCFSoftShadowMap has been removed. Using PCFShadowMap instead.
+[WebServer] 19:30:56 [vite] (client) [console.warn] THREE.Clock: This module has been deprecated. Please use THREE.Timer instead.
+[WebServer] 19:30:56 [vite] (client) [console.warn] THREE.WebGLShadowMap: PCFSoftShadowMap has been removed. Using PCFShadowMap instead.
+  ok  3 tests\construction.spec.ts:107:1 › explicit structural channels require entered geometry and retain their identity and provisional evidence (4.8s)
+[WebServer] 19:30:58 [vite] (client) [console.warn] THREE.Clock: This module has been deprecated. Please use THREE.Timer instead.
+[WebServer] 19:30:58 [vite] (client) [console.warn] THREE.WebGLShadowMap: PCFSoftShadowMap has been removed. Using PCFShadowMap instead.
+[WebServer] 19:31:02 [vite] (client) [console.warn] THREE.Clock: This module has been deprecated. Please use THREE.Timer instead.
+[WebServer] 19:31:02 [vite] (client) [console.warn] THREE.WebGLShadowMap: PCFSoftShadowMap has been removed. Using PCFShadowMap instead.
+[WebServer] 19:31:06 [vite] (client) [console.warn] THREE.Clock: This module has been deprecated. Please use THREE.Timer instead.
+[WebServer] 19:31:06 [vite] (client) [console.warn] THREE.WebGLShadowMap: PCFSoftShadowMap has been removed. Using PCFShadowMap instead.
+  ok  4 tests\construction.spec.ts:192:1 › generic shelf depth, usable depth and entered supports survive front and rear placements (10.0s)
+[WebServer] 19:31:08 [vite] (client) [console.warn] THREE.Clock: This module has been deprecated. Please use THREE.Timer instead.
+[WebServer] 19:31:08 [vite] (client) [console.warn] THREE.WebGLShadowMap: PCFSoftShadowMap has been removed. Using PCFShadowMap instead.
+  ok  5 tests\construction.spec.ts:303:1 › pending shelf supports block saving and inactive supports stay absent when generation is disabled (9.5s)
+[WebServer] 19:31:18 [vite] (client) [console.warn] THREE.Clock: This module has been deprecated. Please use THREE.Timer instead.
+[WebServer] 19:31:18 [vite] (client) [console.warn] THREE.WebGLShadowMap: PCFSoftShadowMap has been removed. Using PCFShadowMap instead.
+[WebServer] 19:31:29 [vite] (client) [console.warn] THREE.Clock: This module has been deprecated. Please use THREE.Timer instead.
+[WebServer] 19:31:30 [vite] (client) [console.warn] THREE.WebGLShadowMap: PCFSoftShadowMap has been removed. Using PCFShadowMap instead.
+[WebServer] 19:31:35 [vite] (client) [console.warn] THREE.Clock: This module has been deprecated. Please use THREE.Timer instead.
+[WebServer] 19:31:35 [vite] (client) [console.warn] THREE.WebGLShadowMap: PCFSoftShadowMap has been removed. Using PCFShadowMap instead.
+  ok  6 tests\device-rails.spec.ts:5:1 › sliding rails preserve cable identity, service extension and saved geometry (23.4s)
+[WebServer] 19:31:41 [vite] (client) [console.warn] THREE.Clock: This module has been deprecated. Please use THREE.Timer instead.
+[WebServer] 19:31:41 [vite] (client) [console.warn] THREE.WebGLShadowMap: PCFSoftShadowMap has been removed. Using PCFShadowMap instead.
+[WebServer] 19:32:08 [vite] (client) [console.warn] THREE.Clock: This module has been deprecated. Please use THREE.Timer instead.
+[WebServer] 19:32:08 [vite] (client) [console.warn] THREE.WebGLShadowMap: PCFSoftShadowMap has been removed. Using PCFShadowMap instead.
+  ok  7 tests\generic-switch.spec.ts:108:1 › generic single-row switch adds to an existing library, connects RJ45/SFP/AC and preserves edited ports (35.8s)
+[WebServer] 19:32:17 [vite] (client) [console.warn] THREE.Clock: This module has been deprecated. Please use THREE.Timer instead.
+[WebServer] 19:32:17 [vite] (client) [console.warn] THREE.WebGLShadowMap: PCFSoftShadowMap has been removed. Using PCFShadowMap instead.
+  ok  8 tests\lacing-bar.spec.ts:66:1 › native rear and front library drops follow the selected mounting face in a translated stepped rack (7.7s)
+[WebServer] 19:32:25 [vite] (client) [console.warn] THREE.Clock: This module has been deprecated. Please use THREE.Timer instead.
+[WebServer] 19:32:25 [vite] (client) [console.warn] THREE.WebGLShadowMap: PCFSoftShadowMap has been removed. Using PCFShadowMap instead.
+  ok  9 tests\lacing-bar.spec.ts:113:1 › existing projects can add, edit, place and round-trip a lacing bar without replacing their equipment (3.2s)
+[WebServer] 19:32:28 [vite] (client) [console.warn] THREE.Clock: This module has been deprecated. Please use THREE.Timer instead.
+[WebServer] 19:32:28 [vite] (client) [console.warn] THREE.WebGLShadowMap: PCFSoftShadowMap has been removed. Using PCFShadowMap instead.
+[WebServer] 19:32:29 [vite] (client) [console.warn] THREE.Clock: This module has been deprecated. Please use THREE.Timer instead.
+[WebServer] 19:32:29 [vite] (client) [console.warn] THREE.Clock: This module has been deprecated. Please use THREE.Timer instead.
+[WebServer] 19:32:29 [vite] (client) [console.warn] THREE.WebGLShadowMap: PCFSoftShadowMap has been removed. Using PCFShadowMap instead.
+  ok 10 tests\model-designer.spec.ts:4:1 › isolated device designer, face drag/drop, library persistence and tray stretching (5.3s)
+[WebServer] 19:32:33 [vite] (client) [console.warn] THREE.Clock: This module has been deprecated. Please use THREE.Timer instead.
+[WebServer] 19:32:33 [vite] (client) [console.warn] THREE.WebGLShadowMap: PCFSoftShadowMap has been removed. Using PCFShadowMap instead.
+[WebServer] 19:32:35 [vite] (client) [console.warn] THREE.Clock: This module has been deprecated. Please use THREE.Timer instead.
+  ok 11 tests\model-save-as-new.spec.ts:12:1 › save as new preserves the source and its cables, edits only the copy and survives undo and reload (6.2s)
+[WebServer] 19:32:39 [vite] (client) [console.warn] THREE.Clock: This module has been deprecated. Please use THREE.Timer instead.
+[WebServer] 19:32:39 [vite] (client) [console.warn] THREE.WebGLShadowMap: PCFSoftShadowMap has been removed. Using PCFShadowMap instead.
+  ok 12 tests\modelling.spec.ts:55:1 › direct guide dragging, tray rotation/free placement, duplication, alignment, visibility and measurement (31.4s)
+[WebServer] 19:33:11 [vite] (client) [console.warn] THREE.Clock: This module has been deprecated. Please use THREE.Timer instead.
+[WebServer] 19:33:11 [vite] (client) [console.warn] THREE.WebGLShadowMap: PCFSoftShadowMap has been removed. Using PCFShadowMap instead.
+[WebServer] 19:33:26 [vite] (client) [console.warn] THREE.Clock: This module has been deprecated. Please use THREE.Timer instead.
+  ok 13 tests\modelling.spec.ts:134:1 › adjacent racks retain independent layouts and portable assemblies remap all identities (16.7s)
+[WebServer] 19:33:27 [vite] (client) [console.warn] THREE.Clock: This module has been deprecated. Please use THREE.Timer instead.
+[WebServer] 19:33:28 [vite] (client) [console.warn] THREE.WebGLShadowMap: PCFSoftShadowMap has been removed. Using PCFShadowMap instead.
+  ok 14 tests\modelling.spec.ts:182:1 › attached clips, shared bundle paths and a movable 3D vehicle endpoint retain real cable records (29.3s)
+Mounting QA: Microsoft Edge 156.0.4314.42, 1600 × 1000, software WebGL.
+[WebServer] 19:33:57 [vite] (client) [console.warn] THREE.Clock: This module has been deprecated. Please use THREE.Timer instead.
+[WebServer] 19:33:57 [vite] (client) [console.warn] THREE.WebGLShadowMap: PCFSoftShadowMap has been removed. Using PCFShadowMap instead.
+Mounting view front U18: rendered U-label pitch 25.6 → 155.6 px.
+  ok 15 tests\mounting.spec.ts:158:1 › front patch panel and switch expose their rack ears against the mounting rails (13.9s)
+[WebServer] 19:34:11 [vite] (client) [console.warn] THREE.Clock: This module has been deprecated. Please use THREE.Timer instead.
+[WebServer] 19:34:11 [vite] (client) [console.warn] THREE.WebGLShadowMap: PCFSoftShadowMap has been removed. Using PCFShadowMap instead.
+Mounting view front U6: rendered U-label pitch 25.6 → 117.0 px.
+  ok 16 tests\mounting.spec.ts:175:1 › a 1U shelf mounts at the front with ears while its centre remains open (12.8s)
+[WebServer] 19:34:24 [vite] (client) [console.warn] THREE.Clock: This module has been deprecated. Please use THREE.Timer instead.
+[WebServer] 19:34:24 [vite] (client) [console.warn] THREE.WebGLShadowMap: PCFSoftShadowMap has been removed. Using PCFShadowMap instead.
+[WebServer] 19:34:26 [vite] (client) [console.warn] THREE.Clock: This module has been deprecated. Please use THREE.Timer instead.
+[WebServer] 19:34:26 [vite] (client) [console.warn] THREE.WebGLShadowMap: PCFSoftShadowMap has been removed. Using PCFShadowMap instead.
+Mounting view rear U10: rendered U-label pitch 28.9 → 53.7 px.
+  ok 17 tests\mounting.spec.ts:187:1 › a 1U shelf mounts at the rear and retains its mounting face after local save and reload (8.2s)
+Photographed PC QA: Microsoft Edge 156.0.4314.42, 1600 × 1000, software WebGL.
+[WebServer] 19:34:32 [vite] (client) [console.warn] THREE.Clock: This module has been deprecated. Please use THREE.Timer instead.
+[WebServer] 19:34:32 [vite] (client) [console.warn] THREE.WebGLShadowMap: PCFSoftShadowMap has been removed. Using PCFShadowMap instead.
+[WebServer] 19:34:40 [vite] (client) [console.warn] THREE.Clock: This module has been deprecated. Please use THREE.Timer instead.
+[WebServer] 19:34:41 [vite] (client) [console.warn] THREE.WebGLShadowMap: PCFSoftShadowMap has been removed. Using PCFShadowMap instead.
+PC view front U8: rendered U pitch 21.9 → 55.1 px.
+PC view rear U8: rendered U pitch 21.9 → 55.1 px.
+PC view front oblique U8: rendered U pitch 21.9 → 54.5 px.
+  ok 18 tests\user-rack-pc.spec.ts:193:1 › photographed PC places at either rack face and preserves measured dimensions and front/rear ports (1.6m)
+[WebServer] 19:36:10 [vite] (client) [console.warn] THREE.Clock: This module has been deprecated. Please use THREE.Timer instead.
+[WebServer] 19:36:10 [vite] (client) [console.warn] THREE.WebGLShadowMap: PCFSoftShadowMap has been removed. Using PCFShadowMap instead.
+[WebServer] 19:36:11 [vite] (client) [console.warn] THREE.Clock: This module has been deprecated. Please use THREE.Timer instead.
+[WebServer] 19:36:11 [vite] (client) [console.warn] THREE.WebGLShadowMap: PCFSoftShadowMap has been removed. Using PCFShadowMap instead.
+[WebServer] 19:36:14 [vite] (client) [console.warn] THREE.Clock: This module has been deprecated. Please use THREE.Timer instead.
+[WebServer] 19:36:14 [vite] (client) [console.warn] THREE.WebGLShadowMap: PCFSoftShadowMap has been removed. Using PCFShadowMap instead.
+  ok 19 tests\user-rack-pc.spec.ts:263:1 › a PC library import adds the photographed model to an existing rack without changing old devices or cables (5.7s)
+[WebServer] 19:36:15 [vite] (client) [console.warn] THREE.Clock: This module has been deprecated. Please use THREE.Timer instead.
+[WebServer] 19:36:16 [vite] (client) [console.warn] THREE.WebGLShadowMap: PCFSoftShadowMap has been removed. Using PCFShadowMap instead.
+[WebServer] 19:36:21 [vite] (client) [console.warn] THREE.Clock: This module has been deprecated. Please use THREE.Timer instead.
+[WebServer] 19:36:22 [vite] (client) [console.warn] THREE.WebGLShadowMap: PCFSoftShadowMap has been removed. Using PCFShadowMap instead.
+[WebServer] 19:36:24 [vite] (client) [console.warn] THREE.Clock: This module has been deprecated. Please use THREE.Timer instead.
+[WebServer] 19:36:25 [vite] (client) [console.warn] THREE.WebGLShadowMap: PCFSoftShadowMap has been removed. Using PCFShadowMap instead.
+  ok 20 tests\user-rack-pc.spec.ts:326:1 › a photographed rear network port connects through the UI and retains identity after a PC move and save/reload (11.1s)
+Visual-reference QA: Microsoft Edge 156.0.4314.42, 1600 × 1000, software WebGL.
+[WebServer] 19:36:26 [vite] (client) [console.warn] THREE.Clock: This module has been deprecated. Please use THREE.Timer instead.
+[WebServer] 19:36:27 [vite] (client) [console.warn] THREE.WebGLShadowMap: PCFSoftShadowMap has been removed. Using PCFShadowMap instead.
+[WebServer] 19:36:31 [vite] (client) [console.warn] THREE.Clock: This module has been deprecated. Please use THREE.Timer instead.
+[WebServer] 19:36:31 [vite] (client) [console.warn] THREE.WebGLShadowMap: PCFSoftShadowMap has been removed. Using PCFShadowMap instead.
+[WebServer] 19:36:32 [vite] (client) [console.warn] THREE.Clock: This module has been deprecated. Please use THREE.Timer instead.
+[WebServer] 19:36:32 [vite] (client) [console.warn] THREE.WebGLShadowMap: PCFSoftShadowMap has been removed. Using PCFShadowMap instead.
+  ok 21 tests\visual-references.spec.ts:147:1 › flat reference rack has independent top and base panels whose settings persist (6.9s)
+[WebServer] 19:36:33 [vite] (client) [console.warn] THREE.Clock: This module has been deprecated. Please use THREE.Timer instead.
+[WebServer] 19:36:33 [vite] (client) [console.warn] THREE.WebGLShadowMap: PCFSoftShadowMap has been removed. Using PCFShadowMap instead.
+[WebServer] 19:36:44 [vite] (client) [console.warn] THREE.Clock: This module has been deprecated. Please use THREE.Timer instead.
+[WebServer] 19:36:44 [vite] (client) [console.warn] THREE.WebGLShadowMap: PCFSoftShadowMap has been removed. Using PCFShadowMap instead.
+Reference plate view front: rendered U pitch 25.4 → 52.4 px.
+Reference plate view rear oblique: rendered U pitch 28.1 → 76.3 px.
+  ok 22 tests\visual-references.spec.ts:207:1 › solid and perforated blanks place at both faces and preserve editable sheet geometry and identities (25.5s)
+[WebServer] 19:36:59 [vite] (client) [console.warn] THREE.Clock: This module has been deprecated. Please use THREE.Timer instead.
+[WebServer] 19:36:59 [vite] (client) [console.warn] THREE.WebGLShadowMap: PCFSoftShadowMap has been removed. Using PCFShadowMap instead.
+[WebServer] 19:37:23 [vite] (client) [console.warn] THREE.Clock: This module has been deprecated. Please use THREE.Timer instead.
+[WebServer] 19:37:24 [vite] (client) [console.warn] THREE.WebGLShadowMap: PCFSoftShadowMap has been removed. Using PCFShadowMap instead.
+  ok 23 tests\wiring.spec.ts:26:1 › surface waypoints, line traversal, port wiring and ordered reusable links persist (28.6s)
+Browser QA: Microsoft Edge 156.0.4314.42, 1600 × 1000, software WebGL.
+[WebServer] 19:37:28 [vite] (client) [console.warn] THREE.Clock: This module has been deprecated. Please use THREE.Timer instead.
+[WebServer] 19:37:28 [vite] (client) [console.warn] THREE.WebGLShadowMap: PCFSoftShadowMap has been removed. Using PCFShadowMap instead.
+Installed drag U16: rendered grid samples [{"x":925.49609375,"y":445.424560546875},{"x":925.49609375,"y":445.424560546875},{"x":925.49609375,"y":445.424560546875},{"x":925.49609375,"y":445.424560546875},{"x":925.49609375,"y":445.424560546875}].
+  ok 24 tests\workflows.spec.ts:131:1 › actual library drag, occupied drop, precise placement, undo/redo and camera controls (12.6s)
+[WebServer] 19:37:40 [vite] (client) [console.warn] THREE.Clock: This module has been deprecated. Please use THREE.Timer instead.
+[WebServer] 19:37:40 [vite] (client) [console.warn] THREE.WebGLShadowMap: PCFSoftShadowMap has been removed. Using PCFShadowMap instead.
+[WebServer] 19:37:43 [vite] (client) [console.warn] THREE.Clock: This module has been deprecated. Please use THREE.Timer instead.
+[WebServer] 19:37:43 [vite] (client) [console.warn] THREE.WebGLShadowMap: PCFSoftShadowMap has been removed. Using PCFShadowMap instead.
+  ok 25 tests\workflows.spec.ts:189:1 › custom definition, port editing and embedded image survive a real local save/reload (4.4s)
+[WebServer] 19:37:44 [vite] (client) [console.warn] THREE.Clock: This module has been deprecated. Please use THREE.Timer instead.
+[WebServer] 19:37:45 [vite] (client) [console.warn] THREE.WebGLShadowMap: PCFSoftShadowMap has been removed. Using PCFShadowMap instead.
+[WebServer] 19:37:47 [vite] (client) [console.warn] THREE.Clock: This module has been deprecated. Please use THREE.Timer instead.
+[WebServer] 19:37:47 [vite] (client) [console.warn] THREE.WebGLShadowMap: PCFSoftShadowMap has been removed. Using PCFShadowMap instead.
+[WebServer] 19:37:48 [vite] (client) [console.warn] THREE.Clock: This module has been deprecated. Please use THREE.Timer instead.
+[WebServer] 19:37:49 [vite] (client) [console.warn] THREE.WebGLShadowMap: PCFSoftShadowMap has been removed. Using PCFShadowMap instead.
+  ok 26 tests\workflows.spec.ts:251:1 › connections, master schedule, external length, reserve, CSV and project reopen stay consistent (5.9s)
+[WebServer] 19:37:50 [vite] (client) [console.warn] THREE.Clock: This module has been deprecated. Please use THREE.Timer instead.
+[WebServer] 19:37:50 [vite] (client) [console.warn] THREE.WebGLShadowMap: PCFSoftShadowMap has been removed. Using PCFShadowMap instead.
+[WebServer] 19:37:54 [vite] (client) [console.warn] THREE.Clock: This module has been deprecated. Please use THREE.Timer instead.
+[WebServer] 19:37:54 [vite] (client) [console.warn] THREE.WebGLShadowMap: PCFSoftShadowMap has been removed. Using PCFShadowMap instead.
+  ok 27 tests\workflows.spec.ts:394:1 › new rack dimensions and inclusive depth sections persist while invalid overlapping sections are rejected (4.3s)
+[WebServer] 19:37:55 [vite] (client) [console.warn] THREE.Clock: This module has been deprecated. Please use THREE.Timer instead.
+[WebServer] 19:37:55 [vite] (client) [console.warn] THREE.WebGLShadowMap: PCFSoftShadowMap has been removed. Using PCFShadowMap instead.
+  ok 28 tests\workflows.spec.ts:437:1 › a storage failure preserves the current project when New is requested (2.1s)
+[WebServer] 19:37:57 [vite] (client) [console.warn] THREE.Clock: This module has been deprecated. Please use THREE.Timer instead.
+[WebServer] 19:37:57 [vite] (client) [console.warn] THREE.WebGLShadowMap: PCFSoftShadowMap has been removed. Using PCFShadowMap instead.
+[WebServer] 19:37:58 [vite] (client) [console.warn] THREE.Clock: This module has been deprecated. Please use THREE.Timer instead.
+[WebServer] 19:37:58 [vite] (client) [console.warn] THREE.WebGLShadowMap: PCFSoftShadowMap has been removed. Using PCFShadowMap instead.
+  ok 29 tests\workflows.spec.ts:471:1 › imported power cable follows an existing curved run through UI edits and reload (3.1s)
+
+  29 passed (7.5m)

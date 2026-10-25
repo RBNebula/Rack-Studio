@@ -1,0 +1,92 @@
+{
+  "notice": "Illustrative model. No physical installation certification.",
+  "cables": [
+    {
+      "id": "NET-001",
+      "number": "0",
+      "routeMm": 1037.730791728998,
+      "routeValid": true,
+      "routeIssues": [
+        "Minimum bend radius is unknown; the displayed draft radius must be verified for this cable."
+      ],
+      "requiredMm": 1037.730791728998,
+      "status": "Unverified model"
+    },
+    {
+      "id": "NET-002",
+      "number": "1",
+      "routeMm": 1111.8293583494215,
+      "routeValid": true,
+      "routeIssues": [
+        "External route is not modelled; its surveyed length must be entered separately.",
+        "Minimum bend radius is unknown; the displayed draft radius must be verified for this cable."
+      ],
+      "requiredMm": 6740,
+      "status": "Unverified model"
+    }
+  ],
+  "procurement": {
+    "products": [
+      {
+        "productId": "cat6a-blue",
+        "productName": "Cat6A blue · example",
+        "status": "complete",
+        "knownCutLengthMm": 6740,
+        "requiredCutLengthMm": 6740,
+        "knownCuttingWasteMm": 0,
+        "knownConsumptionMm": 6740,
+        "unresolvedCutIds": [],
+        "aggregateLowerBoundReels": 1,
+        "aggregateLowerBoundNewReels": 1,
+        "minimumFeasibleNewReels": 1,
+        "feasibleNewReels": 1,
+        "allocatedReelCount": 1,
+        "allocatedReels": [
+          {
+            "reelId": "cat6a-blue:purchase-1",
+            "productId": "cat6a-blue",
+            "source": "purchase",
+            "startingLengthMm": 305000,
+            "cuts": [
+              {
+                "id": "NET-002",
+                "lengthMm": 6740,
+                "wasteMm": 0,
+                "consumedLengthMm": 6740
+              }
+            ],
+            "cutLengthMm": 6740,
+            "wasteMm": 0,
+            "consumedLengthMm": 6740,
+            "remainingLengthMm": 298260,
+            "utilisationPercent": 2.2098360655737705
+          }
+        ],
+        "unusedStock": [],
+        "technicalPurchases": [
+          {
+            "reelLengthMm": 305000,
+            "quantity": 1
+          }
+        ],
+        "recommendedNewReels": 1,
+        "recommendedPurchases": [
+          {
+            "reelLengthMm": 305000,
+            "quantity": 1
+          }
+        ],
+        "remainingInventoryAfterTechnicalMm": 298260,
+        "reserveTargetMm": 0,
+        "reserveShortfallMm": 0,
+        "recommendationReason": "The technical plan leaves 298260 mm in available inventory, meeting the configured 0 mm reserve.",
+        "provenOptimal": true,
+        "optimisationMethod": "exact",
+        "searchNodes": 0,
+        "warnings": []
+      }
+    ],
+    "complete": true,
+    "warnings": []
+  }
+}

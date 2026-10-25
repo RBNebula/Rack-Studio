@@ -1,0 +1,37 @@
+[
+  {
+    "id": "def-lacing-bar",
+    "name": "Adjustable lacing bar · middle hole",
+    "manufacturer": "",
+    "model": "",
+    "category": "Cable management",
+    "widthMm": 430,
+    "heightU": 1,
+    "heightMm": 14,
+    "depthMm": 156,
+    "faceWidthMm": 482.6,
+    "earThicknessMm": 2,
+    "shelf": null,
+    "plate": null,
+    "lacing": {
+      "barWidthMm": 6,
+      "barHeightMm": 8
+    },
+    "appearance": null,
+    "mounting": "bracket",
+    "bodyMode": "parts",
+    "color": "#333b40",
+    "evidence": "example",
+    "source": "User requested one middle-hole screw per side, a 150 mm inward return and a crossbar. Generic editable example: reach to inside face 150 mm; 6 × 8 mm bar, 14 mm tabs and 2 mm ears are provisional. No load rating or manufacturer compatibility is established.",
+    "massKg": null,
+    "railMinMm": null,
+    "railMaxMm": null,
+    "screwOffsetsMm": [
+      22.225
+    ],
+    "ports": [],
+    "parts": [],
+    "frontImage": null,
+    "rearImage": null
+  }
+]

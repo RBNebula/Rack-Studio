@@ -1,0 +1,2 @@
+﻿"Product","Status","Known requirement (mm)","Aggregate lower bound (reels)","Proven minimum NEW reels","Feasible NEW reels","Recommended NEW reels","Existing stock (mm)","Reserve target (mm)","Reason"
+"Cat6A blue · example","complete",6740,1,1,1,1,0,0,"The technical plan leaves 298260 mm in available inventory, meeting the configured 0 mm reserve."

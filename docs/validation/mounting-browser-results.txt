@@ -1,0 +1,51 @@
+[WebServer] (node:18584) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+
+Running 9 tests using 1 worker
+
+(node:24728) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+Mounting QA: Microsoft Edge 155.0.4283.62, 1600 × 1000, software WebGL.
+Mounting view front U18: rendered U-label pitch 25.6 → 157.3 px.
+  ok 1 tests\mounting.spec.ts:143:1 › front patch panel and switch expose their rack ears against the mounting rails (9.6s)
+Mounting view front U6: rendered U-label pitch 25.6 → 115.3 px.
+  ok 2 tests\mounting.spec.ts:160:1 › a 1U shelf mounts at the front with ears while its centre remains open (9.6s)
+Mounting view rear U10: rendered U-label pitch 28.9 → 53.7 px.
+  ok 3 tests\mounting.spec.ts:172:1 › a 1U shelf mounts at the rear and retains its mounting face after local save and reload (5.7s)
+Browser QA: Microsoft Edge 155.0.4283.62, 1600 × 1000, software WebGL.
+  ok 4 tests\workflows.spec.ts:106:1 › actual library drag, occupied drop, precise placement, undo/redo and camera controls (8.1s)
+  ok 5 tests\workflows.spec.ts:164:1 › custom definition, port editing and embedded image survive a real local save/reload (3.5s)
+  ok 6 tests\workflows.spec.ts:226:1 › connections, master schedule, external length, reserve, CSV and project reopen stay consistent (3.7s)
+  ok 7 tests\workflows.spec.ts:369:1 › new rack dimensions and inclusive depth sections persist while invalid overlapping sections are rejected (3.8s)
+  ok 8 tests\workflows.spec.ts:412:1 › a storage failure preserves the current project when New is requested (1.5s)
+  ok 9 tests\workflows.spec.ts:446:1 › imported power cable follows an existing curved run through UI edits and reload (2.4s)
+
+  9 passed (49.1s)
+
+Validation context · 22 October 2026
+Target: http://127.0.0.1:5174 (local immutable production build)
+Production assets: index-BPFoU8tH.js; Scene-BaCQBNQv.js
+Runtime: Node.js 24.22.1 on Windows (verified with node --version at the same approved execution boundary)
+Browser: Microsoft Edge 155.0.4283.62, headless channel msedge
+Viewport: 1600 x 1000; canvas captures: 1068 x 629
+WebGL: software SwiftShader (--enable-webgl --use-angle=swiftshader --enable-unsafe-swiftshader)
+Execution: approved outside the restricted sandbox, disposable browser contexts and local loopback only
+Exit code: 0
+
+Exact PowerShell command:
+$env:RACK_TEST_URL = 'http://127.0.0.1:5174'
+node node_modules/@playwright/test/cli.js test tests/workflows.spec.ts tests/mounting.spec.ts --reporter=list 2>&1 | Tee-Object -FilePath docs/validation/mounting-browser-results.txt
+exit $LASTEXITCODE
+
+Final result: 9 passed (49.1s); zero uncaught JavaScript errors.
+All six existing browser workflows and three new mounting workflows ran against the production assets above.
+The frozen final tests are tests/workflows.spec.ts and tests/mounting.spec.ts.
+
+Actual screenshots reviewed:
+docs/screenshots/mounting-front.png: front oblique close-up, patch and switch ears bear against the rail faces rather than sitting inside them.
+docs/screenshots/mounting-shelf.png: a newly placed 1U shelf at U6 has two front mounting ears and an open centre.
+docs/screenshots/mounting-rear.png: a newly placed 1U shelf at U10 retains rear mounting after Save/reload; head-on view exposes both ears without outer-frame occlusion.
+
+The tests use actual accessible controls, right-button pans, orbit drags and repeated wheel events. Rendered U-label spacing is checked before/after zoom; the selected U remains inside the captured canvas. No test mutates the application store. Numerical zero-gap contact, front/rear depth datums, ear collisions and shelf bearing constraints are established separately in geometry.test.ts and mounting.test.ts. Screenshots are manual visual review, not pixel baselines or measurements of real hardware. Circular marks and square rail marks remain position markers rather than through-holes or verified fasteners.
+
+Earlier test-only issues were resolved before this accepted run: mounting-face selection now targets the accessible combobox; camera framing measures the actual pan response and uses a wider head-on rear view. The completed final run above includes all nine workflows with no ignored failures.

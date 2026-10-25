@@ -26,7 +26,7 @@ Snapshot: 25 October 2026. Milestone: preserve the working lacing-bar/rear-place
 | Adjacent racks/modelling | Partially implemented | Origins, cross-rack links, assemblies, measuring and hide/isolate work; rack rotation and full empty-frame overlap prevention remain open |
 | Browser performance | Implemented but not fully tested | Lazy scene/designer and cached analysis; synthetic geometric smoke fixture. Full FPS/memory/stress acceptance is unverified |
 | Automated tests | Implemented; Linux browser baseline known to be broken | 302 numeric/state tests and all 29 current local Edge workflows pass. Linux Chromium run has six observed failures and did not finish before the time limit; see `TESTING.md`. Full controlled visual regression and coverage instrumentation are absent |
-| Repository/CI/cloud readiness | Partially implemented | GitHub push/SHA, independent clone/install/check, shared instructions and PR workflow verified. Linux install/type/lint/unit/build pass; browser CI fails and needs diagnosis. Cloud account connection remains the owner's next step. Main branch protection is disabled |
+| Repository/CI/cloud readiness | Partially implemented | GitHub push/SHA, independent clone/install/check, shared instructions and PR workflow verified. Linux install/type/lint/unit/build pass; browser CI fails and needs diagnosis. Claude Code cloud sessions are prepared by a SessionStart hook (see `CLOUD_SETUP.md`); the Codex Cloud connection remains the owner's step. Main branch protection is disabled |
 | Hosted backend/team features | Planned | No accounts, authorisation service, shared inventory or project backend; static frontend deployment is not private project hosting |
 
 ## Next work

@@ -4,7 +4,7 @@ Snapshot: 25 October 2026. Milestone: preserve the working lacing-bar/rear-place
 
 ## Current subsystem status
 
-“Implemented and verified” below means model/software checks for the supplied assumptions; it does not certify real hardware or a physically accurate installation. The migration baseline passes typecheck, lint, 302 unit/integration tests across 23 files, and production build. Current browser results and fresh-checkout results are recorded in `MIGRATION.md`; historical 29-workflow Edge evidence is in `validation/lacing-bar-browser-results.txt`.
+“Implemented and verified” below means model/software checks for the supplied assumptions; it does not certify real hardware or a physically accurate installation. The migration passes typecheck, lint, 302 unit/integration tests across 23 files, production build, and all 29 current Edge browser workflows. A separate GitHub clone passes locked installation and `pnpm check`. Results and live Linux CI links are recorded in `MIGRATION.md`; historical 29-workflow Edge evidence remains in `validation/lacing-bar-browser-results.txt`.
 
 | Subsystem | Status | Evidence and remaining boundary |
 | --- | --- | --- |
@@ -26,7 +26,7 @@ Snapshot: 25 October 2026. Milestone: preserve the working lacing-bar/rear-place
 | Adjacent racks/modelling | Partially implemented | Origins, cross-rack links, assemblies, measuring and hide/isolate work; rack rotation and full empty-frame overlap prevention remain open |
 | Browser performance | Implemented but not fully tested | Lazy scene/designer and cached analysis; synthetic geometric smoke fixture. Full FPS/memory/stress acceptance is unverified |
 | Automated tests | Implemented and verified | 302 numeric/state tests baseline; 29 historical Edge workflows. Full controlled visual regression and coverage instrumentation are absent |
-| Repository/CI/cloud readiness | Partially implemented during migration | Shared instructions, PR workflow and Linux browser selection added; see `MIGRATION.md` for actual upload/CI/fresh-clone evidence |
+| Repository/CI/cloud readiness | Implemented and verified for local checkout/setup | GitHub push and SHA comparison, independent clone/install/check, shared instructions, PR workflow and Linux CI configuration verified. Cloud account environment connection remains the owner's next step; hosted browser outcome is on the live Actions page. Main branch protection is disabled |
 | Hosted backend/team features | Planned | No accounts, authorisation service, shared inventory or project backend; static frontend deployment is not private project hosting |
 
 ## Next work

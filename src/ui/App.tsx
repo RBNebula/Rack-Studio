@@ -27,6 +27,13 @@ const tabs: [Workspace, string, string][] = [
 ];
 const Scene = lazy(() => import('./Scene'));
 const ModelDesigner = lazy(() => import('./ModelDesigner'));
+let persistenceRequested = false;
+/** Once work exists, ask the browser not to evict this origin's IndexedDB under storage pressure. */
+function requestPersistentStorage() {
+  if (persistenceRequested) return;
+  persistenceRequested = true;
+  void navigator.storage?.persist?.().catch(() => false);
+}
 async function save(p: Project, manual = false): Promise<boolean> {
   const store = useStore.getState();
   store.set({ saveStatus: 'Saving…' });
@@ -42,6 +49,7 @@ async function save(p: Project, manual = false): Promise<boolean> {
       saveStatus: `Saved locally ${new Date().toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' })}`,
       ...(manual ? { notice: 'Project saved to this browser’s local IndexedDB storage.' } : {}),
     });
+    requestPersistentStorage();
     return true;
   } catch (error) {
     useStore.getState().set({
@@ -75,9 +83,17 @@ export default function App() {
             !useStore.getState().dirty
           ) {
             useStore.getState().replace(p);
-            useStore.getState().set({ saveStatus: 'Restored from local storage' });
+            useStore.getState().set({
+              saveStatus: 'Restored from local storage',
+              notice: 'Reopened your last project.',
+            });
+            return;
           }
         }
+        if (active && !useStore.getState().notice)
+          useStore.getState().set({
+            notice: 'New blank rack. Open Tutorial rack for a worked example.',
+          });
       } catch (error) {
         if (active)
           useStore.getState().set({
@@ -136,9 +152,12 @@ export default function App() {
     window.addEventListener('keydown', handler);
     return () => window.removeEventListener('keydown', handler);
   }, []);
-  async function newProject(example = false) {
-    if (!(await save(project))) return;
-    const next = example ? createExampleProject(true) : createWorkspaceProject(false);
+  async function newProject(kind: 'blank' | 'tutorial' | 'stepped' = 'blank') {
+    // An untouched project has nothing to keep, so switching away does not store it.
+    const pristine = project.revision === 0 && !s.dirty;
+    if (!pristine && !(await save(project))) return;
+    const example = kind === 'stepped';
+    const next = example ? createExampleProject(true) : createWorkspaceProject(kind === 'tutorial');
     if (example) {
       next.settings.cablePrefix = '';
       next.cables.forEach((c, i) => {
@@ -155,7 +174,9 @@ export default function App() {
       workspace: 'designer',
       notice: example
         ? 'Explicit stepped demonstration loaded; all physical dimensions are examples.'
-        : 'New rack created without a depth step. Depth is front-to-rear screw-plane spacing.',
+        : kind === 'tutorial'
+          ? 'Tutorial rack opened as a separate project; your other projects are unchanged. All physical dimensions are examples.'
+          : 'New rack created without a depth step. Depth is front-to-rear screw-plane spacing.',
       error: '',
     });
   }
@@ -189,6 +210,12 @@ export default function App() {
     workspace !== 'settings' &&
     workspace !== 'power' &&
     s.selection?.kind === 'cable';
+  if (!s.hydrated)
+    return (
+      <div className="app-loading" role="status">
+        Opening Rack Studio…
+      </div>
+    );
   return (
     <div className="app-shell">
       <header className="app-header">
@@ -223,6 +250,9 @@ export default function App() {
           </Button>
           <Button icon="folder" onClick={() => void openProjects()}>
             Open
+          </Button>
+          <Button icon="cube" onClick={() => void newProject('tutorial')}>
+            Tutorial rack
           </Button>
           <Button icon="save" onClick={() => void save(project, true)}>
             Save
@@ -427,7 +457,7 @@ export default function App() {
                 <h1>Project settings</h1>
                 <p>Physical specifications, provenance and portable project data.</p>
               </div>
-              <Button icon="refresh" onClick={() => void newProject(true)}>
+              <Button icon="refresh" onClick={() => void newProject('stepped')}>
                 Load stepped example
               </Button>
             </div>
@@ -640,7 +670,7 @@ function Guide() {
   const items: [string, ReactNode][] = [
     [
       'Configure the rack',
-      'Use the properties panel to set dimensions, depth sections and the mounting hole type. Unconfirmed mounting details block new installations.',
+      'Use the properties panel to set dimensions, depth sections and the mounting hole type. Unconfirmed mounting details block new installations. Tutorial rack opens a worked example as a separate project.',
     ],
     [
       'Install equipment',

@@ -24,6 +24,7 @@ test.beforeAll(({ browser }) => {
 async function open(page: Page) {
   page.setDefaultTimeout(10_000);
   await page.goto('/');
+  await page.getByRole('button', { name: 'Tutorial rack', exact: true }).click();
   await expect(page.locator('canvas')).toBeVisible();
   await expect(page.locator('.rack-u-label').first()).toBeVisible();
   await expect(page.locator('.installed-pills > button')).toHaveCount(6);
@@ -527,4 +528,39 @@ test('imported power cable follows an existing curved run through UI edits and r
   await page.getByRole('button', { name: 'Rear view', exact: true }).click();
   await expect(page.locator('.rack-u-label').first()).toBeVisible();
   await page.screenshot({ path: 'docs/screenshots/cable-follow.png' });
+});
+
+test('a first visit starts blank and the tutorial rack opens as a separate, restorable project', async ({
+  page,
+}) => {
+  page.setDefaultTimeout(10_000);
+  await page.goto('/');
+  await expect(page.locator('canvas')).toBeVisible();
+  await expect(page.locator('.header-project')).toContainText('Untitled rack project');
+  await expect(page.locator('.installed-pills > button')).toHaveCount(0);
+  await expect(page.locator('.statusbar')).toContainText('New blank rack');
+
+  await page
+    .locator('.workspace-tabs')
+    .getByRole('button', { name: 'Project Settings', exact: true })
+    .click();
+  await page.getByLabel('Project name', { exact: true }).fill('QA own rack');
+  await expect(page.locator('.toolbar-save')).toContainText('Saved locally');
+
+  await page.getByRole('button', { name: 'Tutorial rack', exact: true }).click();
+  await expect(page.locator('.header-project')).toContainText('Vehicle communications · example');
+  await expect(page.locator('.installed-pills > button')).toHaveCount(6);
+  await expect(page.locator('.statusbar')).toContainText('Tutorial rack opened');
+  await expect(page.locator('.toolbar-save')).toContainText('Saved locally');
+
+  await page.reload();
+  await expect(page.locator('.header-project')).toContainText('Vehicle communications · example');
+  await expect(page.locator('.installed-pills > button')).toHaveCount(6);
+  await expect(page.locator('.statusbar')).toContainText('Reopened your last project.');
+
+  await page.getByRole('button', { name: 'Open', exact: true }).click();
+  const saved = page.getByRole('dialog').locator('.saved-project');
+  await expect(saved).toHaveCount(2);
+  await expect(saved.filter({ hasText: 'QA own rack' })).toHaveCount(1);
+  await expect(saved.filter({ hasText: 'Vehicle communications · example' })).toHaveCount(1);
 });

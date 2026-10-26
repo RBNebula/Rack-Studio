@@ -28,7 +28,6 @@ async function openBlank(page: Page) {
   await page.goto('/');
   await expect(page.locator('canvas')).toBeVisible();
   await expect(page.locator('.rack-u-label').first()).toBeVisible();
-  await expect(page.locator('.installed-pills > button')).toHaveCount(6);
   await page.getByRole('button', { name: 'New', exact: true }).click();
   await expect(page.locator('.installed-pills > button')).toHaveCount(0);
 }

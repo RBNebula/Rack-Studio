@@ -62,7 +62,7 @@ interface State {
   set: (patch: Partial<State>) => void;
 }
 export const useStore = create<State>((set, get) => ({
-  project: createWorkspaceProject(),
+  project: createWorkspaceProject(false),
   past: [],
   future: [],
   workspace: 'designer',
@@ -73,8 +73,7 @@ export const useStore = create<State>((set, get) => ({
   showLabels: true,
   showMeasurements: false,
   showGround: true,
-  notice:
-    'Example project loaded. Rack depth is screw-plane spacing; numerical dimensions need confirmation.',
+  notice: '',
   error: '',
   hydrated: false,
   dirty: false,

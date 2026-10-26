@@ -26,6 +26,7 @@ async function open(page: Page) {
   // this flow showed one such compile blocking the main thread for about 20 s.
   page.setDefaultTimeout(45_000);
   await page.goto('/');
+  await page.getByRole('button', { name: 'Tutorial rack', exact: true }).click();
   await expect(page.locator('canvas')).toBeVisible();
   await expect(page.locator('.rack-u-label').first()).toBeVisible();
   await expect(page.locator('.installed-pills > button')).toHaveCount(6);

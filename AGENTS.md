@@ -25,7 +25,7 @@ Cable endpoints use stable physical identities. Route samples rendered by the sc
 
 ## Validation and continuity
 
-Run `pnpm check` for code changes (typecheck, lint, 386 baseline unit/integration tests, production build). Run relevant Playwright workflows for UI/scene/interaction changes and the full suite for cross-system geometry/routing changes; see `docs/TESTING.md`. Add meaningful regression coverage when behavior changes. Never suppress failures or claim checks that did not run. Numeric geometry assertions must cover both mounting faces and relevant transforms; visual success alone is insufficient.
+Run `pnpm check` for code changes (typecheck, lint, 387 baseline unit/integration tests, production build). Run relevant Playwright workflows for UI/scene/interaction changes and the full suite for cross-system geometry/routing changes; see `docs/TESTING.md`. Add meaningful regression coverage when behavior changes. Never suppress failures or claim checks that did not run. Numeric geometry assertions must cover both mounting faces and relevant transforms; visual success alone is insufficient.
 
 After major work update `docs/PROJECT_STATUS.md`; update architecture, decisions, roadmap and feature guides as relevant. Record actual commands/results and remaining limits. Keep `docs/progress.md` as the historical milestone log. Screenshots are evidence, not proof of physical accuracy. Tests write tracked screenshots: review changes and retain only intentional evidence updates.
 

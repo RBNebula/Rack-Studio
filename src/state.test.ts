@@ -252,4 +252,32 @@ describe('gendered power couplers at the edit boundary', () => {
     ).toBe(true);
     expect(useStore.getState().project.cables.map((c) => c.id)).toEqual(['LEGACY', 'GOOD']);
   });
+
+  it('refuses re-pointing either end of a stored outlet-to-outlet cable to another outlet', () => {
+    loadWithLegacyOutletCable();
+    const before = useStore.getState().project;
+    for (const [end, label] of [
+      ['destination', 'Re-point destination'],
+      ['source', 'Re-point source'],
+    ] as const) {
+      expect(
+        useStore.getState().edit(label, (p) => {
+          p.cables[0][end] = outletEnd(5);
+        }),
+      ).toBe(false);
+      expect(useStore.getState().project).toBe(before);
+      expect(useStore.getState().error).toContain('LEGACY: Two IEC-C13 couplers cannot mate');
+    }
+    // Re-pointing an end to a C14 inlet repairs the cable and is accepted.
+    expect(
+      useStore.getState().edit('Repair', (p) => {
+        p.cables[0].destination = { kind: 'device', deviceId: 'sw', portId: 'power' };
+      }),
+    ).toBe(true);
+    const repaired = useStore.getState().project.cables[0];
+    expect([repaired.source, repaired.destination]).toEqual([
+      outletEnd(1),
+      { kind: 'device', deviceId: 'sw', portId: 'power' },
+    ]);
+  });
 });

@@ -12,6 +12,8 @@ import {
 } from '../engineering/shelves';
 import { U_MM } from '../engineering/geometry';
 import { ConnectorRotation } from './ConnectorRotation';
+import { DefinitionPowerFields } from './PowerPanel';
+import { powerDefinitionIssues } from '../engineering/power';
 import { portRotationDeg } from '../engineering/ports';
 import { createGenericSwitch } from '../models/generic-switch';
 const genericSwitch = createGenericSwitch();
@@ -488,7 +490,7 @@ export default function Library({ expanded = false }: { expanded?: boolean }) {
 function DeviceEditor({ initial, onClose }: { initial: DeviceDefinition; onClose: () => void }) {
   const [d, setD] = useState(initial);
   const [supportDraft, setSupportDraft] = useState<ShelfSupportDraft | null>(null);
-  const [tab, setTab] = useState<'dimensions' | 'ports' | 'shape'>('dimensions');
+  const [tab, setTab] = useState<'dimensions' | 'ports' | 'shape' | 'power'>('dimensions');
   const { edit, set } = useStore();
   const update = (patch: Partial<DeviceDefinition>) => setD({ ...d, ...patch });
   async function image(file: File | undefined, face: 'frontImage' | 'rearImage') {
@@ -572,15 +574,17 @@ function DeviceEditor({ initial, onClose }: { initial: DeviceDefinition; onClose
     <Modal title={`Device definition · ${d.name}`} onClose={onClose} wide>
       <div className="modal-tabs">
         {(d.plate || d.lacing
-          ? (['dimensions'] as const)
-          : (['dimensions', 'ports', 'shape'] as const)
+          ? (['dimensions', 'power'] as const)
+          : (['dimensions', 'ports', 'shape', 'power'] as const)
         ).map((t) => (
           <button className={tab === t ? 'active' : ''} onClick={() => setTab(t)} key={t}>
-            {t === 'shape'
-              ? 'Compound geometry'
-              : t === 'ports'
-                ? `Ports (${d.ports.length})`
-                : 'Dimensions & mounting'}
+            {t === 'power'
+              ? 'Power & weight'
+              : t === 'shape'
+                ? 'Compound geometry'
+                : t === 'ports'
+                  ? `Ports (${d.ports.length})`
+                  : 'Dimensions & mounting'}
           </button>
         ))}
       </div>
@@ -983,6 +987,7 @@ function DeviceEditor({ initial, onClose }: { initial: DeviceDefinition; onClose
             )}
           </>
         )}
+        {tab === 'power' && <DefinitionPowerFields definition={d} update={update} />}
         {tab === 'ports' && (
           <>
             <p className="muted">
@@ -1239,6 +1244,11 @@ function DeviceEditor({ initial, onClose }: { initial: DeviceDefinition; onClose
               const shelfIssues = validateShelfDefinition(d);
               if (shelfIssues.length) {
                 set({ error: shelfIssues.join(' ') });
+                return;
+              }
+              const powerIssues = powerDefinitionIssues(d);
+              if (powerIssues.length) {
+                set({ error: powerIssues.join(' ') });
                 return;
               }
               const plateIssues = validatePlateDefinition(d);

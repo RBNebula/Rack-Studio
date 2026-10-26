@@ -29,4 +29,10 @@ Checked against [official OpenAI documentation](https://learn.chatgpt.com/docs/e
 
 The [legacy Cloud environment guide](https://learn.chatgpt.com/docs/environments/cloud-environment) remains relevant for Code Review and GitHub/Linear integration environments; it is distinct from the current published-environment flow. Use the account's current Cloud UI rather than assuming an older setup-screen layout.
 
+## Claude Code cloud sessions
+
+`.claude/settings.json` registers `.claude/hooks/session-start.sh` as a synchronous SessionStart hook. It runs only when `CLAUDE_CODE_REMOTE=true`: it installs pnpm 11.25.0 if the container has another version (the container provides Node 22, which the manifest permits), runs `pnpm install --frozen-lockfile`, then installs the Chromium revision expected by the locked Playwright. The hook is idempotent and takes effect for new sessions once it is on `main`.
+
+On 25 October 2026 the session's network policy blocked `cdn.playwright.dev`, so Playwright 1.64.1's Chromium 1248 could not be downloaded. The hook then links the container's newest pre-installed Chromium (1243) under the expected revision and prints a warning. With that fallback `pnpm check` passed and `pnpm test:e2e tests/lacing-bar.spec.ts` passed 2/2, but such runs use an older browser than CI and are not a substitute for the Actions browser gate. To use the exact revision, add `cdn.playwright.dev` to the environment's allowed domains (environment settings > Network access) and start a new session.
+
 There is no machine-specific path required for install/build/test. The Windows convenience launcher has an optional Codex-runtime fallback, but ordinary PATH-provided Node is the primary path and the launcher is not needed in Cloud or CI. Private static hosting at `rackstudio.app` is described in `HOSTING.md`; hosted project storage and collaboration remain future decisions.

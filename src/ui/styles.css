@@ -218,6 +218,42 @@ svg {
 .warning-text {
   color: #ad7934;
 }
+.error-text {
+  color: var(--red);
+}
+.power-meter {
+  position: relative;
+  height: 8px;
+  border-radius: 4px;
+  background: #edf1f4;
+  overflow: hidden;
+  margin: 4px 0 8px;
+}
+.power-meter > span {
+  display: block;
+  height: 100%;
+  background: #2f9a72;
+}
+.power-meter > span[data-status='warning'],
+.power-meter > span[data-status='incomplete'] {
+  background: #d59a3f;
+}
+.power-meter > span[data-status='over'] {
+  background: var(--red);
+}
+.power-meter > i {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  width: 1px;
+  background: #6b7a86;
+}
+.power-bank p {
+  margin: 6px 0;
+}
+.power-outlet-picks .check-field {
+  margin: 4px 0;
+}
 .color-dot,
 .port-dot {
   display: inline-block;
@@ -1794,7 +1830,122 @@ tbody > tr.selected {
     padding-left: 15px;
   }
 }
+.print-only {
+  display: none;
+}
+.power-document td.wrap {
+  white-space: normal;
+  min-width: 180px;
+  max-width: 380px;
+  line-height: 1.45;
+}
+.power-document td.unknown-value {
+  color: #ad7934;
+  font-weight: 600;
+}
+.power-document .metric strong {
+  font-size: 20px;
+}
+.power-distributor + .power-distributor {
+  margin-top: 26px;
+}
+.power-distributor h3 {
+  margin: 0 0 4px;
+}
+.power-distributor .section-title {
+  align-items: flex-end;
+}
+.power-issues {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+.power-issues li {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  padding: 9px 0;
+  border-top: 1px solid #edf1f4;
+  font-size: 11px;
+  line-height: 1.5;
+}
+.power-issues li:first-child {
+  border-top: 0;
+}
+.report-notes {
+  font-size: 10px;
+  color: #8b99a4;
+  line-height: 1.6;
+  margin: 4px 0 24px;
+  padding-left: 18px;
+}
+/* Keeps a lower-bound sign with its number when a cell wraps. */
+.power-document .nowrap {
+  white-space: nowrap;
+}
+@page power-document {
+  size: A4 landscape;
+  margin: 12mm;
+}
 @media print {
+  :root,
+  body {
+    min-width: 0;
+    background: #fff;
+  }
+  .error-toast,
+  .power-document .report-heading .button-row {
+    display: none;
+  }
+  .power-document {
+    page: power-document;
+    color: #000;
+    print-color-adjust: exact;
+    -webkit-print-color-adjust: exact;
+  }
+  .power-document .print-only {
+    display: block;
+    color: #333;
+  }
+  .power-document .report-heading {
+    margin: 0 0 10px;
+  }
+  .power-document .metrics-row {
+    gap: 8px;
+    margin: 8px 0 12px;
+  }
+  .power-document .metric {
+    padding: 8px 10px;
+  }
+  .power-document .surface {
+    break-inside: auto;
+    padding: 10px 0;
+    border: 0;
+    margin-bottom: 10px;
+  }
+  .power-document .section-title {
+    break-after: avoid;
+  }
+  .power-document table {
+    font-size: 8.5px;
+  }
+  .power-document th,
+  .power-document td {
+    padding: 4px 6px;
+    color: #000;
+    white-space: normal;
+    max-width: none;
+    overflow: visible;
+  }
+  .power-document tr {
+    break-inside: avoid;
+  }
+  .power-document thead {
+    display: table-header-group;
+  }
+  .power-document .callout {
+    margin: 6px 0;
+  }
   .app-header,
   .project-toolbar,
   .workspace-tabs,

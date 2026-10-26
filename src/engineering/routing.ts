@@ -102,6 +102,71 @@ function leadPoint(
   return add(point, mul(direction, length));
 }
 
+/** Minimum straight connector run before a lead bend: clear of the owning chassis envelope. */
+function leadStraight(point: Vec3, direction: Vec3, ownBoxes: Obstacle[], margin: number): number {
+  let straight = 25;
+  for (const box of ownBoxes) {
+    let enter = Number.NEGATIVE_INFINITY,
+      exit = Number.POSITIVE_INFINITY;
+    for (let axis = 0; axis < 3; axis++) {
+      const low = box.min[axis] - margin,
+        high = box.max[axis] + margin;
+      if (Math.abs(direction[axis]) <= EPS) {
+        if (point[axis] < low || point[axis] > high) exit = Number.NEGATIVE_INFINITY;
+        continue;
+      }
+      const a = (low - point[axis]) / direction[axis],
+        b = (high - point[axis]) / direction[axis];
+      enter = Math.max(enter, Math.min(a, b));
+      exit = Math.min(exit, Math.max(a, b));
+    }
+    if (exit >= Math.max(enter, 0)) straight = Math.max(straight, exit + 2);
+  }
+  return straight;
+}
+
+/** Straight connector runs that a lead fillet must leave intact, keyed by route end. */
+interface LeadStraights {
+  start?: number;
+  end?: number;
+}
+
+/**
+ * Length the fillet at a connector lead may consume. Interior segments share 49 % with each
+ * neighbouring fillet; a lead's other end is the connector itself, which has no fillet, so the
+ * fillet may also use everything beyond the required straight connector run.
+ */
+const leadAllowance = (length: number, straight: number | undefined): number =>
+  straight === undefined ? length * 0.49 : Math.max(length * 0.49, length - straight);
+
+/**
+ * Lengthen a connector lead along its own direction when the bend leaving it needs a longer
+ * tangent than the lead provides. The extension must itself be clear of every obstacle and no
+ * longer than the straight distance between the route ends, so a near-reversal stays reported.
+ */
+function extendedLead(
+  port: Vec3,
+  lead: Vec3,
+  next: Vec3 | undefined,
+  straight: number | undefined,
+  radius: number,
+  boxes: Obstacle[],
+  margin: number,
+  maxLength: number,
+): Vec3 {
+  if (straight === undefined || !next) return lead;
+  const direction = unit(sub(lead, port)),
+    angle = Math.acos(Math.max(-1, Math.min(1, dot(direction, unit(sub(next, lead))))));
+  if (angle < 1e-6 || Math.PI - angle < 1e-5) return lead;
+  const tangent = radius * Math.tan(angle / 2),
+    length = distance(port, lead);
+  if (tangent <= leadAllowance(length, straight) + 1e-9) return lead;
+  const extendedLength = straight + tangent + 1;
+  if (extendedLength > maxLength) return lead;
+  const extended = add(port, mul(direction, extendedLength));
+  return freeSegment(lead, extended, boxes, margin) ? extended : lead;
+}
+
 /** Visibility graph over inflated box corners; deterministic Euclidean Dijkstra. */
 function routeLeg(
   start: Vec3,
@@ -192,6 +257,7 @@ function roundedPath(
   issues: string[],
   protectedPoints: Vec3[],
   enforceRadius: boolean,
+  straights: LeadStraights = {},
 ): Rounded {
   const points = raw.filter((p, i) => !i || !near(p, raw[i - 1]));
   const fillets = new Map<number, Fillet>();
@@ -211,8 +277,13 @@ function roundedPath(
       issues.push('A route contains a 180-degree reversal that cannot be filleted.');
       continue;
     }
-    const available =
-      Math.min(distance(points[i - 1], points[i]), distance(points[i], points[i + 1])) * 0.49;
+    const available = Math.min(
+      leadAllowance(distance(points[i - 1], points[i]), i === 1 ? straights.start : undefined),
+      leadAllowance(
+        distance(points[i], points[i + 1]),
+        i === points.length - 2 ? straights.end : undefined,
+      ),
+    );
     const required = radius * Math.tan(angle / 2);
     const tangent = Math.min(required, available);
     const actualRadius = tangent / Math.tan(angle / 2);
@@ -267,42 +338,84 @@ function routeBetween(
   enforceRadius: boolean,
   issues: string[],
   lines: [Vec3, Vec3][] = [],
+  straights: LeadStraights = {},
 ): Rounded {
-  const anchors = [firstLead, ...fixed, lastLead];
-  const incoming: Vec3[] = [],
-    outgoing: Vec3[] = [];
-  for (let i = 0; i < anchors.length; i++) {
-    if (!i || i === anchors.length - 1) {
-      incoming.push(anchors[i]);
-      outgoing.push(anchors[i]);
-      continue;
-    }
-    const line = lines.find(([a, b]) => near(a, anchors[i]) || near(b, anchors[i]));
-    const tangent = line ? unit(sub(line[1], line[0])) : unit(sub(anchors[i + 1], anchors[i - 1]));
-    const reach = Math.min(
-      radius * 2 + margin + 2,
-      distance(anchors[i - 1], anchors[i]) * 0.24,
-      distance(anchors[i], anchors[i + 1]) * 0.24,
-    );
-    if (norm(tangent) < EPS || reach < EPS)
-      issues.push('Coincident or reversing waypoints leave no usable bend tangent.');
-    incoming.push(sub(anchors[i], mul(tangent, reach)));
-    outgoing.push(add(anchors[i], mul(tangent, reach)));
-  }
-  const raw: Vec3[] = [start, firstLead];
-  for (let i = 0; i < anchors.length - 1; i++) {
-    const path = routeLeg(outgoing[i], incoming[i + 1], boxes, margin, radius);
-    if (path) raw.push(...path.slice(1));
-    else {
-      raw.push(incoming[i + 1]);
-      issues.push(
-        'No automatic route with the requested clearance was found; add or move waypoints.',
+  const rawPath = (first: Vec3, last: Vec3, legIssues: string[]): Vec3[] => {
+    const anchors = [first, ...fixed, last];
+    const incoming: Vec3[] = [],
+      outgoing: Vec3[] = [];
+    for (let i = 0; i < anchors.length; i++) {
+      if (!i || i === anchors.length - 1) {
+        incoming.push(anchors[i]);
+        outgoing.push(anchors[i]);
+        continue;
+      }
+      const line = lines.find(([a, b]) => near(a, anchors[i]) || near(b, anchors[i]));
+      const tangent = line
+        ? unit(sub(line[1], line[0]))
+        : unit(sub(anchors[i + 1], anchors[i - 1]));
+      const reach = Math.min(
+        radius * 2 + margin + 2,
+        distance(anchors[i - 1], anchors[i]) * 0.24,
+        distance(anchors[i], anchors[i + 1]) * 0.24,
       );
+      if (norm(tangent) < EPS || reach < EPS)
+        legIssues.push('Coincident or reversing waypoints leave no usable bend tangent.');
+      incoming.push(sub(anchors[i], mul(tangent, reach)));
+      outgoing.push(add(anchors[i], mul(tangent, reach)));
     }
-    if (i + 1 < anchors.length - 1) raw.push(anchors[i + 1], outgoing[i + 1]);
+    const raw: Vec3[] = [start, first];
+    for (let i = 0; i < anchors.length - 1; i++) {
+      const path = routeLeg(outgoing[i], incoming[i + 1], boxes, margin, radius);
+      if (path) raw.push(...path.slice(1));
+      else {
+        raw.push(incoming[i + 1]);
+        legIssues.push(
+          'No automatic route with the requested clearance was found; add or move waypoints.',
+        );
+      }
+      if (i + 1 < anchors.length - 1) raw.push(anchors[i + 1], outgoing[i + 1]);
+    }
+    raw.push(end);
+    return raw;
+  };
+  // A connector lead is sized for a bend of about 90 degrees. When the free route leaves it
+  // more sharply, lengthen that lead and route again so the declared radius has room.
+  let first = firstLead,
+    last = lastLead;
+  for (let attempt = 0; ; attempt++) {
+    const legIssues: string[] = [];
+    const raw = rawPath(first, last, legIssues);
+    const nextFirst = extendedLead(
+      start,
+      first,
+      raw.slice(2).find((p) => !near(p, first)),
+      straights.start,
+      radius,
+      boxes,
+      margin,
+      distance(start, end),
+    );
+    const nextLast = extendedLead(
+      end,
+      last,
+      raw
+        .slice(0, -2)
+        .reverse()
+        .find((p) => !near(p, last)),
+      straights.end,
+      radius,
+      boxes,
+      margin,
+      distance(start, end),
+    );
+    if (attempt >= 12 || (near(nextFirst, first) && near(nextLast, last))) {
+      issues.push(...legIssues);
+      return roundedPath(raw, radius, issues, fixed, enforceRadius, straights);
+    }
+    first = nextFirst;
+    last = nextLast;
   }
-  raw.push(end);
-  return roundedPath(raw, radius, issues, fixed, enforceRadius);
 }
 
 function partitionWaypoints(
@@ -493,6 +606,20 @@ function routeCableGeometry(
     margin,
     radius,
   );
+  const straights: LeadStraights = {
+    start: leadStraight(
+      start,
+      sourceDirection,
+      boxes.filter((b) => isOwner(b, sourcePrefix)),
+      margin,
+    ),
+    end: leadStraight(
+      end,
+      destinationDirection,
+      boxes.filter((b) => isOwner(b, destinationPrefix)),
+      margin,
+    ),
+  };
   const shared = project.looms
     .filter((loom) => loom.cableIds.includes(cable.id))
     .flatMap((loom) => loom.waypoints);
@@ -545,6 +672,7 @@ function routeCableGeometry(
       cable.minBendRadiusMm !== null,
       issues,
       guides.lines,
+      { start: straights.start },
     );
     const outgoing = routeBetween(
       sharedExit,
@@ -558,6 +686,7 @@ function routeCableGeometry(
       cable.minBendRadiusMm !== null,
       issues,
       guides.lines,
+      { end: straights.end },
     );
     const segments = [...incoming.segments, ...sharedRun.segments, ...outgoing.segments];
     for (let index = 1; index < segments.length; index++) {
@@ -604,6 +733,7 @@ function routeCableGeometry(
       cable.minBendRadiusMm !== null,
       issues,
       guides.lines,
+      straights,
     );
   const collisions = new Set<string>();
   for (let i = 1; i < rounded.points.length; i++) {

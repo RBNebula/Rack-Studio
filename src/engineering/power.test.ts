@@ -561,3 +561,150 @@ describe('equipment model power and mass edits', () => {
     ]);
   });
 });
+
+describe('independent verification cases', () => {
+  /** One consumer drawing `maxW` on outlet o1 of the top row. */
+  function oneOutlet(maxW: number | null, nominalW: number | null = 0) {
+    const p = fixture();
+    addConsumer(p, 'load', nominalW, maxW);
+    connect(p, 'P1', device('pdu', 'o1'), device('load', 'psu1'));
+    return p;
+  }
+
+  it.each([
+    // W = utilisation × 10 A × 230 V on one outlet; the 16 A bank stays below 80 %.
+    [0.79, 1817, 'ok', []],
+    [0.8, 1840, 'warning', ['outlet-warning']],
+    [1, 2300, 'warning', ['outlet-warning']],
+    [1.01, 2323, 'over', ['outlet-over']],
+  ] as const)(
+    'pins the per-outlet threshold at %s utilisation as %s',
+    (utilisation, maxW, status, codes) => {
+      const p = oneOutlet(maxW);
+      const top = bank(p, 'top');
+      expect(top.outlets[0].max.knownA).toBeCloseTo(utilisation * 10, 9);
+      expect(top.outlets[0].utilisation).toBeCloseTo(utilisation, 9);
+      expect(top.outlets[0].status).toBe(status);
+      expect(top.utilisation).toBeCloseTo((utilisation * 10) / 16, 9);
+      expect(top.status).toBe('ok');
+      expect(analysePower(p).issues.map((i) => i.code)).toEqual(codes);
+    },
+  );
+
+  it('reproduces the browser scenario: 3000 W at 230 V is 13.04 A, 81.5 % of 16 A', () => {
+    const p = oneOutlet(3000, 1200);
+    let top = bank(p, 'top');
+    expect(top.max.knownA).toBeCloseTo(13.0434782609, 9);
+    expect(top.max.knownA.toFixed(2)).toBe('13.04');
+    expect((top.utilisation * 100).toFixed(1)).toBe('81.5');
+    expect(top.status).toBe('warning');
+    expect(top.nominal.knownA.toFixed(2)).toBe('5.22');
+    expect(top.outlets[0].status).toBe('over');
+    expect((top.outlets[0].utilisation! * 100).toFixed(1)).toBe('130.4');
+    setPowerBank(p, 'def-fixture-pdu', 'top', { maxCurrentA: 20 });
+    top = bank(structuredClone(p), 'top');
+    expect((top.utilisation * 100).toFixed(1)).toBe('65.2');
+    expect(top.status).toBe('ok');
+    setPowerBank(p, 'def-fixture-pdu', 'top', { maxCurrentA: 12 });
+    top = bank(structuredClone(p), 'top');
+    expect((top.utilisation * 100).toFixed(1)).toBe('108.7');
+    expect(top.status).toBe('over');
+  });
+
+  it('leaves an outlet without a rating unchecked but still incomplete when its load is unknown', () => {
+    const p = oneOutlet(5000);
+    p.definitions.find((d) => d.id === 'def-fixture-pdu')!.powerBanks![0].outletMaxCurrentA = null;
+    const top = bank(p, 'top');
+    expect(top.outlets[0]).toMatchObject({ limitA: null, utilisation: null, status: 'ok' });
+    expect(top.status).toBe('over');
+    expect(analysePower(p).issues.map((i) => i.code)).toEqual(['bank-over']);
+    const unknown = oneOutlet(null);
+    unknown.definitions.find((d) => d.id === 'def-fixture-pdu')!.powerBanks![0].outletMaxCurrentA =
+      null;
+    expect(bank(unknown, 'top').outlets[0]).toMatchObject({
+      utilisation: null,
+      status: 'incomplete',
+    });
+  });
+
+  it('marks a bank incomplete when only the nominal draw is unknown', () => {
+    const p = oneOutlet(600, null);
+    const top = bank(p, 'top');
+    expect(top.max).toMatchObject({ knownW: 600, complete: true });
+    expect(top.nominal).toMatchObject({ knownW: 0, complete: false });
+    expect(top.status).toBe('incomplete');
+    expect(top.unknownConsumers).toEqual([
+      {
+        deviceId: 'load',
+        name: 'load',
+        reason: 'No nominal draw recorded for its equipment model.',
+      },
+    ]);
+    // The outlet check uses maximum draw only, so it is complete and OK.
+    expect(top.outlets[0].status).toBe('ok');
+    expect(analysePower(p).issues.map((i) => i.code)).toEqual(['bank-incomplete']);
+  });
+
+  it('uses the bank voltage for the current estimate', () => {
+    const p = oneOutlet(1200);
+    p.definitions.find((d) => d.id === 'def-fixture-pdu')!.powerBanks![0].voltageV = 120;
+    const top = bank(p, 'top');
+    expect(top.max.knownA).toBeCloseTo(10, 9);
+    expect(top.outlets[0].status).toBe('warning');
+    expect(top.utilisation).toBeCloseTo(10 / 16, 9);
+  });
+
+  it('reports a distributor feeding its own inlet as a cycle', () => {
+    const p = fixture();
+    connect(p, 'SELF', device('pdu', 'o1'), device('pdu', 'inlet'));
+    const analysis = analysePower(p);
+    expect(analysis.issues.map((i) => i.code)).toEqual(['distribution-cycle', 'bank-incomplete']);
+    expect(analysis.devices.find((d) => d.deviceId === 'pdu')!.inCycle).toBe(true);
+    const top = bank(p, 'top');
+    expect(top.status).toBe('incomplete');
+    expect(top.unknownConsumers).toEqual([
+      { deviceId: 'pdu', name: 'PDU', reason: 'Part of a power distribution cycle.' },
+    ]);
+  });
+
+  it('never counts a chained distributor with no recorded own draw as zero', () => {
+    const p = fixture();
+    // The fixture PDU's own draw becomes unknown; its downstream consumer is fully known.
+    delete p.definitions.find((d) => d.id === 'def-fixture-pdu')!.power;
+    p.definitions.push({
+      ...pduDefinition('def-ups'),
+      power: { nominalW: 0, maxW: 0, evidence: 'example', source: '' },
+    });
+    p.devices.push({
+      id: 'ups',
+      definitionId: 'def-ups',
+      name: 'UPS',
+      startU: 15,
+      face: 'front',
+      supportId: null,
+      installation: 'installed',
+    });
+    addConsumer(p, 'pc', 100, 200);
+    connect(p, 'U1', device('ups', 'o1'), device('pdu', 'inlet'));
+    connect(p, 'P1', device('pdu', 'o1'), device('pc', 'psu1'));
+    expect(bank(p, 'top').status).toBe('ok');
+    const upstream = bank(p, 'top', 'ups');
+    expect(upstream.max).toMatchObject({ knownW: 200, complete: false });
+    expect(upstream.status).toBe('incomplete');
+    expect(upstream.unknownConsumers[0]).toMatchObject({
+      deviceId: 'pdu',
+      reason: 'No nominal or maximum draw recorded for its equipment model.',
+    });
+  });
+
+  it('ignores cables whose consumer or distributor no longer exists', () => {
+    const p = fixture();
+    connect(p, 'GONE', device('pdu', 'o1'), device('removed-device', 'psu1'));
+    addConsumer(p, 'pc', 100, 200);
+    connect(p, 'ORPHAN', device('removed-pdu', 'o1'), device('pc', 'psu1'));
+    const analysis = analysePower(p);
+    expect(analysis.issues).toEqual([]);
+    expect(bank(p, 'top').consumers).toEqual([]);
+    expect(analysis.devices.find((d) => d.deviceId === 'pc')!.feeds).toEqual([]);
+  });
+});

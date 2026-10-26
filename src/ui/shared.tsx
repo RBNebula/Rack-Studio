@@ -246,7 +246,10 @@ export function OptionalNumberField({
             if (value !== null) onChange(null);
           } else if (Number.isFinite(n) && n >= min && (!positive || n > 0)) {
             if (n !== value) onChange(n);
-          } else setDraft(value === null ? '' : String(value));
+          }
+          // Show the stored value again; an accepted edit replaces it when `value` updates,
+          // while a value the caller refuses must not stay on screen.
+          setDraft(value === null ? '' : String(value));
         }}
         onKeyDown={(e) => {
           if (e.key === 'Enter') e.currentTarget.blur();

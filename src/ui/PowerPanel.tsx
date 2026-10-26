@@ -114,8 +114,10 @@ export function DevicePowerSection({ device }: { device: Device }) {
               <span>
                 {distributor?.name ?? feed.distributorDeviceId} · {bank?.name ?? feed.bankId}
                 <small>
-                  Outlet {feed.outletPortId} → {feed.inletPortId} · cable{' '}
-                  {project.cables.find((c) => c.id === feed.cableId)?.label || feed.cableId}
+                  {bank?.outlets.find((o) => o.portId === feed.outletPortId)?.portName ??
+                    feed.outletPortId}{' '}
+                  → {def.ports.find((p) => p.id === feed.inletPortId)?.name ?? feed.inletPortId} ·
+                  cable {project.cables.find((c) => c.id === feed.cableId)?.label || feed.cableId}
                   {bank && ` · bank ${amps(bank.max.knownA)} of ${bank.maxCurrentA} A`}
                 </small>
               </span>

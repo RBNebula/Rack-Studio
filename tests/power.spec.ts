@@ -232,6 +232,7 @@ test('power banks, draw, mass, bank warnings and the status bar survive undo, re
   const feed = section.getByLabel('Power feeds').locator('> div');
   await expect(feed).toHaveCount(1);
   await expect(feed).toContainText('Rear PDU 1 · Top row');
+  await expect(feed).toContainText('Outlet 1 → IEC power');
   await expect(feed).toContainText(`bank ${SERVER_MAX_A.toFixed(2)} A of 16 A`);
   await expect(feed.locator('.badge')).toHaveText('Warning');
 
@@ -442,6 +443,8 @@ test('mass edits undo and redo, and removing powered equipment still needs its c
     nominalW: null,
     maxW: 500,
   });
+  // The refused value must not stay on screen.
+  await expect(section.getByLabel('Nominal draw (W)', { exact: true })).toHaveValue('');
 
   // Regression: removal of fed equipment is refused until its cable is deleted.
   await connect(page, 'Rear PDU 1 · Outlet 1', 'Server 1 · IEC power');

@@ -15,6 +15,7 @@ Use Node 24 and pnpm 11.25.0; install with `pnpm install --frozen-lockfile`. The
 | `pnpm exec playwright test tests/lacing-bar.spec.ts` | Example targeted browser run |
 | `pnpm format:check` | Existing Prettier check; separate from CI check, report any existing failures |
 | `node scripts/validate-examples.mjs` | Parse portable project/library examples and validate references/placement; writes `docs/validation/example-integrity.txt` |
+| `node scripts/validate-library.mjs <file>…` | Validate equipment library files: schema, unique port ids, ports within face/chassis, front and rear placement at U1 in the empty example rack (placement skipped for shelf/freestanding/side/custom mounting). Writes nothing |
 | `node scripts/benchmark.mjs` | Existing synthetic geometric smoke benchmark, not full browser FPS/stress acceptance |
 
 `scripts/verify.mjs` is an alternative sequential verifier that writes `docs/validation/latest-checks.txt`; it has per-command 120-second limits. Do not use generated historical evidence as a substitute for rerunning relevant checks.

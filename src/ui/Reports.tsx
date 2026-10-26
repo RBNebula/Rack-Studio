@@ -761,7 +761,20 @@ function PowerCell({ value, column }: { value: ReportCell; column: string }) {
   ]
     .filter(Boolean)
     .join(' ');
-  return <td className={className || undefined}>{reportCellText(value)}</td>;
+  const text = reportCellText(value);
+  const bound = /^(≥ \S+)([\s\S]*)$/.exec(text);
+  return (
+    <td className={className || undefined}>
+      {bound ? (
+        <>
+          <span className="nowrap">{bound[1]}</span>
+          {bound[2]}
+        </>
+      ) : (
+        text
+      )}
+    </td>
+  );
 }
 /** The power and weights document: equipment, bank loads, totals and issues from `analysePower`. */
 function PowerWeightsReport() {

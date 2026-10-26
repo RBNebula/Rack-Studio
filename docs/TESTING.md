@@ -8,7 +8,7 @@ Use Node 24 and pnpm 11.25.0; install with `pnpm install --frozen-lockfile`. The
 | --- | --- |
 | `pnpm typecheck` | TypeScript strict checking with no emitted files |
 | `pnpm lint` | Existing ESLint/TypeScript/React hook rules |
-| `pnpm test` | Vitest `src/**/*.test.ts` using the Node environment; migration baseline 302 tests in 23 files, 325 in 24 files after the power-and-weight feature, 339 in 25 files after the Power & Weights document, 350 in 25 files with the added power verification cases |
+| `pnpm test` | Vitest `src/**/*.test.ts` using the Node environment; migration baseline 302 tests in 23 files, 325 in 24 files after the power-and-weight feature, 336 with its added verification cases, 350 in 25 files after the Power & Weights document and 359 with its added verification cases |
 | `pnpm build` | Typecheck then Vite production bundle in ignored `dist/` |
 | `pnpm check` | Typecheck, lint, unit/integration tests and build, stopping on failure |
 | `pnpm test:e2e` | All real-pointer Playwright workflows in `tests/` |
@@ -33,7 +33,7 @@ For Windows bundled Chromium, run `pnpm exec playwright install chromium`, then 
 
 `playwright.config.ts` runs one worker, 1600×1000 headless, and starts Vite at `http://127.0.0.1:5173`. With `CI=true` an existing server is not reused, focused tests are rejected, and execution stops with a failing exit code at the first failure so its complete diagnostic reaches the log. Failure traces are retained; the workflow uploads `test-results/` for three days. Retries are not added. The full suite remains selected; later tests are unrun after a CI failure, not accepted as passing. Free port 5173 before a CI-style run. Most specs accept optional `RACK_TEST_URL` (e.g. `http://127.0.0.1:5174`) to target a separately started immutable production preview. The configured webServer still starts/checks 5173. Use the default URL for a uniform full-suite run.
 
-Browser workflows cover placement, shelves, construction, persistence/recovery, port connections, designer/tray controls, rails, wiring, modelling/assemblies, generic switch, copy-as-new, rotation, lacing/rear placement and power banks/weights (`tests/power.spec.ts`). Tests write screenshots under `docs/screenshots/`; preserve/review existing evidence before accepting updates. These are workflow captures, not an automated pixel-comparison regression suite. CI screenshots are ephemeral and do not change repository commits.
+Browser workflows cover placement, shelves, construction, persistence/recovery, port connections, designer/tray controls, rails, wiring, modelling/assemblies, generic switch, copy-as-new, rotation, lacing/rear placement power banks/weights (`tests/power.spec.ts`) and the Power & Weights document, its CSV and print layout (`tests/power-report.spec.ts`). Tests write screenshots under `docs/screenshots/`; preserve/review existing evidence before accepting updates. These are workflow captures, not an automated pixel-comparison regression suite. CI screenshots are ephemeral and do not change repository commits.
 
 ## Geometry and collision validation
 

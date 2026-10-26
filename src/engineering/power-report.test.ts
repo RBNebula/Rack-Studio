@@ -427,3 +427,175 @@ describe('power and weights CSV', () => {
     expect(text).not.toMatch(/(^|,)"\+/m);
   });
 });
+
+describe('power and weights verification cases', () => {
+  it('formats the analysis it is given and never recomputes loads from the project', () => {
+    const p = fixture();
+    const analysis = structuredClone(analysePower(p));
+    const bank = analysis.distributors[0].banks[0];
+    bank.max = { knownW: 1234.5, knownA: 5.367, complete: true };
+    bank.utilisation = 0.4;
+    bank.status = 'warning';
+    analysis.totals.mass = { knownKg: 99, complete: true, missing: [] };
+    analysis.devices.find((d) => d.deviceId === 'server')!.maxW = 777;
+    const report = buildPowerReport(p, analysis);
+    const cells = report.distributors[0].banks[0].cells;
+    expect(cells[bankColumn('Max (A)')]).toBe(5.37);
+    expect(cells[bankColumn('Max (W)')]).toBe(1234.5);
+    expect(cells[bankColumn('Utilisation (%)')]).toBe(40);
+    expect(cells[bankColumn('Status')]).toBe('Warning');
+    expect(report.totals.find((t) => t.label === 'Total mass')!.value).toBe('99 kg');
+    expect(
+      report.equipment.rows.find((r) => r.deviceId === 'server')!.cells[column('Max draw (W)')],
+    ).toBe(777);
+    // The CSV is written from the report it is given.
+    expect(powerReportCsv(p, report)).toContain('"PDU","Bank A",230,16,10,1,230,5.37,1234.5,40,');
+  });
+  it('is deterministic and leaves the project unchanged', () => {
+    const p = fixture();
+    const before = structuredClone(p);
+    expect(buildPowerReport(p)).toEqual(buildPowerReport(structuredClone(p)));
+    expect(powerReportCsv(p)).toBe(powerReportCsv(structuredClone(p)));
+    expect(p).toEqual(before);
+  });
+  it('shows a load with no known part as Unknown, never as zero or "≥ 0"', () => {
+    const p = fixture();
+    // Bank B now only feeds the switch, whose draw is unknown.
+    p.cables = p.cables.filter((c) => c.id !== 'P2');
+    for (const d of p.definitions) d.massKg = null;
+    const report = buildPowerReport(p);
+    const cells = report.distributors[0].banks[1].cells;
+    for (const name of [
+      'Nominal (A)',
+      'Nominal (W)',
+      'Max (A)',
+      'Max (W)',
+      'Utilisation (%)',
+    ] as const) {
+      expect(cells[bankColumn(name)]).toBeNull();
+      expect(reportCellText(cells[bankColumn(name)])).toBe('Unknown');
+    }
+    expect(cells[bankColumn('Status')]).toBe('Incomplete');
+    expect(report.totals.find((t) => t.label === 'Total mass')!.value).toBe(
+      'Unknown (incomplete: 5 devices unknown)',
+    );
+    expect(report.summary.mass).toBe('Unknown');
+    const text = powerReportCsv(p);
+    expect(text).not.toContain('≥ 0');
+    expect(text).toMatch(
+      /"PDU","Bank B",230,16,10,"Unknown","Unknown","Unknown","Unknown","Unknown","Incomplete"/,
+    );
+  });
+  it('keeps a Warning status when the known part of an incomplete bank is already at 80 %', () => {
+    const p = fixture();
+    // Bank B: server 3000 W (13.04 A of 16 A, 81.5 %) plus the switch, whose draw is unknown.
+    p.definitions.find((d) => d.id === 'def-fx-server')!.power!.maxW = 3000;
+    const cells = buildPowerReport(p).distributors[0].banks[1].cells;
+    expect(cells[bankColumn('Status')]).toBe('Warning');
+    expect(cells[bankColumn('Max (A)')]).toBe('≥ 13.04');
+    expect(cells[bankColumn('Max (W)')]).toBe('≥ 3,000');
+    expect(cells[bankColumn('Utilisation (%)')]).toBe('≥ 81.5');
+  });
+  it('gives the maximum inlet current at each feeding voltage when banks differ', () => {
+    const p = fixture();
+    p.definitions.find((d) => d.id === 'def-fx-pdu')!.powerBanks![1].voltageV = 120;
+    // 450 W / 230 V = 1.96 A; 450 W / 120 V = 3.75 A.
+    expect(row(p, 'server')[column('Max inlet current (A)')]).toBe('1.96 at 230 V; 3.75 at 120 V');
+    // An unknown draw stays Unknown at each voltage. The analysis is cached per project
+    // snapshot, so edit a fresh project.
+    const q = fixture();
+    q.definitions.find((d) => d.id === 'def-fx-pdu')!.powerBanks![1].voltageV = 120;
+    connect(q, 'P5', at('pdu', 'o3'), at('switch', 'psu2'));
+    // Voltages follow feed order, as in the Fed from column (P4 on Bank B before P5 on Bank A).
+    expect(row(q, 'switch')[column('Max inlet current (A)')]).toBe(
+      'Unknown at 120 V; Unknown at 230 V',
+    );
+    expect(row(q, 'switch')[column('Fed from')]).toBe(
+      'PDU · Bank B · Outlet 6; PDU · Bank A · Outlet 3 (redundant feed)',
+    );
+  });
+  it('marks distributors in a distribution cycle and lists the cycle error first', () => {
+    const p = fixture();
+    place(p, 'pdu2', 'def-fx-pdu', 'PDU 2', 7);
+    connect(p, 'C1', at('pdu', 'o4'), at('pdu2', 'inlet'));
+    connect(p, 'C2', at('pdu2', 'o1'), at('pdu', 'inlet'));
+    const report = buildPowerReport(p);
+    expect(row(p, 'pdu')[column('Fed from')]).toBe(
+      'PDU 2 · Bank A · Outlet 1 (in a distribution cycle)',
+    );
+    expect(row(p, 'pdu2')[column('Fed from')]).toBe(
+      'PDU · Bank A · Outlet 4 (in a distribution cycle)',
+    );
+    expect(report.distributors.map((d) => d.name).sort()).toEqual(['PDU', 'PDU 2']);
+    expect(report.issues[0].severity).toBe('Error');
+    expect(report.issues[0].message).toMatch(/^Power distribution cycle: /);
+    expect(report.issues.map((i) => i.severity)).toEqual(
+      [...report.issues.map((i) => i.severity)].sort(
+        (a, b) =>
+          ['Error', 'Warning', 'Notice'].indexOf(a) - ['Error', 'Warning', 'Notice'].indexOf(b),
+      ),
+    );
+  });
+  it('orders rows by rack, then top U, then name, and lists both faces', () => {
+    const p = fixture();
+    place(p, 'rear-a', 'def-blank-1', 'A rear plate', 6);
+    p.devices.find((d) => d.id === 'rear-a')!.face = 'rear';
+    p.additionalRacks = [{ ...p.rack, id: 'rack-b', name: 'Rack B' }];
+    place(p, 'low-b', 'def-blank-1', 'Rack B plate', 1);
+    p.devices.find((d) => d.id === 'low-b')!.rackId = 'rack-b';
+    const report = buildPowerReport(p);
+    expect(report.equipment.rows.map((r) => r.deviceId)).toEqual([
+      'rear-a',
+      'blank',
+      'switch',
+      'pc',
+      'server',
+      'pdu',
+      'low-b',
+    ]);
+    expect(row(p, 'rear-a')[column('Position')]).toBe('Communications rack A · U6 · Rear');
+  });
+  it('writes complete figures as plain numbers and lists "None" when there are no issues', () => {
+    const p = fixture();
+    p.definitions.find((d) => d.id === 'def-fx-switch')!.power = {
+      nominalW: 1200,
+      maxW: 1415,
+      evidence: 'verified',
+      source: 'Datasheet',
+    };
+    const lines = powerReportCsv(p).slice(1).split('\r\n');
+    expect(lines).toContain(
+      '"Switch","Fixture switch","Communications rack A · U5 · Front",3.1,"user-entered",1200,1415,6.15,"verified","PDU · Bank B · Outlet 6"',
+    );
+    const issues = lines.indexOf('"Issues"');
+    expect(lines.slice(issues, issues + 3)).toEqual([
+      '"Issues"',
+      '"Severity","Message"',
+      '"None","No power issues."',
+    ]);
+    // The header block precedes the first blank line.
+    expect(lines.slice(0, 5)).toEqual([
+      '"Power and weights","Untitled rack project"',
+      '"Project revision",0',
+      '"Racks","Communications rack A"',
+      expect.stringMatching(/^"Evidence","\d+ of 5 devices and 2 of 2 banks use example/),
+      '',
+    ]);
+  });
+  it('guards every formula prefix wherever a name starts a cell, and quotes separators', () => {
+    const p = fixture();
+    p.devices.find((d) => d.id === 'pdu')!.name = '-PDU';
+    p.devices.find((d) => d.id === 'server')!.name = '@Server';
+    p.devices.find((d) => d.id === 'switch')!.name = '\tSwitch';
+    p.devices.find((d) => d.id === 'pc')!.name = 'PC, "desk"\nrow 2';
+    const text = powerReportCsv(p);
+    // The fed-from, consumer and distributor cells all begin with a renamed device.
+    expect(text).toContain('"\'-PDU · Bank A · Outlet 2"');
+    expect(text).toContain('"\'-PDU","Bank A",230');
+    expect(text).toContain('"\'@Server (Outlet 1; 450 W; redundant feed); PC, ""desk""\nrow 2');
+    expect(text).toContain('"\'\tSwitch","Fixture switch"');
+    expect(text).toContain('"PC, ""desk""\nrow 2","User rack PC"');
+    for (const prefix of ['=', '+', '-', '@', '\t'])
+      expect(text).not.toMatch(new RegExp(`(^|,)"\\${prefix === '\t' ? 't' : prefix}`, 'm'));
+  });
+});

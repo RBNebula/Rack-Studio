@@ -305,13 +305,13 @@
         "name": "Input cord · IEC 60309 32 A",
         "connector": "IEC-60309-32A",
         "surface": "rear",
-        "position": [195, 44.45, 192],
+        "position": [195, 44.45, 194],
         "direction": [0, 0, 1],
         "multiple": false,
         "widthMm": 20,
         "heightMm": 20,
         "evidence": "example",
-        "source": "PROVISIONAL: captive IEC 60309 32 A input cord (catalogue). Photo 5 shows the cord leaving near the rear corner of the left end (left as seen facing the outlets); whether it leaves the rear face or the end face is not confirmed, and the exit centre is a placeholder. This endpoint is the cord exit on the PDU body; the plug end lies a further 3.05–3.66 m away depending on source, so cord length is unknown."
+        "source": "PROVISIONAL: captive IEC 60309 32 A input cord (catalogue). A user photograph shows the cord leaving near the rear corner of the left end (left as seen facing the outlets); whether it leaves the rear face or the end face is not confirmed, and the exit centre is a placeholder. This endpoint is the cord exit on the PDU body; the plug end lies a further 3.05–3.66 m away depending on source, so cord length is unknown."
       }
     ],
     "parts": [

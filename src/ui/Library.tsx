@@ -232,7 +232,7 @@ export default function Library({ expanded = false }: { expanded?: boolean }) {
         </div>
         <button
           className="icon-button teal"
-          title="New device"
+          data-tooltip="New device"
           aria-label="New device"
           onClick={() =>
             setEditing({
@@ -400,21 +400,21 @@ export default function Library({ expanded = false }: { expanded?: boolean }) {
               </span>
               <div className="card-actions">
                 <button
-                  title={`Place ${d.name}`}
+                  data-tooltip={`Place ${d.name}`}
                   aria-label={`Place ${d.name}`}
                   onClick={() => setPlacing(d)}
                 >
                   <Icon name="plus" size={14} />
                 </button>
                 <button
-                  title={`Edit ${d.name}`}
+                  data-tooltip={`Edit ${d.name}`}
                   aria-label={`Edit ${d.name}`}
                   onClick={() => setEditing(clone(d))}
                 >
                   <Icon name="settings" size={14} />
                 </button>
                 <button
-                  title={`Duplicate ${d.name}`}
+                  data-tooltip={`Duplicate ${d.name}`}
                   aria-label={`Duplicate ${d.name}`}
                   onClick={() =>
                     edit('Definition duplicated.', (p) =>
@@ -425,7 +425,11 @@ export default function Library({ expanded = false }: { expanded?: boolean }) {
                   <Icon name="copy" size={14} />
                 </button>
                 {expanded && (
-                  <button title={`Delete ${d.name}`} onClick={() => remove(d)}>
+                  <button
+                    aria-label={`Delete ${d.name}`}
+                    data-tooltip={`Delete ${d.name}`}
+                    onClick={() => remove(d)}
+                  >
                     <Icon name="trash" size={14} />
                   </button>
                 )}
@@ -1122,7 +1126,8 @@ function DeviceEditor({ initial, onClose }: { initial: DeviceDefinition; onClose
                   </Field>
                   <button
                     className="icon-button danger"
-                    title="Delete port"
+                    aria-label="Delete port"
+                    data-tooltip="Delete port"
                     onClick={() => update({ ports: d.ports.filter((_, j) => j !== i) })}
                   >
                     <Icon name="trash" />

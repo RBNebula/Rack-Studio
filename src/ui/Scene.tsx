@@ -546,7 +546,7 @@ export default function Scene() {
         <div className="scene-tools" role="group" aria-label="Viewport settings">
           <select
             aria-label="Drop mounting face"
-            title="Mounting face for new equipment drops"
+            data-tooltip="Mounting face for new equipment drops"
             value={placeFace}
             disabled={dragging}
             onChange={(e) => set({ placeFace: e.target.value as 'front' | 'rear' })}
@@ -588,7 +588,7 @@ export default function Scene() {
             Wiring
           </button>
           <button
-            title="Toggle orthographic camera"
+            data-tooltip="Toggle orthographic camera"
             aria-label="Orthographic camera"
             aria-pressed={orthographic}
             className={orthographic ? 'active' : ''}
@@ -598,7 +598,7 @@ export default function Scene() {
             Ortho
           </button>
           <button
-            title="Toggle port and U labels"
+            data-tooltip="Toggle port and U labels"
             aria-label="Show labels"
             aria-pressed={showLabels}
             className={showLabels ? 'active' : ''}
@@ -607,7 +607,7 @@ export default function Scene() {
             <Icon name="layers" size={16} />
           </button>
           <button
-            title="Show dimension guides"
+            data-tooltip="Show dimension guides"
             aria-label="Show measurements"
             aria-pressed={showMeasurements}
             className={showMeasurements ? 'active' : ''}
@@ -616,7 +616,7 @@ export default function Scene() {
             <Icon name="ruler" size={16} />
           </button>
           <button
-            title="Show cables"
+            data-tooltip="Show cables"
             aria-label="Show cables"
             aria-pressed={showCables}
             className={showCables ? 'active' : ''}
@@ -625,7 +625,7 @@ export default function Scene() {
             <Icon name="cable" size={16} />
           </button>
           <button
-            title="Reset camera"
+            data-tooltip="Reset camera"
             aria-label="Reset camera"
             disabled={dragging}
             onClick={() => setResetKey((key) => key + 1)}

@@ -5,7 +5,7 @@ import { clone, uid, cableLabel } from '../model';
 import { validateRack } from '../engineering/geometry';
 import { placementIssues, projectWithPlacement } from '../engineering/placement';
 import { analyseProject } from '../engineering/analysis';
-import { Button, Field, NumberField, Icon, Badge, metres } from './shared';
+import { Button, Field, NumberField, Icon, IconButton, Badge, metres } from './shared';
 import { DeviceMini } from './Library';
 import { StructuralMembers } from './StructuralMembers';
 import { SpatialInspector } from './SpatialInspector';
@@ -48,13 +48,13 @@ export default function Inspector() {
           </h2>
         </div>
         {selection && (
-          <button
-            className="icon-button"
-            title="Select rack"
+          <IconButton
+            icon="x"
+            size={18}
+            label="Select rack"
+            tooltip="Close · show rack properties"
             onClick={() => set({ selection: null })}
-          >
-            <Icon name="x" />
-          </button>
+          />
         )}
       </div>
       {device ? (
@@ -1049,13 +1049,13 @@ export function CableInspector({ cable: c }: { cable: Cable }) {
               }
             />
           ))}
-          <button
-            className="icon-button danger"
-            title="Remove waypoint"
+          <IconButton
+            icon="x"
+            size={14}
+            className="danger"
+            label="Remove waypoint"
             onClick={() => update({ waypoints: c.waypoints.filter((_, j) => j !== i) })}
-          >
-            <Icon name="x" size={14} />
-          </button>
+          />
         </div>
       ))}
       <Button

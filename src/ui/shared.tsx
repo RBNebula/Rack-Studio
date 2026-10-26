@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import type { ReactNode } from 'react';
 
 export function Icon({ name, size = 18 }: { name: string; size?: number }) {
@@ -139,6 +139,10 @@ export function Icon({ name, size = 18 }: { name: string; size?: number }) {
     </svg>
   );
 }
+/**
+ * Text button. Variants (via className): default = secondary, `primary`, `ghost`, `danger`,
+ * plus the `sm` size modifier. Icon-only actions use IconButton instead.
+ */
 export function Button({
   icon,
   children,
@@ -149,6 +153,88 @@ export function Button({
     <button className={`button ${className}`} {...props}>
       {icon && <Icon name={icon} />} {children}
     </button>
+  );
+}
+/**
+ * Icon-only button. `label` is the accessible name and, unless `tooltip` overrides it, the
+ * visible tooltip shown on hover and keyboard focus.
+ */
+export function IconButton({
+  icon,
+  label,
+  tooltip,
+  size = 16,
+  className = '',
+  ...props
+}: Omit<React.ButtonHTMLAttributes<HTMLButtonElement>, 'children'> & {
+  icon: string;
+  label: string;
+  tooltip?: string;
+  size?: number;
+}) {
+  return (
+    <button
+      type="button"
+      className={`icon-button ${className}`}
+      aria-label={label}
+      data-tooltip={tooltip ?? label}
+      {...props}
+    >
+      <Icon name={icon} size={size} />
+    </button>
+  );
+}
+/**
+ * One fixed-position tooltip for every element with `data-tooltip`. It is drawn outside
+ * scrolling panels so it is never clipped, shows on hover and on keyboard focus, and renders
+ * its text through CSS so it does not duplicate accessible names or page text.
+ */
+export function TooltipLayer() {
+  const [tip, setTip] = useState<{ text: string; x: number; y: number; below: boolean } | null>(
+    null,
+  );
+  useEffect(() => {
+    let current: HTMLElement | null = null;
+    const show = (target: EventTarget | null) => {
+      const el =
+        target instanceof Element ? target.closest<HTMLElement>('[data-tooltip]') : null;
+      if (el === current) return;
+      current = el;
+      const text = el?.dataset.tooltip;
+      if (!el || !text) return setTip(null);
+      const r = el.getBoundingClientRect();
+      const below = r.top < 44;
+      setTip({ text, x: r.left + r.width / 2, y: below ? r.bottom + 6 : r.top - 6, below });
+    };
+    const over = (e: Event) => show(e.target);
+    const focus = (e: Event) => {
+      if (e.target instanceof HTMLElement && e.target.matches(':focus-visible')) show(e.target);
+    };
+    const hide = () => {
+      current = null;
+      setTip(null);
+    };
+    document.addEventListener('mouseover', over);
+    document.addEventListener('focusin', focus);
+    document.addEventListener('focusout', hide);
+    document.addEventListener('pointerdown', hide);
+    document.addEventListener('scroll', hide, true);
+    return () => {
+      document.removeEventListener('mouseover', over);
+      document.removeEventListener('focusin', focus);
+      document.removeEventListener('focusout', hide);
+      document.removeEventListener('pointerdown', hide);
+      document.removeEventListener('scroll', hide, true);
+    };
+  }, []);
+  if (!tip) return null;
+  return (
+    <div
+      className={`ui-tooltip ${tip.below ? 'below' : ''}`}
+      aria-hidden="true"
+      data-text={tip.text}
+      style={{ left: tip.x, top: tip.y }}
+    />
   );
 }
 export function Field({
@@ -351,9 +437,7 @@ export function Modal({
       >
         <header>
           <h2>{title}</h2>
-          <button className="icon-button" onClick={onClose} aria-label="Close dialog">
-            <Icon name="x" />
-          </button>
+          <IconButton icon="x" size={18} label="Close dialog" onClick={onClose} />
         </header>
         {children}
       </section>

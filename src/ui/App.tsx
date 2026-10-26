@@ -11,7 +11,7 @@ import Library from './Library';
 import Inspector, { RackInspector, addAccessory } from './Inspector';
 import Reports from './Reports';
 import { ConnectionDialog, DestinationDialog, ExitDialog } from './Forms';
-import { Button, Icon, Badge, Field, Modal, download } from './shared';
+import { Button, Icon, IconButton, Badge, Field, Modal, TooltipLayer, download } from './shared';
 import { analyseProject, csv } from '../engineering/analysis';
 
 const tabs: [Workspace, string, string][] = [
@@ -209,7 +209,7 @@ export default function App() {
         </div>
         <button
           className="avatar"
-          title="Local project settings"
+          data-tooltip="Local project settings"
           aria-label="Project settings"
           onClick={() => set({ workspace: 'settings', selection: null })}
         >
@@ -218,17 +218,22 @@ export default function App() {
       </header>
       <div className="project-toolbar">
         <div className="button-row">
-          <Button icon="plus" onClick={() => void newProject()}>
+          <Button className="ghost" icon="plus" onClick={() => void newProject()}>
             New
           </Button>
-          <Button icon="folder" onClick={() => void openProjects()}>
+          <Button className="ghost" icon="folder" onClick={() => void openProjects()}>
             Open
           </Button>
-          <Button icon="save" onClick={() => void save(project, true)}>
+          <Button
+            className="ghost"
+            icon="save"
+            data-tooltip="Save locally (Ctrl+S)"
+            onClick={() => void save(project, true)}
+          >
             Save
           </Button>
           <span className="toolbar-divider" />
-          <label className="button">
+          <label className="button ghost">
             <Icon name="upload" />
             Import
             <input
@@ -243,6 +248,7 @@ export default function App() {
             />
           </label>
           <Button
+            className="ghost"
             icon="download"
             onClick={() =>
               download(
@@ -255,29 +261,32 @@ export default function App() {
             Export project
           </Button>
           <span className="toolbar-divider" />
-          <button
-            className="icon-button"
-            title="Undo (Ctrl+Z)"
-            aria-label="Undo"
+          <IconButton
+            icon="undo"
+            size={18}
+            label="Undo"
+            tooltip="Undo (Ctrl+Z)"
             disabled={s.past.length === 0}
             onClick={s.undo}
-          >
-            <Icon name="undo" />
-          </button>
-          <button
-            className="icon-button"
-            title="Redo (Ctrl+Shift+Z)"
-            aria-label="Redo"
+          />
+          <IconButton
+            icon="redo"
+            size={18}
+            label="Redo"
+            tooltip="Redo (Ctrl+Shift+Z)"
             disabled={s.future.length === 0}
             onClick={s.redo}
-          >
-            <Icon name="redo" />
-          </button>
+          />
         </div>
         <div className="toolbar-save">
           <span className={s.dirty ? 'unsaved-dot' : 'saved-dot'} />
           {s.saveStatus}
-          <button className="help-button" onClick={() => setDialog('help')} title="Quick guide">
+          <button
+            className="help-button"
+            onClick={() => setDialog('help')}
+            aria-label="Quick guide"
+            data-tooltip="Quick guide and shortcuts"
+          >
             ?
           </button>
         </div>
@@ -551,13 +560,7 @@ export default function App() {
         <div className="error-toast" role="alert">
           <Icon name="alert" />
           <span>{s.error}</span>
-          <button
-            className="icon-button"
-            aria-label="Dismiss error"
-            onClick={() => set({ error: '' })}
-          >
-            <Icon name="x" />
-          </button>
+          <IconButton icon="x" label="Dismiss error" onClick={() => set({ error: '' })} />
         </div>
       )}
       <footer className="statusbar">
@@ -628,6 +631,7 @@ export default function App() {
       {dialog === 'connection' && <ConnectionDialog onClose={() => setDialog(null)} />}{' '}
       {dialog === 'destination' && <DestinationDialog onClose={() => setDialog(null)} />}{' '}
       {dialog === 'exit' && <ExitDialog onClose={() => setDialog(null)} />}{' '}
+      <TooltipLayer />
       {dialog === 'help' && (
         <Modal title="Rack Studio · quick guide" onClose={() => setDialog(null)}>
           <Guide />

@@ -19,6 +19,8 @@ On this Windows workspace, **`Start Rack Studio.cmd`** starts the existing produ
 
 The browser must support WebGL for the viewport and IndexedDB for saving. Enable browser hardware acceleration where available. There is no hosted project backend in this milestone.
 
+The same static build can be hosted privately at `https://rackstudio.app` on Cloudflare, behind Cloudflare Access sign-in. Projects still stay in each browser. See [hosting](docs/HOSTING.md).
+
 ```powershell
 pnpm typecheck
 pnpm lint
@@ -43,7 +45,7 @@ pnpm dev
 
 Read [AGENTS.md](AGENTS.md) and [project status](docs/PROJECT_STATUS.md) before editing. Use one branch and separate checkout/worktree per concurrent agent; push a branch and open a pull request for approval. GitHub carries committed code and documentation, not conversations or unsaved browser projects. Export project JSON separately to move browser work between devices. Store private designs outside this public repository.
 
-See [architecture](docs/ARCHITECTURE.md), [roadmap](docs/ROADMAP.md), [decisions](docs/DECISIONS.md), [cloud setup](docs/CLOUD_SETUP.md) and [migration verification](docs/MIGRATION.md). No runtime environment variables or production credentials are required. `RACK_BROWSER_CHANNEL`, `RACK_TEST_URL` and `CI` are optional test controls described in the testing guide.
+See [architecture](docs/ARCHITECTURE.md), [roadmap](docs/ROADMAP.md), [decisions](docs/DECISIONS.md), [cloud setup](docs/CLOUD_SETUP.md), [hosting](docs/HOSTING.md) and [migration verification](docs/MIGRATION.md). No runtime environment variables or production credentials are required. `RACK_BROWSER_CHANNEL`, `RACK_TEST_URL` and `CI` are optional test controls described in the testing guide.
 
 ## Current workflows
 

@@ -18,6 +18,7 @@ Recorded from existing code and retained documentation, 25 October 2026. These a
 | Lengths preserve supply semantics | Bulk defaults: 60 mm each termination end and no automatic service loop. Preterminated length stays fixed; unknown required distances stay unknown |
 | Continuous cuts and honest optimiser labels | `procurement.ts` separates products, waste, stock and reserves; exact search is bounded and distinguished from heuristic results. Planning does not consume shared stock |
 | Local persistence adapter | `ProjectRepository` implemented by IndexedDB; JSON carries versioned records and validated embedded images. Autosave clears dirty only for the saved revision. No remote backend exists |
+| Private static hosting on Cloudflare | `wrangler.jsonc` serves `dist/` from a Workers static-assets Worker on the custom domain `rackstudio.app` only; `workers.dev` and preview URLs are disabled. Worker-level Cloudflare Access gates every request. `public/_headers` sets a same-origin CSP and caching. No server code or secrets; projects stay in browser IndexedDB. See `HOSTING.md` |
 | Public repository with PR handover | Initial import to main, then independent branches/checkouts and reviewed PRs; `AGENTS.md` is authoritative, Gemini/Claude files link to it. Git shares files/history, not agent conversations or unsaved browser storage |
 
 ## Unresolved decisions
@@ -26,6 +27,6 @@ Recorded from existing code and retained documentation, 25 October 2026. These a
 - Physical cable solver, slack/fixing dynamics, global cable collision approach and installation-animation state machine.
 - Photo/mesh authoring pipeline and calibrated collision decomposition.
 - Backend/authentication/ownership, concurrent revision merging, asset storage and cross-project stock reservation design.
-- Final hosting provider, report export tooling and performance budgets. No paid service or deployment is selected by this migration.
+- Report export tooling and performance budgets. Hosting of the static frontend is decided (Cloudflare, see above); hosted project storage is not.
 
 When resolving one, record evidence, tradeoffs, affected invariants and validation here and update the relevant feature guide/status.

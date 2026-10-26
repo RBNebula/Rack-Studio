@@ -27,7 +27,8 @@ Snapshot: 25 October 2026. Milestone: preserve the working lacing-bar/rear-place
 | Browser performance | Implemented but not fully tested | Lazy scene/designer and cached analysis; synthetic geometric smoke fixture. Full FPS/memory/stress acceptance is unverified |
 | Automated tests | Implemented; Linux browser baseline known to be broken | 302 numeric/state tests and all 29 current local Edge workflows pass. Linux Chromium run has six observed failures and did not finish before the time limit; see `TESTING.md`. Full controlled visual regression and coverage instrumentation are absent |
 | Repository/CI/cloud readiness | Partially implemented | GitHub push/SHA, independent clone/install/check, shared instructions and PR workflow verified. Linux install/type/lint/unit/build pass; browser CI fails and needs diagnosis. Cloud account connection remains the owner's next step. Main branch protection is disabled |
-| Hosted backend/team features | Planned | No accounts, authorisation service, shared inventory or project backend; static frontend deployment is not private project hosting |
+| Private static hosting | Configured; awaiting owner dashboard setup | `wrangler.jsonc` and `public/_headers` serve the build at `rackstudio.app` behind Cloudflare Access (`HOSTING.md`). Verified locally through Wrangler 4.149.0: headers applied, `_headers` not served, unknown paths fall back to the app, 28 of 29 Chromium workflows pass against it. The remaining photographed-PC workflow times out identically on the unchanged Vite server (existing Linux issue #4). Repository connection, first deploy and Access policy are owner steps, not yet verified live |
+| Hosted backend/team features | Planned | No accounts, authorisation service, shared inventory or project backend. Hosting serves the frontend only; projects stay in each browser |
 
 ## Next work
 

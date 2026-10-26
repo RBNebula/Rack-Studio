@@ -29,4 +29,4 @@ Checked against [official OpenAI documentation](https://learn.chatgpt.com/docs/e
 
 The [legacy Cloud environment guide](https://learn.chatgpt.com/docs/environments/cloud-environment) remains relevant for Code Review and GitHub/Linear integration environments; it is distinct from the current published-environment flow. Use the account's current Cloud UI rather than assuming an older setup-screen layout.
 
-There is no machine-specific path required for install/build/test. The Windows convenience launcher has an optional Codex-runtime fallback, but ordinary PATH-provided Node is the primary path and the launcher is not needed in Cloud or CI. Hosting and private collaboration are future decisions, not part of this migration.
+There is no machine-specific path required for install/build/test. The Windows convenience launcher has an optional Codex-runtime fallback, but ordinary PATH-provided Node is the primary path and the launcher is not needed in Cloud or CI. Private static hosting at `rackstudio.app` is described in `HOSTING.md`; hosted project storage and collaboration remain future decisions.

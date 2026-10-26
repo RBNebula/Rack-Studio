@@ -12,6 +12,7 @@ import {
 } from '../engineering/power';
 import type { PowerBankResult, PowerStatus } from '../engineering/power';
 import { Badge, BlurTextField, Button, Field, NumberField, OptionalNumberField } from './shared';
+import { Note } from './Panels';
 
 const evidenceLevels = ['example', 'user-entered', 'verified', 'unknown'] as const;
 const statusTone: Record<PowerStatus, 'good' | 'warn' | 'error'> = {
@@ -31,7 +32,14 @@ const watts = (w: number) => `${Math.round(w * 10) / 10} W`;
 const percent = (u: number) => `${(u * 100).toFixed(1)} %`;
 
 /** Power and weight of a placed device's equipment model, its feeds and, for a distributor, its banks. */
-export function DevicePowerSection({ device }: { device: Device }) {
+/** Power and mass fields for one placed device. `embedded` drops the heading inside a titled panel section. */
+export function DevicePowerSection({
+  device,
+  embedded = false,
+}: {
+  device: Device;
+  embedded?: boolean;
+}) {
   const { project, edit, set } = useStore();
   const def = project.definitions.find((x) => x.id === device.definitionId);
   if (!def) return null;
@@ -58,15 +66,17 @@ export function DevicePowerSection({ device }: { device: Device }) {
   };
   return (
     <section className="power-section" aria-label="Power and weight">
-      <div className="section-title">
-        <h3>Power & weight</h3>
-        {info?.redundantFeed && <Badge tone="good">Redundant feed</Badge>}
-      </div>
-      <p className="muted small">
+      {(!embedded || info?.redundantFeed) && (
+        <div className="section-title">
+          {!embedded && <h3>Power & weight</h3>}
+          {info?.redundantFeed && <Badge tone="good">Redundant feed</Badge>}
+        </div>
+      )}
+      <Note summary="Empty fields are Unknown and never counted as zero.">
         These values belong to the equipment model <strong>{def.name}</strong>, so all {copies}{' '}
         placed {copies === 1 ? 'copy shares' : 'copies share'} them. Leave a field empty when the
         value is unknown; unknown values are never counted as zero.
-      </p>
+      </Note>
       <div className="form-grid">
         <OptionalNumberField
           label="Nominal draw (W)"

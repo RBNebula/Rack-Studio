@@ -2,6 +2,7 @@ import { useState } from 'react';
 import type { Rack, Vec3 } from '../model';
 import { uid } from '../model';
 import { Badge, Button, Field, Icon, NumberField } from './shared';
+import { Note } from './Panels';
 
 type Member = Rack['members'][number];
 type Profile = Member['profile'];
@@ -64,10 +65,13 @@ export function StructuralMembers({
   members,
   onChange,
   onDraftPendingChange,
+  embedded = false,
 }: {
   members: Rack['members'];
   onChange: (members: Rack['members']) => void;
   onDraftPendingChange: (pending: boolean) => void;
+  /** Inside a titled panel section: the section supplies the heading and count. */
+  embedded?: boolean;
 }) {
   const [draft, setDraft] = useState<NewMemberDraft | null>(null);
   const [showIssues, setShowIssues] = useState(false);
@@ -104,15 +108,17 @@ export function StructuralMembers({
   };
   return (
     <section aria-label="Structural members">
-      <div className="section-title">
-        <h3>Structural members</h3>
-        <Badge>{members.length} defined</Badge>
-      </div>
-      <p className="small muted">
+      {!embedded && (
+        <div className="section-title">
+          <h3>Structural members</h3>
+          <Badge>{members.length} defined</Badge>
+        </div>
+      )}
+      <Note summary="World centres in mm · saved with Apply rack configuration.">
         Define beams and crossmembers from a reference. Positions are world centres in mm. Add
         separate members for a compound construction; depth steps do not create measured supports.
         Changes are saved together with Apply rack configuration.
-      </p>
+      </Note>
       {!members.length && <p className="small muted">No explicit structural members defined.</p>}
       {members.map((member) => (
         <details className="depth-section" key={member.id}>

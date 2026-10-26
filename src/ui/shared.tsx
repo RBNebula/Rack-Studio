@@ -115,6 +115,30 @@ export function Icon({ name, size = 18 }: { name: string; size?: number }) {
       </>
     ),
     bolt: <path d="M13 2 4.5 13.5H12L11 22l8.5-11.5H12z" />,
+    info: (
+      <>
+        <circle cx="12" cy="12" r="9" />
+        <path d="M12 11v6M12 7.5v.5" />
+      </>
+    ),
+    'panel-left': (
+      <>
+        <rect x="3" y="4" width="18" height="16" rx="2" />
+        <path d="M9 4v16M15 10l-2 2 2 2" />
+      </>
+    ),
+    'panel-right': (
+      <>
+        <rect x="3" y="4" width="18" height="16" rx="2" />
+        <path d="M15 4v16M9 10l2 2-2 2" />
+      </>
+    ),
+    mouse: (
+      <>
+        <rect x="6" y="3" width="12" height="18" rx="6" />
+        <path d="M12 7v3" />
+      </>
+    ),
     printer: (
       <>
         <path d="M7 9V3h10v6" />
@@ -190,21 +214,27 @@ export function IconButton({
  * its text through CSS so it does not duplicate accessible names or page text.
  */
 export function TooltipLayer() {
-  const [tip, setTip] = useState<{ text: string; x: number; y: number; below: boolean } | null>(
-    null,
-  );
+  const [tip, setTip] = useState<{
+    text: string;
+    x: number;
+    y: number;
+    below: boolean;
+    align: 'start' | 'center' | 'end';
+  } | null>(null);
   useEffect(() => {
     let current: HTMLElement | null = null;
     const show = (target: EventTarget | null) => {
-      const el =
-        target instanceof Element ? target.closest<HTMLElement>('[data-tooltip]') : null;
+      const el = target instanceof Element ? target.closest<HTMLElement>('[data-tooltip]') : null;
       if (el === current) return;
       current = el;
       const text = el?.dataset.tooltip;
       if (!el || !text) return setTip(null);
       const r = el.getBoundingClientRect();
       const below = r.top < 44;
-      setTip({ text, x: r.left + r.width / 2, y: below ? r.bottom + 6 : r.top - 6, below });
+      // Near a viewport edge, align the tooltip with the element's edge so it is not clipped.
+      const align = r.left < 140 ? 'start' : r.right > window.innerWidth - 140 ? 'end' : 'center';
+      const x = align === 'start' ? r.left : align === 'end' ? r.right : r.left + r.width / 2;
+      setTip({ text, x, y: below ? r.bottom + 6 : r.top - 6, below, align });
     };
     const over = (e: Event) => show(e.target);
     const focus = (e: Event) => {
@@ -230,7 +260,7 @@ export function TooltipLayer() {
   if (!tip) return null;
   return (
     <div
-      className={`ui-tooltip ${tip.below ? 'below' : ''}`}
+      className={`ui-tooltip ${tip.below ? 'below' : ''} ${tip.align}`}
       aria-hidden="true"
       data-text={tip.text}
       style={{ left: tip.x, top: tip.y }}

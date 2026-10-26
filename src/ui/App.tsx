@@ -1,5 +1,5 @@
 import { lazy, Suspense, useEffect, useState } from 'react';
-import type { ReactNode } from 'react';
+import type { CSSProperties, ReactNode } from 'react';
 import { useStore } from '../state';
 import type { Workspace } from '../state';
 import { createExampleProject, createWorkspaceProject } from '../examples';
@@ -13,6 +13,7 @@ import Reports from './Reports';
 import { ConnectionDialog, DestinationDialog, ExitDialog } from './Forms';
 import { Button, Icon, IconButton, Badge, Field, Modal, TooltipLayer, download } from './shared';
 import { analyseProject, csv } from '../engineering/analysis';
+import { ResizeHandle, useStoredState } from './Panels';
 
 const tabs: [Workspace, string, string][] = [
   ['designer', '3D Rack Designer', 'cube'],
@@ -58,6 +59,21 @@ export default function App() {
     'open' | 'connection' | 'destination' | 'exit' | 'help' | null
   >(null);
   const [savedProjects, setSavedProjects] = useState<ProjectSummary[]>([]);
+  // Designer side panels: null width = the responsive default from CSS.
+  const [libraryWidth, setLibraryWidth] = useStoredState<number | null>(
+    'rack-studio-library-width',
+    null,
+  );
+  const [inspectorWidth, setInspectorWidth] = useStoredState<number | null>(
+    'rack-studio-inspector-width',
+    null,
+  );
+  const [libraryOpen, setLibraryOpen] = useStoredState('rack-studio-library-open', true);
+  const [inspectorOpen, setInspectorOpen] = useStoredState('rack-studio-inspector-open', true);
+  const panelStyle = {
+    ...(libraryWidth && libraryOpen ? { '--library-w': `${libraryWidth}px` } : {}),
+    ...(inspectorWidth && inspectorOpen ? { '--inspector-w': `${inspectorWidth}px` } : {}),
+  } as CSSProperties;
   const analysis = analyseProject(project);
   useEffect(() => {
     let active = true;
@@ -326,11 +342,34 @@ export default function App() {
         </button>
       </div>
       <div
-        className={`workspace-body ${workspace === 'designer' ? 'designer-layout' : editingReport ? 'report-layout' : ''}`}
+        className={`workspace-body ${workspace === 'designer' ? `designer-layout ${libraryOpen ? '' : 'library-collapsed'} ${inspectorOpen ? '' : 'inspector-collapsed'}` : editingReport ? 'report-layout' : ''}`}
+        style={workspace === 'designer' ? panelStyle : undefined}
       >
         {workspace === 'designer' ? (
           <>
-            <Library />
+            {libraryOpen ? (
+              <div className="side-panel left">
+                <Library onCollapse={() => setLibraryOpen(false)} />
+                <ResizeHandle
+                  label="Resize equipment library"
+                  side="left"
+                  width={libraryWidth ?? 244}
+                  min={200}
+                  max={420}
+                  onChange={setLibraryWidth}
+                />
+              </div>
+            ) : (
+              <button
+                className="side-rail left"
+                aria-label="Expand equipment library"
+                data-tooltip="Expand equipment library"
+                onClick={() => setLibraryOpen(true)}
+              >
+                <Icon name="panel-right" size={18} />
+                <span>Equipment library</span>
+              </button>
+            )}
             <div className="designer-centre">
               <div className="designer-heading">
                 <div>
@@ -420,7 +459,34 @@ export default function App() {
                 </div>
               </div>
             </div>
-            <Inspector />
+            {inspectorOpen ? (
+              <div className="side-panel right">
+                <ResizeHandle
+                  label="Resize properties panel"
+                  side="right"
+                  width={inspectorWidth ?? 288}
+                  min={260}
+                  max={520}
+                  onChange={setInspectorWidth}
+                />
+                <Inspector onCollapse={() => setInspectorOpen(false)} />
+              </div>
+            ) : (
+              <button
+                className="side-rail right"
+                aria-label="Expand properties panel"
+                data-tooltip="Expand properties panel"
+                onClick={() => setInspectorOpen(true)}
+              >
+                <Icon name="panel-left" size={18} />
+                <span>
+                  Properties
+                  {s.selection
+                    ? ` · ${s.selection.kind === 'device' ? 'equipment' : s.selection.kind}`
+                    : ''}
+                </span>
+              </button>
+            )}
           </>
         ) : workspace === 'model' ? (
           <Suspense fallback={<p>Loading model designer…</p>}>
@@ -630,8 +696,7 @@ export default function App() {
       )}
       {dialog === 'connection' && <ConnectionDialog onClose={() => setDialog(null)} />}{' '}
       {dialog === 'destination' && <DestinationDialog onClose={() => setDialog(null)} />}{' '}
-      {dialog === 'exit' && <ExitDialog onClose={() => setDialog(null)} />}{' '}
-      <TooltipLayer />
+      {dialog === 'exit' && <ExitDialog onClose={() => setDialog(null)} />} <TooltipLayer />
       {dialog === 'help' && (
         <Modal title="Rack Studio · quick guide" onClose={() => setDialog(null)}>
           <Guide />

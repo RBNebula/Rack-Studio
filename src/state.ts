@@ -15,6 +15,7 @@ export type Workspace =
   | 'schedule'
   | 'cuts'
   | 'procurement'
+  | 'power'
   | 'settings';
 export type Selection = {
   kind: 'device' | 'cable' | 'exit' | 'accessory' | 'guide' | 'destination' | 'rack' | 'member';

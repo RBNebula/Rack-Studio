@@ -131,3 +131,9 @@ Added a generic parametric lacing bar with flush tab ears and one middle-hole sc
 Front/Rear camera buttons now select that mounting face for new library drops. The visible Mount selector supports 3D/side/top views, and precise placement starts with the same choice. Moving an installed device preserves its own face. Rear plane reprojection now consistently subtracts rack origin height, fixing shifted racks.
 
 Current production index-18QnjpoI.js / Scene-DuiHiMVa.js passes TypeScript, ESLint, build and 302 unit/integration tests in 23 files. All 29 Edge browser workflows pass on the frozen bundle, including native rear/front drops in a translated stepped rack, lacing editing and reopen; no uncaught page errors. [Browser record](validation/lacing-bar-browser-results.txt), [3D capture](screenshots/lacing-bar-3d.png), [top capture](screenshots/lacing-bar-top.png), [controls](user-guide.md#lacing-bar). Thirteen portable projects and three standalone library exports validate. The [lacing example](../examples/lacing-bars.rack.json) contains front/rear bars.
+
+## Power & Weights document · 26 October 2026
+
+Added a read-only **Power & Weights** report tab. `src/engineering/power-report.ts` formats `analysePower` into an equipment table (position, mass, draw, maximum inlet current, evidence, feeding outlets), per-distributor bank summaries ordered upstream first, totals and issues, without recalculating loads. Unknown values stay `Unknown` and incomplete totals show `≥` lower bounds. Export is one sectioned CSV through the shared formula-protected `csv` helper; a print stylesheet supports browser print and save-as-PDF without a new dependency.
+
+`pnpm check` passes: typecheck, lint, 339 unit/integration tests in 25 files and production build. No browser workflow was run for the new view, its CSV download or its print layout. See [power and weight](power-and-weight.md#power--weights-document).

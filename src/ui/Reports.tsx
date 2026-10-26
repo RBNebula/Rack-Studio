@@ -10,9 +10,20 @@ import {
   scheduleCsv,
   scheduleValue,
 } from '../engineering/analysis';
+import {
+  NOT_CONNECTED,
+  buildPowerReport,
+  powerReportCsv,
+  reportCellText,
+} from '../engineering/power-report';
+import type { ReportCell } from '../engineering/power-report';
+import type { PowerStatus } from '../engineering/power';
 import { Button, Field, NumberField, Icon, Badge, Modal, download, metres } from './shared';
 import { ConnectionDialog, DestinationDialog, ExitDialog } from './Forms';
 export default function Reports({ workspace }: { workspace: Workspace }) {
+  return workspace === 'power' ? <PowerWeightsReport /> : <CableReports workspace={workspace} />;
+}
+function CableReports({ workspace }: { workspace: Workspace }) {
   const { project, selection, set, edit } = useStore();
   const analysis = analyseProject(project);
   const [search, setSearch] = useState('');
@@ -726,5 +737,245 @@ function ProductDialog({ onClose }: { onClose: () => void }) {
         </Button>
       </footer>
     </Modal>
+  );
+}
+const powerStatusTone: Record<PowerStatus, 'good' | 'warn' | 'error'> = {
+  ok: 'good',
+  warning: 'warn',
+  over: 'error',
+  incomplete: 'warn',
+};
+/** Long text columns wrap instead of being cut off. */
+const wrappingColumns = new Set([
+  'Position',
+  'Fed from',
+  'Consumers (outlets; max load)',
+  'Unknown draw',
+  'Rating evidence',
+]);
+function PowerCell({ value, column }: { value: ReportCell; column: string }) {
+  const className = [
+    wrappingColumns.has(column) ? 'wrap' : '',
+    value === null ? 'unknown-value' : '',
+    value === NOT_CONNECTED ? 'warning-text' : '',
+  ]
+    .filter(Boolean)
+    .join(' ');
+  return <td className={className || undefined}>{reportCellText(value)}</td>;
+}
+/** The power and weights document: equipment, bank loads, totals and issues from `analysePower`. */
+function PowerWeightsReport() {
+  const { project } = useStore();
+  const report = buildPowerReport(project, analyseProject(project).power);
+  const statusColumn = report.bankColumns.indexOf('Status');
+  // Banks are grouped under their distributor, so its name column is dropped on screen.
+  const bankColumns = report.bankColumns.slice(1);
+  const printed = new Date().toLocaleDateString('en-GB', {
+    day: 'numeric',
+    month: 'long',
+    year: 'numeric',
+  });
+  return (
+    <main className="report-workspace power-document" aria-label="Power and weights document">
+      <div className="report-heading">
+        <div>
+          <span className="eyebrow">PROJECT DOCUMENTATION</span>
+          <h1>Power & weights</h1>
+          <p>
+            Each placed device’s draw, mass and feeding bank, live from the power analysis. Unknown
+            values are never counted as zero.
+          </p>
+          <p className="print-only">
+            {report.projectName} · revision {report.revision} · {report.racks} · printed {printed}
+          </p>
+        </div>
+        <div className="button-row">
+          <Button
+            icon="download"
+            onClick={() =>
+              download(
+                `${project.name.replaceAll(/[^a-z0-9]/gi, '-')}-power-weights.csv`,
+                powerReportCsv(project, report),
+                'text/csv;charset=utf-8',
+              )
+            }
+          >
+            Export CSV
+          </Button>
+          <Button icon="printer" onClick={() => window.print()}>
+            Print / save PDF
+          </Button>
+        </div>
+      </div>
+      {report.provisionalNote && (
+        <div className="callout">
+          <Icon name="alert" />
+          <span>{report.provisionalNote}</span>
+        </div>
+      )}
+      <div className="metrics-row">
+        {[
+          ['Placed devices', report.summary.devices, 'box'],
+          ['Total mass', report.summary.mass, 'layers'],
+          ['Total maximum draw', report.summary.maxDraw, 'bolt'],
+          ['Power issues', report.summary.issues, 'alert'],
+        ].map(([label, value, icon]) => (
+          <div className="metric" key={label}>
+            <Icon name={icon} size={20} />
+            <div>
+              <span>{label}</span>
+              <strong>{value}</strong>
+            </div>
+          </div>
+        ))}
+      </div>
+      <section className="surface" aria-label="Equipment">
+        <div className="section-title">
+          <h2>Equipment</h2>
+          <span>One row per placed device, top of each rack first</span>
+        </div>
+        {report.equipment.rows.length === 0 ? (
+          <p className="empty-note">No equipment is placed.</p>
+        ) : (
+          <div className="table-scroll">
+            <table>
+              <thead>
+                <tr>
+                  {report.equipment.columns.map((c) => (
+                    <th key={c}>{c}</th>
+                  ))}
+                </tr>
+              </thead>
+              <tbody>
+                {report.equipment.rows.map((row) => (
+                  <tr key={row.deviceId}>
+                    {row.cells.map((cell, i) => (
+                      <PowerCell key={i} value={cell} column={report.equipment.columns[i]} />
+                    ))}
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        )}
+      </section>
+      <section className="surface" aria-label="Power distribution">
+        <div className="section-title">
+          <h2>Power distribution</h2>
+          <span>Bank loads at maximum draw; a feeding UPS is listed before its PDUs</span>
+        </div>
+        {report.distributors.length === 0 && (
+          <p className="empty-note">
+            No PDU or UPS with power banks is placed. Its banks and loads appear here once one is
+            added.
+          </p>
+        )}
+        {report.distributors.map((d) => (
+          <div className="power-distributor" key={d.deviceId} style={{ marginLeft: d.level * 18 }}>
+            <div className="section-title">
+              <div>
+                <h3>{d.name}</h3>
+                <p className="muted small">
+                  {d.model} · {d.position} · Fed from:{' '}
+                  <span className={d.fedFrom === NOT_CONNECTED ? 'warning-text' : undefined}>
+                    {d.fedFrom}
+                  </span>
+                </p>
+              </div>
+              <span>
+                Input: {d.inputMax} max · {d.inputNominal} nominal
+              </span>
+            </div>
+            <div className="table-scroll">
+              <table>
+                <thead>
+                  <tr>
+                    {bankColumns.map((c) => (
+                      <th key={c}>{c}</th>
+                    ))}
+                  </tr>
+                </thead>
+                <tbody>
+                  {d.banks.map((bank) => (
+                    <tr key={bank.bankId}>
+                      {bank.cells.slice(1).map((cell, i) =>
+                        i + 1 === statusColumn ? (
+                          <td key={i}>
+                            <Badge tone={powerStatusTone[bank.status]}>
+                              {reportCellText(cell)}
+                            </Badge>
+                          </td>
+                        ) : (
+                          <PowerCell key={i} value={cell} column={bankColumns[i]} />
+                        ),
+                      )}
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        ))}
+      </section>
+      <section className="surface" aria-label="Totals">
+        <div className="section-title">
+          <h2>Totals</h2>
+        </div>
+        <div className="table-scroll">
+          <table>
+            <thead>
+              <tr>
+                <th>Item</th>
+                <th>Value</th>
+                <th>Detail</th>
+              </tr>
+            </thead>
+            <tbody>
+              {report.totals.map((t) => (
+                <tr key={t.label}>
+                  <td>
+                    <strong>{t.label}</strong>
+                  </td>
+                  <td>{t.value}</td>
+                  <td className="wrap">{t.detail}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      </section>
+      <section className="surface" aria-label="Power issues">
+        <div className="section-title">
+          <h2>Issues</h2>
+        </div>
+        {report.issues.length === 0 ? (
+          <p className="empty-note">No power issues.</p>
+        ) : (
+          <ul className="power-issues">
+            {report.issues.map((issue, i) => (
+              <li key={i}>
+                <Badge
+                  tone={
+                    issue.severity === 'Error'
+                      ? 'error'
+                      : issue.severity === 'Warning'
+                        ? 'warn'
+                        : 'neutral'
+                  }
+                >
+                  {issue.severity}
+                </Badge>
+                <span>{issue.message}</span>
+              </li>
+            ))}
+          </ul>
+        )}
+      </section>
+      <ul className="report-notes">
+        {report.notes.map((note) => (
+          <li key={note}>{note}</li>
+        ))}
+      </ul>
+    </main>
   );
 }

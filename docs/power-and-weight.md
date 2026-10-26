@@ -37,7 +37,18 @@ Every change is one atomic, validated, undoable edit.
 - A fed device's inspector lists its feeds with the feeding bank's status.
 - The status bar shows `N power to review` when any power issues exist. Hover over it to read the messages.
 
-There is no power report tab yet. A later power and weights document will use `analysePower`.
+## Power & weights document
+
+The **Power & Weights** tab is a read-only document built by `buildPowerReport` in `src/engineering/power-report.ts`. It only selects, labels and formats `analysePower` results; it recalculates nothing. `Unknown` marks an unknown value, which is never shown as 0. A figure starting with `≥` is the known part of an incomplete total, and `—` means not applicable.
+
+- **Equipment**: one row per placed device, top of each rack first. Columns: device, model, position (rack · U · face, plus the supporting shelf), mass and its evidence, nominal and maximum draw, maximum inlet current, power evidence and fed from (distributor · bank · outlet). A device with several feeds lists each one and is marked `redundant feed`. A powered device without a feed reads `Not connected`. An unpowered device, such as a blank plate, shows `—`. Maximum inlet current is the device's whole input load divided by each feeding bank's voltage, so for a PDU fed from a UPS it includes everything the PDU supplies.
+- **Power distribution**: grouped by distributor. Each group shows the model, position, what feeds it and its input load. A distributor fed from another distributor is listed after it and indented, so a UPS → PDU chain needs no change to the document. Each bank row has voltage, bank and per-outlet limits, nominal and maximum A/W, utilisation, status (`OK`, `Warning`, `Over limit`, `Incomplete`), consumers with their outlets and maximum load, unknown draws (including outlets that feed external destinations) and rating evidence.
+- **Totals**: device count; known mass with the devices missing a mass; nominal and maximum own draw with the devices missing a draw; an estimated heat output (all recorded draw treated as heat in the rack, 1 W ≈ 3.412 BTU/h); powered devices not connected; devices with redundant feeds; each distributor's input load, which is what an upstream supply such as a UPS must provide; mass per rack when there is more than one rack; and the issue count by severity.
+- **Issues**: every `PowerIssue` with its severity, errors first. A callout counts the devices and banks with example, user-entered or unknown evidence.
+
+**Export CSV** writes `<project>-power-weights.csv` through the shared `csv` helper, so formula prefixes are neutralised and unknown cells read `Unknown`. It is one sectioned file: a header block (project, revision, racks, evidence note), then `Equipment`, `Power banks`, `Totals`, `Issues` and `Notes`. Each section starts with a one-cell title row followed by its column headings, and a blank line separates sections. Complete values are plain numbers with the unit in the column heading; lower bounds are text such as `≥ 450`.
+
+**Print / save PDF** opens the browser's print dialog. The print layout hides the application chrome and buttons, adds the project, revision, racks and print date, wraps long cells, repeats table headings and uses an A4 landscape page in browsers that support named pages. Choose *Save as PDF* as the printer for a PDF. No PDF or spreadsheet library is used.
 
 ## API summary for reports
 
@@ -53,4 +64,4 @@ Loads are `{ knownW, complete }`. Bank and outlet loads add `knownA`.
 
 ## Limits
 
-These are planning checks of entered values, not an electrical design certificate. Inrush current, power factor, phase balance, upstream breaker and cable ratings, UPS runtime, and derating for temperature or grouping are not modelled. Shelf, rail and rack load ratings are not checked against the mass totals.
+These are planning checks of entered values, not an electrical design certificate. The heat-output figure is an estimate from recorded draw only. Inrush current, power factor, phase balance, upstream breaker and cable ratings, UPS runtime, and derating for temperature or grouping are not modelled. Shelf, rail and rack load ratings are not checked against the mass totals.

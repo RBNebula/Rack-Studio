@@ -114,6 +114,14 @@ export function Icon({ name, size = 18 }: { name: string; size?: number }) {
         <path d="M12 3v5M12 16v5M3 12h5M16 12h5" />
       </>
     ),
+    bolt: <path d="M13 2 4.5 13.5H12L11 22l8.5-11.5H12z" />,
+    printer: (
+      <>
+        <path d="M7 9V3h10v6" />
+        <rect x="3" y="9" width="18" height="8" rx="1.5" />
+        <path d="M7 14h10v7H7z" />
+      </>
+    ),
   };
   return (
     <svg

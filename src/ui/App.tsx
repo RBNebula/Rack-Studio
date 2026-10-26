@@ -22,6 +22,7 @@ const tabs: [Workspace, string, string][] = [
   ['schedule', 'Cable Schedule', 'grid'],
   ['cuts', 'Cut List', 'ruler'],
   ['procurement', 'Procurement', 'reel'],
+  ['power', 'Power & Weights', 'bolt'],
   ['settings', 'Project Settings', 'settings'],
 ];
 const Scene = lazy(() => import('./Scene'));
@@ -186,6 +187,7 @@ export default function App() {
     workspace !== 'designer' &&
     workspace !== 'library' &&
     workspace !== 'settings' &&
+    workspace !== 'power' &&
     s.selection?.kind === 'cable';
   return (
     <div className="app-shell">
@@ -650,7 +652,7 @@ function Guide() {
     ],
     [
       'Review materials',
-      'Schedule, cut list and procurement use the same cable records. Unknown external runs stay provisional. Export the complete CSV reports or a portable JSON project.',
+      'Schedule, cut list and procurement use the same cable records. Unknown external runs stay provisional. Power & Weights lists each device’s draw, mass and feeding bank. Export the complete CSV reports or a portable JSON project.',
     ],
     [
       'Save and recover',

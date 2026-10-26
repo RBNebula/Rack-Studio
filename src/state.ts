@@ -5,6 +5,7 @@ import { createWorkspaceProject } from './examples';
 import { projectSchema } from './model';
 import { validateReferences } from './data/project';
 import { validatePlacement, validateRack } from './engineering/geometry';
+import { newSameGenderConnections } from './engineering/connectivity';
 
 type View = 'orbit' | 'front' | 'rear' | 'left' | 'right' | 'top';
 export type Workspace =
@@ -15,6 +16,7 @@ export type Workspace =
   | 'schedule'
   | 'cuts'
   | 'procurement'
+  | 'power'
   | 'settings';
 export type Selection = {
   kind: 'device' | 'cable' | 'exit' | 'accessory' | 'guide' | 'destination' | 'rack' | 'member';
@@ -100,7 +102,11 @@ export const useStore = create<State>((set, get) => ({
       const draft = clone(state.project);
       fn(draft);
       const next = projectSchema.parse(draft);
-      const issues = [...validateReferences(next), ...validateRack(next.rack)];
+      const issues = [
+        ...validateReferences(next),
+        ...validateRack(next.rack),
+        ...newSameGenderConnections(state.project, next),
+      ];
       for (const d of next.devices) {
         const old = state.project.devices.find((v) => v.id === d.id);
         const previous = old ? validatePlacement(state.project, old, old.id) : [];

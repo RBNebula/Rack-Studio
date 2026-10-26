@@ -55,9 +55,9 @@ Primary sources: [Schneider Electric's own product marketplace](https://shop.se.
 | Mass | 4.5 kg, rounded in the listing |
 | Output connectors | Sixteen IEC 60320 C13 outlets |
 | Input | IEC 60309 32 A, 2P + E; 230 V output, 32 A maximum |
-| Ear-to-rear fascia depth | **Unknown**: the 114 mm catalogue depth has no ear-plane datum |
-| Width excluding / including mounting ears | **Not separated** by the reviewed listing |
-| Connector positions, management connector details, attached lead entry and projections | **Unknown** |
+| Ear-to-rear fascia depth | User-measured 26 October 2026: about 195 mm with the ears forward of the body (outlets facing the rack front, outlet face recessed about 81 mm); about 114 mm with the unit turned so the outlets face into the rack and the body sits flush to the ears |
+| Width excluding / including mounting ears | User-measured: body 445 mm (114 mm deep, 2U); about 449 mm with the mounting brackets fitted, interpreted as the width across the bracket side plates (awaiting confirmation). Ear-flange tip-to-tip width is not measured |
+| Connector positions, management connector details, attached lead entry and projections | Banks printed on the unit: B1 = outlets 1–8 (top row), B2 = 9–16 (bottom row), 16 A per bank, 10 A per outlet, 220–240 V. The hardwired input cord enters on the outlet face at its left end (user observation). Connector centres, the cord exit position and projections remain **unknown** |
 | Exact screw offsets and rack-hole compatibility | **Unknown** |
 
 The listed 89 mm height is rounded: nominal 2U is 88.9 mm. Do not interpret the 0.1 mm catalogue-rounding difference as a proven mechanical overheight or silently claim a precision physical height of 88.9 mm.

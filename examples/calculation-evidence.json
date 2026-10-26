@@ -15,7 +15,7 @@
     {
       "id": "NET-002",
       "number": "1",
-      "routeMm": 1111.8293583494215,
+      "routeMm": 1110.7101122616996,
       "routeValid": true,
       "routeIssues": [
         "External route is not modelled; its surveyed length must be entered separately.",

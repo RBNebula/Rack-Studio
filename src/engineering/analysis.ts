@@ -7,6 +7,7 @@ import { endpointLabel, endpointPort } from './connectivity';
 import { hasRackEars } from './geometry';
 import { positionedExternalCable } from './external';
 import { racks } from './space';
+import { analysePower } from './power';
 
 export function analyseCable(project: Project, cable: Cable) {
   const route = routeCable(project, cable);
@@ -107,6 +108,8 @@ function analyseProjectUncached(project: Project) {
     procurement,
     issues: cables.filter((c) => c.status !== 'Calculated' && c.status !== 'Unverified model'),
     knownRouteMm: cables.reduce((n, c) => n + c.route.lengthMm, 0),
+    /** Power-load and equipment-mass analysis; independent of the cable length outputs above. */
+    power: analysePower(project),
   };
 }
 export function analyseProject(project: Project) {

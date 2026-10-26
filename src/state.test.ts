@@ -1,7 +1,14 @@
 import { beforeEach, describe, expect, it } from 'vitest';
 import { useStore } from './state';
-import { createWorkspaceProject } from './examples';
+import { createExampleProject, createWorkspaceProject } from './examples';
 import { parseProject, serializeProject } from './data/project';
+import {
+  analysePower,
+  setDefinitionMass,
+  setDefinitionPower,
+  setPowerBank,
+} from './engineering/power';
+import { baseCable } from './examples';
 
 beforeEach(() => {
   useStore.getState().replace(createWorkspaceProject());
@@ -96,5 +103,181 @@ describe('atomic project edits and recovery history', () => {
     expect(() =>
       parseProject(JSON.stringify({ ...p, rack: { ...p.rack, unrecognisedLoadRating: 200 } })),
     ).toThrow(/rack.unrecognisedLoadRating/);
+  });
+  it('edits shared equipment power, bank limits and mass atomically with undo, redo and reload', () => {
+    const store = useStore.getState;
+    expect(
+      store().edit('Power banks', (p) => {
+        p.definitions.find((d) => d.id === 'def-pdu')!.powerBanks = [
+          {
+            id: 'top',
+            name: 'Top row',
+            portIds: ['iec1', 'iec2', 'iec3'],
+            maxCurrentA: 16,
+            outletMaxCurrentA: 10,
+            voltageV: 230,
+            evidence: 'user-entered',
+            source: '',
+          },
+        ];
+        p.cables.push({
+          ...baseCable('PWR-001'),
+          label: 'PWR-001',
+          type: 'Power',
+          source: { kind: 'device', deviceId: 'pdu-1', portId: 'iec1' },
+          destination: { kind: 'device', deviceId: 'server-1', portId: 'power' },
+        });
+      }),
+    ).toBe(true);
+    expect(analysePower(store().project).distributors[0].banks[0].status).toBe('incomplete');
+    expect(
+      store().edit('Power draw', (p) => {
+        setDefinitionPower(p, 'def-server', { nominalW: 1500, maxW: 3000 });
+        setDefinitionMass(p, 'def-server', 21);
+      }),
+    ).toBe(true);
+    let bank = analysePower(store().project).distributors[0].banks[0];
+    expect(bank.max.knownA).toBeCloseTo(3000 / 230, 9);
+    expect(bank.status).toBe('warning');
+    expect(
+      store().edit('Bank limit', (p) => setPowerBank(p, 'def-pdu', 'top', { maxCurrentA: 12 })),
+    ).toBe(true);
+    expect(analysePower(store().project).distributors[0].banks[0].status).toBe('over');
+    // Invalid values are rejected without changing the project.
+    const before = store().project;
+    expect(
+      store().edit('Inverted draw', (p) => setDefinitionPower(p, 'def-server', { nominalW: 4000 })),
+    ).toBe(false);
+    expect(store().project).toBe(before);
+    store().undo();
+    bank = analysePower(store().project).distributors[0].banks[0];
+    expect(bank.maxCurrentA).toBe(16);
+    expect(bank.status).toBe('warning');
+    store().undo();
+    const server = store().project.definitions.find((d) => d.id === 'def-server')!;
+    expect(server.power).toBeUndefined();
+    expect(server.massKg).toBeNull();
+    store().redo();
+    store().redo();
+    const after = store().project;
+    expect(after.definitions.find((d) => d.id === 'def-server')).toMatchObject({
+      massKg: 21,
+      power: { nominalW: 1500, maxW: 3000, evidence: 'user-entered' },
+    });
+    expect(after.definitions.find((d) => d.id === 'def-pdu')!.powerBanks![0].maxCurrentA).toBe(12);
+    const reloaded = parseProject(serializeProject(after));
+    expect(reloaded.definitions).toEqual(after.definitions);
+    expect(analysePower(reloaded).distributors[0].banks[0].status).toBe('over');
+  });
+});
+
+describe('gendered power couplers at the edit boundary', () => {
+  const outletEnd = (n: number) => ({
+    kind: 'device' as const,
+    deviceId: 'pdu',
+    portId: `iec${n}`,
+  });
+  function loadWithLegacyOutletCable() {
+    const project = createExampleProject(false);
+    project.devices = [
+      {
+        id: 'pdu',
+        definitionId: 'def-pdu',
+        name: 'PDU',
+        startU: 1,
+        face: 'rear',
+        supportId: null,
+        installation: 'installed',
+      },
+      {
+        id: 'sw',
+        definitionId: 'def-generic-switch-24',
+        name: 'Switch',
+        startU: 10,
+        face: 'front',
+        supportId: null,
+        installation: 'installed',
+      },
+    ];
+    project.cables = [
+      {
+        ...baseCable('LEGACY'),
+        label: 'L',
+        type: 'Power',
+        source: outletEnd(1),
+        destination: outletEnd(2),
+      },
+    ];
+    useStore.getState().replace(parseProject(serializeProject(project)));
+  }
+
+  it('keeps a loaded outlet-to-outlet cable editable without blocking unrelated edits', () => {
+    loadWithLegacyOutletCable();
+    expect(
+      useStore.getState().edit('Move switch', (p) => {
+        p.devices.find((d) => d.id === 'sw')!.startU = 12;
+      }),
+    ).toBe(true);
+    const p = useStore.getState().project;
+    expect(p.cables.map((c) => [c.id, c.source, c.destination])).toEqual([
+      ['LEGACY', outletEnd(1), outletEnd(2)],
+    ]);
+    expect(p.devices.find((d) => d.id === 'sw')!.startU).toBe(12);
+  });
+
+  it('rejects an edit that adds an outlet-to-outlet cable and accepts outlet to inlet', () => {
+    loadWithLegacyOutletCable();
+    const before = useStore.getState().project;
+    expect(
+      useStore.getState().edit('Bad cable', (p) => {
+        p.cables.push({
+          ...baseCable('BAD'),
+          label: 'B',
+          source: outletEnd(3),
+          destination: outletEnd(4),
+        });
+      }),
+    ).toBe(false);
+    expect(useStore.getState().project).toBe(before);
+    expect(useStore.getState().error).toContain('BAD: Two IEC-C13 couplers cannot mate');
+    expect(
+      useStore.getState().edit('Good cable', (p) => {
+        p.cables.push({
+          ...baseCable('GOOD'),
+          label: 'G',
+          source: { kind: 'device', deviceId: 'sw', portId: 'power' },
+          destination: outletEnd(3),
+        });
+      }),
+    ).toBe(true);
+    expect(useStore.getState().project.cables.map((c) => c.id)).toEqual(['LEGACY', 'GOOD']);
+  });
+
+  it('refuses re-pointing either end of a stored outlet-to-outlet cable to another outlet', () => {
+    loadWithLegacyOutletCable();
+    const before = useStore.getState().project;
+    for (const [end, label] of [
+      ['destination', 'Re-point destination'],
+      ['source', 'Re-point source'],
+    ] as const) {
+      expect(
+        useStore.getState().edit(label, (p) => {
+          p.cables[0][end] = outletEnd(5);
+        }),
+      ).toBe(false);
+      expect(useStore.getState().project).toBe(before);
+      expect(useStore.getState().error).toContain('LEGACY: Two IEC-C13 couplers cannot mate');
+    }
+    // Re-pointing an end to a C14 inlet repairs the cable and is accepted.
+    expect(
+      useStore.getState().edit('Repair', (p) => {
+        p.cables[0].destination = { kind: 'device', deviceId: 'sw', portId: 'power' };
+      }),
+    ).toBe(true);
+    const repaired = useStore.getState().project.cables[0];
+    expect([repaired.source, repaired.destination]).toEqual([
+      outletEnd(1),
+      { kind: 'device', deviceId: 'sw', portId: 'power' },
+    ]);
   });
 });

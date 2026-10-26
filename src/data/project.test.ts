@@ -1,6 +1,8 @@
 import { describe, expect, it } from 'vitest';
 import { createExampleProject } from '../examples';
 import { endpointPort } from '../engineering/connectivity';
+import { analysePower } from '../engineering/power';
+import { baseCable } from '../examples';
 import type { Project } from '../model';
 import { parseProject, serializeProject, validateReferences } from './project';
 
@@ -207,5 +209,64 @@ describe('versioned project persistence and authoritative relationships', () => 
       project.definitions[0].frontImage = image;
       expect(() => parseProject(JSON.stringify(project))).toThrow(/embedded PNG, JPEG or WebP/);
     }
+  });
+
+  it('round-trips equipment power draw, power banks and mass, and keeps legacy definitions without them', () => {
+    const project = example();
+    const pdu = project.definitions.find((d) => d.id === 'def-pdu')!;
+    pdu.powerBanks = [
+      {
+        id: 'top',
+        name: 'Top row',
+        portIds: ['iec1', 'iec2', 'iec3'],
+        maxCurrentA: 16,
+        outletMaxCurrentA: 10,
+        voltageV: 230,
+        evidence: 'user-entered',
+        source: 'Rating label',
+      },
+      {
+        id: 'bottom',
+        name: 'Bottom row',
+        portIds: ['iec4', 'iec5', 'iec6'],
+        maxCurrentA: 16,
+        outletMaxCurrentA: null,
+        voltageV: 230,
+        evidence: 'unknown',
+        source: '',
+      },
+    ];
+    const server = project.definitions.find((d) => d.id === 'def-server')!;
+    server.power = { nominalW: 180, maxW: 450, evidence: 'verified', source: 'Datasheet' };
+    server.massKg = 18.4;
+    project.cables.push({
+      ...baseCable('PWR-001'),
+      label: 'PWR-001',
+      type: 'Power',
+      source: { kind: 'device', deviceId: 'pdu-1', portId: 'iec1' },
+      destination: { kind: 'device', deviceId: 'server-1', portId: 'power' },
+    });
+    const restored = parseProject(serializeProject(project));
+    expect(restored).toEqual(project);
+    const restoredPdu = restored.definitions.find((d) => d.id === 'def-pdu')!;
+    expect(restoredPdu.powerBanks!.map((b) => [b.id, b.maxCurrentA, b.outletMaxCurrentA])).toEqual([
+      ['top', 16, 10],
+      ['bottom', 16, null],
+    ]);
+    expect(restored.definitions.find((d) => d.id === 'def-server')).toMatchObject({
+      massKg: 18.4,
+      power: { nominalW: 180, maxW: 450, evidence: 'verified', source: 'Datasheet' },
+    });
+    expect(restored.definitions.find((d) => d.id === 'def-switch')).not.toHaveProperty('power');
+    const top = analysePower(restored).distributors[0].banks[0];
+    expect(top.consumers.map((c) => c.deviceId)).toEqual(['server-1']);
+    expect(top.max.knownA).toBeCloseTo(450 / 230, 9);
+    // A missing bank port or nominal above maximum is rejected on import.
+    const missingPort = structuredClone(project);
+    missingPort.definitions.find((d) => d.id === 'def-pdu')!.powerBanks![0].portIds.push('nope');
+    expect(() => parseProject(JSON.stringify(missingPort))).toThrow(/missing port nope/);
+    const inverted = structuredClone(project);
+    inverted.definitions.find((d) => d.id === 'def-server')!.power!.nominalW = 900;
+    expect(() => parseProject(JSON.stringify(inverted))).toThrow(/Invalid project/);
   });
 });

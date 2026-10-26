@@ -60,6 +60,26 @@ export const plateSchema = z.object({
   slotHeightMm: positive.default(6),
 });
 export type PlateConfiguration = z.infer<typeof plateSchema>;
+/** Electrical draw of one powered equipment item; null means not yet known. */
+export const powerDrawSchema = z.object({
+  nominalW: nonnegative.nullable(),
+  maxW: nonnegative.nullable(),
+  evidence: evidenceSchema,
+  source: z.string(),
+});
+export type PowerDraw = z.infer<typeof powerDrawSchema>;
+/** A group of outlet ports on a power distributor sharing one current limit. */
+export const powerBankSchema = z.object({
+  id: z.string().min(1),
+  name: z.string().min(1),
+  portIds: z.array(z.string().min(1)).min(1),
+  maxCurrentA: positive,
+  outletMaxCurrentA: positive.nullable().default(null),
+  voltageV: positive,
+  evidence: evidenceSchema,
+  source: z.string(),
+});
+export type PowerBank = z.infer<typeof powerBankSchema>;
 export const definitionSchema = z
   .object({
     id: z.string().min(1),
@@ -83,6 +103,8 @@ export const definitionSchema = z
     evidence: evidenceSchema,
     source: z.string(),
     massKg: nonnegative.nullable(),
+    power: powerDrawSchema.optional(),
+    powerBanks: z.array(powerBankSchema).optional(),
     railMinMm: nonnegative.nullable(),
     railMaxMm: positive.nullable(),
     screwOffsetsMm: z.array(nonnegative),
@@ -140,6 +162,36 @@ export const definitionSchema = z
         message:
           'The detailed equipment appearance requires a chassis box with rack ears (direct, rails or bracket). Choose generic appearance for parts-only, shelf or freestanding geometry.',
       });
+    const portIds = new Set(definition.ports.map((p) => p.id));
+    const bankIds = new Set<string>();
+    const bankedPorts = new Set<string>();
+    (definition.powerBanks ?? []).forEach((bank, index) => {
+      if (bankIds.has(bank.id))
+        context.addIssue({
+          code: 'custom',
+          path: ['powerBanks', index, 'id'],
+          message: `Duplicate power bank id ${bank.id}.`,
+        });
+      bankIds.add(bank.id);
+      for (const id of bank.portIds) {
+        if (!portIds.has(id) || bankedPorts.has(id))
+          context.addIssue({
+            code: 'custom',
+            path: ['powerBanks', index, 'portIds'],
+            message: portIds.has(id)
+              ? `Port ${id} belongs to more than one power bank.`
+              : `Power bank ${bank.id} refers to missing port ${id}.`,
+          });
+        bankedPorts.add(id);
+      }
+    });
+    if (definition.power?.nominalW != null && definition.power.maxW != null)
+      if (definition.power.nominalW > definition.power.maxW)
+        context.addIssue({
+          code: 'custom',
+          path: ['power', 'nominalW'],
+          message: 'Nominal power draw cannot exceed maximum power draw.',
+        });
     if (definition.depthMm === 0 && !definition.plate)
       context.addIssue({
         code: 'custom',

@@ -21,3 +21,6 @@ coverage/
 .local-projects/
 # Retained local delivery archive duplicates an older application snapshot
 handover/
+
+# Claude Code agent worktrees (temporary isolated checkouts)
+.claude/worktrees/

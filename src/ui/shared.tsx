@@ -114,6 +114,14 @@ export function Icon({ name, size = 18 }: { name: string; size?: number }) {
         <path d="M12 3v5M12 16v5M3 12h5M16 12h5" />
       </>
     ),
+    bolt: <path d="M13 2 4.5 13.5H12L11 22l8.5-11.5H12z" />,
+    printer: (
+      <>
+        <path d="M7 9V3h10v6" />
+        <rect x="3" y="9" width="18" height="8" rx="1.5" />
+        <path d="M7 14h10v7H7z" />
+      </>
+    ),
   };
   return (
     <svg
@@ -197,6 +205,92 @@ export function NumberField({
           if (draft.trim() && Number.isFinite(n) && n >= min && (max === undefined || n <= max))
             onChange(n);
           else setDraft(value === null ? '' : String(value));
+        }}
+        onKeyDown={(e) => {
+          if (e.key === 'Enter') e.currentTarget.blur();
+        }}
+      />
+    </Field>
+  );
+}
+/** A number that may be unknown: an empty field commits null instead of zero. */
+export function OptionalNumberField({
+  label,
+  value,
+  onChange,
+  min = 0,
+  positive = false,
+  step = 1,
+  hint,
+}: {
+  label: string;
+  value: number | null;
+  onChange: (v: number | null) => void;
+  min?: number;
+  /** Reject zero as well as values below `min`. */
+  positive?: boolean;
+  step?: number;
+  hint?: string;
+}) {
+  const [draft, setDraft] = useState(value === null ? '' : String(value));
+  const [previous, setPrevious] = useState(value);
+  if (previous !== value) {
+    setPrevious(value);
+    setDraft(value === null ? '' : String(value));
+  }
+  return (
+    <Field label={label} hint={hint ?? (value === null ? 'Unknown' : undefined)}>
+      <input
+        type="number"
+        aria-label={label}
+        value={draft}
+        min={min}
+        step={step}
+        placeholder="Unknown"
+        onChange={(e) => setDraft(e.target.value)}
+        onBlur={() => {
+          const n = Number(draft);
+          if (!draft.trim()) {
+            if (value !== null) onChange(null);
+          } else if (Number.isFinite(n) && n >= min && (!positive || n > 0)) {
+            if (n !== value) onChange(n);
+          }
+          // Show the stored value again; an accepted edit replaces it when `value` updates,
+          // while a value the caller refuses must not stay on screen.
+          setDraft(value === null ? '' : String(value));
+        }}
+        onKeyDown={(e) => {
+          if (e.key === 'Enter') e.currentTarget.blur();
+        }}
+      />
+    </Field>
+  );
+}
+/** Free text committed once on blur, so typing does not create one undo step per key. */
+export function BlurTextField({
+  label,
+  value,
+  onChange,
+  hint,
+}: {
+  label: string;
+  value: string;
+  onChange: (v: string) => void;
+  hint?: string;
+}) {
+  const [draft, setDraft] = useState(value);
+  const [previous, setPrevious] = useState(value);
+  if (previous !== value) {
+    setPrevious(value);
+    setDraft(value);
+  }
+  return (
+    <Field label={label} hint={hint}>
+      <input
+        value={draft}
+        onChange={(e) => setDraft(e.target.value)}
+        onBlur={() => {
+          if (draft !== value) onChange(draft);
         }}
         onKeyDown={(e) => {
           if (e.key === 'Enter') e.currentTarget.blur();

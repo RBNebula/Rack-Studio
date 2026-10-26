@@ -2,6 +2,13 @@ import { beforeEach, describe, expect, it } from 'vitest';
 import { useStore } from './state';
 import { createWorkspaceProject } from './examples';
 import { parseProject, serializeProject } from './data/project';
+import {
+  analysePower,
+  setDefinitionMass,
+  setDefinitionPower,
+  setPowerBank,
+} from './engineering/power';
+import { baseCable } from './examples';
 
 beforeEach(() => {
   useStore.getState().replace(createWorkspaceProject());
@@ -96,5 +103,70 @@ describe('atomic project edits and recovery history', () => {
     expect(() =>
       parseProject(JSON.stringify({ ...p, rack: { ...p.rack, unrecognisedLoadRating: 200 } })),
     ).toThrow(/rack.unrecognisedLoadRating/);
+  });
+  it('edits shared equipment power, bank limits and mass atomically with undo, redo and reload', () => {
+    const store = useStore.getState;
+    expect(
+      store().edit('Power banks', (p) => {
+        p.definitions.find((d) => d.id === 'def-pdu')!.powerBanks = [
+          {
+            id: 'top',
+            name: 'Top row',
+            portIds: ['iec1', 'iec2', 'iec3'],
+            maxCurrentA: 16,
+            outletMaxCurrentA: 10,
+            voltageV: 230,
+            evidence: 'user-entered',
+            source: '',
+          },
+        ];
+        p.cables.push({
+          ...baseCable('PWR-001'),
+          label: 'PWR-001',
+          type: 'Power',
+          source: { kind: 'device', deviceId: 'pdu-1', portId: 'iec1' },
+          destination: { kind: 'device', deviceId: 'server-1', portId: 'power' },
+        });
+      }),
+    ).toBe(true);
+    expect(analysePower(store().project).distributors[0].banks[0].status).toBe('incomplete');
+    expect(
+      store().edit('Power draw', (p) => {
+        setDefinitionPower(p, 'def-server', { nominalW: 1500, maxW: 3000 });
+        setDefinitionMass(p, 'def-server', 21);
+      }),
+    ).toBe(true);
+    let bank = analysePower(store().project).distributors[0].banks[0];
+    expect(bank.max.knownA).toBeCloseTo(3000 / 230, 9);
+    expect(bank.status).toBe('warning');
+    expect(
+      store().edit('Bank limit', (p) => setPowerBank(p, 'def-pdu', 'top', { maxCurrentA: 12 })),
+    ).toBe(true);
+    expect(analysePower(store().project).distributors[0].banks[0].status).toBe('over');
+    // Invalid values are rejected without changing the project.
+    const before = store().project;
+    expect(
+      store().edit('Inverted draw', (p) => setDefinitionPower(p, 'def-server', { nominalW: 4000 })),
+    ).toBe(false);
+    expect(store().project).toBe(before);
+    store().undo();
+    bank = analysePower(store().project).distributors[0].banks[0];
+    expect(bank.maxCurrentA).toBe(16);
+    expect(bank.status).toBe('warning');
+    store().undo();
+    const server = store().project.definitions.find((d) => d.id === 'def-server')!;
+    expect(server.power).toBeUndefined();
+    expect(server.massKg).toBeNull();
+    store().redo();
+    store().redo();
+    const after = store().project;
+    expect(after.definitions.find((d) => d.id === 'def-server')).toMatchObject({
+      massKg: 21,
+      power: { nominalW: 1500, maxW: 3000, evidence: 'user-entered' },
+    });
+    expect(after.definitions.find((d) => d.id === 'def-pdu')!.powerBanks![0].maxCurrentA).toBe(12);
+    const reloaded = parseProject(serializeProject(after));
+    expect(reloaded.definitions).toEqual(after.definitions);
+    expect(analysePower(reloaded).distributors[0].banks[0].status).toBe('over');
   });
 });

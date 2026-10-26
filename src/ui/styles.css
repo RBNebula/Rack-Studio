@@ -218,6 +218,42 @@ svg {
 .warning-text {
   color: #ad7934;
 }
+.error-text {
+  color: var(--red);
+}
+.power-meter {
+  position: relative;
+  height: 8px;
+  border-radius: 4px;
+  background: #edf1f4;
+  overflow: hidden;
+  margin: 4px 0 8px;
+}
+.power-meter > span {
+  display: block;
+  height: 100%;
+  background: #2f9a72;
+}
+.power-meter > span[data-status='warning'],
+.power-meter > span[data-status='incomplete'] {
+  background: #d59a3f;
+}
+.power-meter > span[data-status='over'] {
+  background: var(--red);
+}
+.power-meter > i {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  width: 1px;
+  background: #6b7a86;
+}
+.power-bank p {
+  margin: 6px 0;
+}
+.power-outlet-picks .check-field {
+  margin: 4px 0;
+}
 .color-dot,
 .port-dot {
   display: inline-block;

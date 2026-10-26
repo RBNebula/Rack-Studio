@@ -205,6 +205,89 @@ export function NumberField({
     </Field>
   );
 }
+/** A number that may be unknown: an empty field commits null instead of zero. */
+export function OptionalNumberField({
+  label,
+  value,
+  onChange,
+  min = 0,
+  positive = false,
+  step = 1,
+  hint,
+}: {
+  label: string;
+  value: number | null;
+  onChange: (v: number | null) => void;
+  min?: number;
+  /** Reject zero as well as values below `min`. */
+  positive?: boolean;
+  step?: number;
+  hint?: string;
+}) {
+  const [draft, setDraft] = useState(value === null ? '' : String(value));
+  const [previous, setPrevious] = useState(value);
+  if (previous !== value) {
+    setPrevious(value);
+    setDraft(value === null ? '' : String(value));
+  }
+  return (
+    <Field label={label} hint={hint ?? (value === null ? 'Unknown' : undefined)}>
+      <input
+        type="number"
+        aria-label={label}
+        value={draft}
+        min={min}
+        step={step}
+        placeholder="Unknown"
+        onChange={(e) => setDraft(e.target.value)}
+        onBlur={() => {
+          const n = Number(draft);
+          if (!draft.trim()) {
+            if (value !== null) onChange(null);
+          } else if (Number.isFinite(n) && n >= min && (!positive || n > 0)) {
+            if (n !== value) onChange(n);
+          } else setDraft(value === null ? '' : String(value));
+        }}
+        onKeyDown={(e) => {
+          if (e.key === 'Enter') e.currentTarget.blur();
+        }}
+      />
+    </Field>
+  );
+}
+/** Free text committed once on blur, so typing does not create one undo step per key. */
+export function BlurTextField({
+  label,
+  value,
+  onChange,
+  hint,
+}: {
+  label: string;
+  value: string;
+  onChange: (v: string) => void;
+  hint?: string;
+}) {
+  const [draft, setDraft] = useState(value);
+  const [previous, setPrevious] = useState(value);
+  if (previous !== value) {
+    setPrevious(value);
+    setDraft(value);
+  }
+  return (
+    <Field label={label} hint={hint}>
+      <input
+        value={draft}
+        onChange={(e) => setDraft(e.target.value)}
+        onBlur={() => {
+          if (draft !== value) onChange(draft);
+        }}
+        onKeyDown={(e) => {
+          if (e.key === 'Enter') e.currentTarget.blur();
+        }}
+      />
+    </Field>
+  );
+}
 export function TextField({
   label,
   value,

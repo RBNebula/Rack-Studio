@@ -14,6 +14,7 @@ import { accessoryPose } from '../engineering/attachments';
 import { positionedExternalCable } from '../engineering/external';
 import { transformObject } from '../engineering/modelling';
 import { guideCableIds, bundlePacking } from '../engineering/wiring';
+import { DevicePowerSection } from './PowerPanel';
 
 export default function Inspector() {
   const { project, selection, set, activeRackId } = useStore();
@@ -662,6 +663,7 @@ function DeviceInspector({ device: d }: { device: Device }) {
       >
         Apply position
       </Button>
+      <DevicePowerSection device={d} />
       <div className="section-title">
         <h3>Connection ports</h3>
         <Badge>{def.ports.length}</Badge>

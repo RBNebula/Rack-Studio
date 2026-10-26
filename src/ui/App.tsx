@@ -571,6 +571,19 @@ export default function App() {
           <span className="warning-text">
             {analysis.cables.filter((c) => c.status !== 'Calculated').length} to review
           </span>
+          {analysis.power.issues.length > 0 && (
+            <span
+              className={
+                analysis.power.issues.some((i) => i.severity === 'error')
+                  ? 'error-text'
+                  : 'warning-text'
+              }
+              title={analysis.power.issues.map((i) => i.message).join('\n')}
+              data-testid="power-issues"
+            >
+              {analysis.power.issues.length} power to review
+            </span>
+          )}
           <span>v0.1 · foundation</span>
         </div>
       </footer>

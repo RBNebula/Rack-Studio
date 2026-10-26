@@ -1,0 +1,14 @@
+// Cloudflare Workers static hosting for https://rackstudio.app (see docs/HOSTING.md).
+// The production build in dist/ is served as static assets; there is no server code.
+{
+  "name": "rack-studio",
+  "compatibility_date": "2026-10-01",
+  "assets": {
+    "directory": "./dist/",
+    "not_found_handling": "single-page-application",
+  },
+  "routes": [{ "pattern": "rackstudio.app", "custom_domain": true }],
+  // Serve only the protected custom domain; no public workers.dev or version URLs.
+  "workers_dev": false,
+  "preview_urls": false,
+}

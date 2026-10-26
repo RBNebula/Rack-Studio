@@ -16,6 +16,7 @@ playwright-report/
 *.pfx
 *.tsbuildinfo
 .cache/
+.wrangler/
 coverage/
 .migration-local/
 .local-projects/

@@ -23,7 +23,7 @@ Every change is one atomic, validated, undoable edit.
 
 ## How loads are calculated
 
-- **Feeds** are ordinary cable records. A cable with one end on a port listed in a distributor's bank feeds the device at the other end. Endpoints use stable device and port identities, so moving equipment keeps its feeds.
+- **Feeds** are ordinary cable records. A cable with one end on a port listed in a distributor's bank feeds the device at the other end. New cables must join gendered IEC 60320 couplers (C13↔C14, C19↔C20); a stored cable joining two banked outlets is still loaded but reported as `outlet-to-outlet` and not counted as a feed. Endpoints use stable device and port identities, so moving equipment keeps its feeds.
 - **Amps** are `I = W / voltageV`. Watts are treated as volt-amperes (power factor 1). This is conservative for the current estimate only. It is not an apparent-power, harmonic or inrush analysis.
 - **Bank utilisation** is maximum-load amps ÷ `maxCurrentA`. Status: `ok` below 80 %, `warning` from 80 % (`POWER_WARNING_UTILISATION`, the common continuous-load derating practice), `over` above 100 %. Each loaded outlet is checked the same way against `outletMaxCurrentA`.
 - **Dual supplies**: a device fed from two outlets counts its full draw against each feeding bank and outlet, because in the worst case one supply carries the whole load. It is flagged `redundantFeed` and counted once in project totals and once within any single bank.

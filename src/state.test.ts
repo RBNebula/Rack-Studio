@@ -1,6 +1,6 @@
 import { beforeEach, describe, expect, it } from 'vitest';
 import { useStore } from './state';
-import { createWorkspaceProject } from './examples';
+import { createExampleProject, createWorkspaceProject } from './examples';
 import { parseProject, serializeProject } from './data/project';
 import {
   analysePower,
@@ -168,5 +168,88 @@ describe('atomic project edits and recovery history', () => {
     const reloaded = parseProject(serializeProject(after));
     expect(reloaded.definitions).toEqual(after.definitions);
     expect(analysePower(reloaded).distributors[0].banks[0].status).toBe('over');
+  });
+});
+
+describe('gendered power couplers at the edit boundary', () => {
+  const outletEnd = (n: number) => ({
+    kind: 'device' as const,
+    deviceId: 'pdu',
+    portId: `iec${n}`,
+  });
+  function loadWithLegacyOutletCable() {
+    const project = createExampleProject(false);
+    project.devices = [
+      {
+        id: 'pdu',
+        definitionId: 'def-pdu',
+        name: 'PDU',
+        startU: 1,
+        face: 'rear',
+        supportId: null,
+        installation: 'installed',
+      },
+      {
+        id: 'sw',
+        definitionId: 'def-generic-switch-24',
+        name: 'Switch',
+        startU: 10,
+        face: 'front',
+        supportId: null,
+        installation: 'installed',
+      },
+    ];
+    project.cables = [
+      {
+        ...baseCable('LEGACY'),
+        label: 'L',
+        type: 'Power',
+        source: outletEnd(1),
+        destination: outletEnd(2),
+      },
+    ];
+    useStore.getState().replace(parseProject(serializeProject(project)));
+  }
+
+  it('keeps a loaded outlet-to-outlet cable editable without blocking unrelated edits', () => {
+    loadWithLegacyOutletCable();
+    expect(
+      useStore.getState().edit('Move switch', (p) => {
+        p.devices.find((d) => d.id === 'sw')!.startU = 12;
+      }),
+    ).toBe(true);
+    const p = useStore.getState().project;
+    expect(p.cables.map((c) => [c.id, c.source, c.destination])).toEqual([
+      ['LEGACY', outletEnd(1), outletEnd(2)],
+    ]);
+    expect(p.devices.find((d) => d.id === 'sw')!.startU).toBe(12);
+  });
+
+  it('rejects an edit that adds an outlet-to-outlet cable and accepts outlet to inlet', () => {
+    loadWithLegacyOutletCable();
+    const before = useStore.getState().project;
+    expect(
+      useStore.getState().edit('Bad cable', (p) => {
+        p.cables.push({
+          ...baseCable('BAD'),
+          label: 'B',
+          source: outletEnd(3),
+          destination: outletEnd(4),
+        });
+      }),
+    ).toBe(false);
+    expect(useStore.getState().project).toBe(before);
+    expect(useStore.getState().error).toContain('BAD: Two IEC-C13 couplers cannot mate');
+    expect(
+      useStore.getState().edit('Good cable', (p) => {
+        p.cables.push({
+          ...baseCable('GOOD'),
+          label: 'G',
+          source: { kind: 'device', deviceId: 'sw', portId: 'power' },
+          destination: outletEnd(3),
+        });
+      }),
+    ).toBe(true);
+    expect(useStore.getState().project.cables.map((c) => c.id)).toEqual(['LEGACY', 'GOOD']);
   });
 });

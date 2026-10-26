@@ -136,7 +136,9 @@ export function validateReferences(p: Project): string[] {
       usedPorts.add(key);
     }
     issues.push(
-      ...connectionIssues(p, c.source, c.destination, c.id).map((issue) => `${c.id}: ${issue}`),
+      ...connectionIssues(p, c.source, c.destination, c.id, { tolerateSameGender: true }).map(
+        (issue) => `${c.id}: ${issue}`,
+      ),
     );
     if (c.exitId && !p.exits.some((e) => e.id === c.exitId))
       issues.push(`${c.id}: missing exit point.`);

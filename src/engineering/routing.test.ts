@@ -3,6 +3,7 @@ import { baseCable, createExampleProject } from '../examples';
 import type { Cable, Port, Project, Vec3 } from '../model';
 import { allObstacles, portWorld, segmentHitsBox } from './geometry';
 import { routeCable } from './routing';
+import { analyseProject } from './analysis';
 
 function fixture(): { project: Project; cable: Cable } {
   const project = createExampleProject(false);
@@ -240,5 +241,137 @@ describe('deterministic geometric cable routing', () => {
       expect(route.lengthMm).toBeGreaterThan(0);
       expect(route.issues.join(' ')).toContain('bend radius is unknown');
     }
+  });
+});
+
+/**
+ * A switch's rear-facing IEC inlet feeding a PDU outlet that faces away from it: the free route
+ * leaves each connector lead at well over 90 degrees, so the fillet needs more than a quarter of
+ * a turn of tangent length. Regression for explicit radii being rejected while the identical
+ * unknown-radius draft silently shrank its fillets.
+ */
+function powerHairpin(face: 'front' | 'rear', minBendRadiusMm: number | null) {
+  const project = createExampleProject(false);
+  project.devices = [
+    {
+      id: 'pdu',
+      definitionId: 'def-pdu',
+      name: 'PDU',
+      startU: 1,
+      face,
+      supportId: null,
+      installation: 'installed',
+    },
+    {
+      id: 'sw',
+      definitionId: 'def-generic-switch-24',
+      name: 'Switch',
+      startU: 10,
+      face: 'front',
+      supportId: null,
+      installation: 'installed',
+    },
+  ];
+  const cable: Cable = {
+    ...baseCable('PWR'),
+    type: 'Power',
+    source: { kind: 'device', deviceId: 'sw', portId: 'power' },
+    destination: { kind: 'device', deviceId: 'pdu', portId: 'iec1' },
+    diameterMm: 7,
+    clearanceMm: 3,
+    minBendRadiusMm,
+  };
+  project.cables = [cable];
+  return { project, cable, route: routeCable(project, cable) };
+}
+const segmentLength = (segment: { start: Vec3; end: Vec3 }) =>
+  Math.hypot(...segment.end.map((v, i) => v - segment.start[i]));
+
+describe('declared bend radii at connector leads', () => {
+  it.each([
+    ['front', 28, 783.2318, 133.98],
+    ['front', 35, 807.7684, 136.34],
+    ['front', 50, 860.0928, 141.54],
+    ['rear', 28, 657.2966, 135.44],
+    ['rear', 35, 672.2457, 135.67],
+    ['rear', 50, 705.8527, 136.3],
+  ] as const)(
+    'routes a %s-mounted PDU outlet with an explicit %d mm radius at its full declared radius',
+    (face, radius, lengthMm, outletBendDeg) => {
+      const { project, cable, route } = powerHairpin(face, radius);
+      expect(route.valid, route.issues.join('; ')).toBe(true);
+      expect(route.issues).toEqual([]);
+      expect(route.lengthMm).toBeCloseTo(lengthMm, 3);
+      expect(route.minRadiusMm).toBeCloseTo(radius, 9);
+      const arcs = route.segments.filter((s) => s.kind === 'arc');
+      expect(arcs).toHaveLength(2);
+      for (const arc of arcs) expect(arc.radiusMm).toBeCloseTo(radius, 9);
+      // The outlet bend is sharper than 90 degrees, so it needs radius * tan(angle / 2) > radius.
+      const outletArc = arcs[1];
+      expect((outletArc.angleRadians * 180) / Math.PI).toBeCloseTo(outletBendDeg, 1);
+      // Both connector leads keep a straight run of at least 25 mm along the port direction.
+      const [first, last] = [route.segments[0], route.segments.at(-1)!];
+      expect(first.kind).toBe('line');
+      expect(last.kind).toBe('line');
+      expect(segmentLength(first)).toBeGreaterThanOrEqual(25);
+      expect(segmentLength(last)).toBeGreaterThanOrEqual(25);
+      expect(first.start).toEqual(portWorld(project, cable.source));
+      expect(last.end).toEqual(portWorld(project, cable.destination));
+      // The PDU outlet faces -Z on the front and +Z on the rear; its lead runs straight out.
+      const outlet = portWorld(project, cable.destination)!;
+      const outward = face === 'front' ? -1 : 1;
+      expect(last.start[0]).toBeCloseTo(outlet[0], 9);
+      expect(last.start[1]).toBeCloseTo(outlet[1], 9);
+      expect((last.start[2] - outlet[2]) * outward).toBeCloseTo(segmentLength(last), 9);
+      expect(outlet).toEqual(face === 'front' ? [-160, 22.75, -2] : [160, 22.75, 702]);
+    },
+  );
+
+  it.each(['front', 'rear'] as const)(
+    'gives an explicit radius the same %s-face geometry as the unknown-radius draft of that size',
+    (face) => {
+      // Draft radius for a 7 mm cable is max(15, 4 x 7) = 28 mm.
+      const explicit = powerHairpin(face, 28).route;
+      const draft = powerHairpin(face, null).route;
+      expect(draft.segments).toEqual(explicit.segments);
+      expect(draft.points).toEqual(explicit.points);
+      expect(draft.lengthMm).toBe(explicit.lengthMm);
+      expect(draft.minRadiusMm).toBeCloseTo(28, 9);
+      expect(explicit.valid).toBe(true);
+      expect(draft.valid).toBe(true);
+      expect(explicit.issues).toEqual([]);
+      expect(draft.issues).toEqual([
+        'Minimum bend radius is unknown; the displayed draft radius must be verified for this cable.',
+      ]);
+    },
+  );
+
+  it.each(['front', 'rear'] as const)(
+    'still rejects a %s-face radius that cannot physically fit and keeps the cut unknown',
+    (face) => {
+      const { project, route } = powerHairpin(face, 400);
+      expect(route.valid).toBe(false);
+      expect(route.issues).toContain(
+        'The 400.0 mm bend radius does not fit between adjacent routing constraints.',
+      );
+      expect(route.minRadiusMm!).toBeLessThan(400);
+      const analysed = analyseProject(project).cables[0];
+      expect(analysed.status).toBe('Route invalid');
+      expect(analysed.requiredMm).toBeNull();
+    },
+  );
+
+  it('does not hide a near-reversal behind an unbounded connector lead', () => {
+    const { project, cable } = fixture();
+    // Both connectors point away from each other along one line: no single fillet can join them.
+    project.destinations[0].ports[0].direction = [0, 0, -1];
+    project.destinations[1].ports[0].direction = [0, 0, 1];
+    project.destinations[1].position = [1010, 100, 400];
+    const route = routeCable(project, cable);
+    expect(route.valid).toBe(false);
+    expect(route.issues.join(' ')).toMatch(/bend radius.*does not fit|reversal/);
+    // Leads stay no longer than the 400.1 mm straight distance between the connectors.
+    expect(segmentLength(route.segments[0])).toBeLessThanOrEqual(400.2);
+    expect(segmentLength(route.segments.at(-1)!)).toBeLessThanOrEqual(400.2);
   });
 });

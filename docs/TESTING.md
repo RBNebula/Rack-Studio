@@ -8,7 +8,7 @@ Use Node 24 and pnpm 11.25.0; install with `pnpm install --frozen-lockfile`. The
 | --- | --- |
 | `pnpm typecheck` | TypeScript strict checking with no emitted files |
 | `pnpm lint` | Existing ESLint/TypeScript/React hook rules |
-| `pnpm test` | Vitest `src/**/*.test.ts` using the Node environment; migration baseline 302 tests in 23 files, 325 in 24 files after the power-and-weight feature, 336 with its added verification cases, 350 in 25 files after the Power & Weights document and 359 with its added verification cases |
+| `pnpm test` | Vitest `src/**/*.test.ts` using the Node environment; migration baseline 302 tests in 23 files, 325 in 24 files after the power-and-weight feature, 336 with its added verification cases, 350 in 25 files after the Power & Weights document, 359 with its added verification cases and 386 after the connector-lead bend-radius and gendered IEC coupler fixes |
 | `pnpm build` | Typecheck then Vite production bundle in ignored `dist/` |
 | `pnpm check` | Typecheck, lint, unit/integration tests and build, stopping on failure |
 | `pnpm test:e2e` | All real-pointer Playwright workflows in `tests/` |

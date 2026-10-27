@@ -4,6 +4,7 @@ import { readFile } from 'node:fs/promises';
 import { resolve } from 'node:path';
 import type { Cable, DeviceDefinition, Project } from '../src/model';
 import { routeCable } from '../src/engineering/routing';
+import { openView } from './navigation';
 
 /**
  * Regression workflows for the connector-lead bend-radius fix and gendered IEC 60320 couplers:
@@ -54,7 +55,7 @@ const tab = (page: Page, name: string | RegExp) =>
   page.locator('.workspace-tabs').getByRole('button', { name, exact: typeof name === 'string' });
 const inspector = (page: Page) => page.locator('.inspector');
 async function importLibrary(page: Page, file: string) {
-  await tab(page, 'Device Library').click();
+  await openView(page, 'Device Library');
   await page
     .locator('label.button', { hasText: 'Import library' })
     .locator('input[type=file]')
@@ -71,7 +72,7 @@ async function place(page: Page, name: string, startU: number, face: 'front' | '
   await expect(dialog).toHaveCount(0);
 }
 async function connect(page: Page, source: string, destination: string) {
-  await tab(page, 'Connections').click();
+  await openView(page, 'Connections');
   await page.getByRole('button', { name: 'New connection', exact: true }).click();
   const dialog = page.getByRole('dialog', { name: 'New cable connection' });
   await dialog.getByRole('combobox', { name: 'Source port', exact: true }).selectOption({
@@ -140,7 +141,7 @@ for (const variant of VARIANTS) {
         'The 400.0 mm bend radius does not fit between adjacent routing constraints.',
       );
       await expect(lengthValue(page, 'Required length')).toHaveText('Unknown');
-      await tab(page, /Cable Schedule/).click();
+      await openView(page, 'Cable Schedule');
       const table = page.locator('.schedule-table table');
       const headers = await table.locator('thead th').allInnerTexts();
       const requiredColumn = headers.findIndex((h) => h.startsWith('Required (mm)'));
@@ -181,7 +182,7 @@ test('wiring mode refuses outlet -> outlet with the gender message and accepts o
   expect(created.source).toEqual({ kind: 'device', deviceId: 'pdu-1', portId: 'iec1' });
   expect(created.destination).toEqual({ kind: 'device', deviceId: 'server-1', portId: 'power' });
   // The connection dialog also refuses two sockets.
-  await tab(page, 'Connections').click();
+  await openView(page, 'Connections');
   await page.getByRole('button', { name: 'New connection', exact: true }).click();
   const dialog = page.getByRole('dialog', { name: 'New cable connection' });
   await dialog
@@ -288,7 +289,7 @@ test('an imported C13-C13 cable loads, is flagged outlet-to-outlet, survives mov
 
   // There is no UI to re-point an existing cable end. The closest UI edit that would create a new
   // same-gender pair is retyping the fed C14 inlet as a C13 socket; it must be refused.
-  await tab(page, 'Device Library').click();
+  await openView(page, 'Device Library');
   const serverDefinition = reloaded.definitions.find(
     (d) => d.id === reloaded.devices.find((v) => v.id === 'server-1')!.definitionId,
   )!;

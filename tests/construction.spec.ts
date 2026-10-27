@@ -2,6 +2,7 @@ import { test as base, expect } from '@playwright/test';
 import type { Locator, Page } from '@playwright/test';
 import { readFile } from 'node:fs/promises';
 import type { Project } from '../src/model';
+import { openView } from './navigation';
 
 const test = base.extend<{ uncaughtErrors: string[] }>({
   uncaughtErrors: [
@@ -193,10 +194,7 @@ test('generic shelf depth, usable depth and entered supports survive front and r
   page,
 }) => {
   await openBlank(page);
-  await page
-    .locator('.workspace-tabs')
-    .getByRole('button', { name: 'Device Library', exact: true })
-    .click();
+  await openView(page, 'Device Library');
   await page.getByRole('button', { name: 'Edit 1U vented shelf', exact: true }).click();
   const editor = page.getByRole('dialog');
   await expect(editor).toHaveAccessibleName('Device definition · 1U vented shelf');

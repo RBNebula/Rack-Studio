@@ -3,6 +3,7 @@ import type { Page } from '@playwright/test';
 import { readFile } from 'node:fs/promises';
 import { resolve } from 'node:path';
 import type { DeviceDefinition, Project } from '../src/model';
+import { openView } from './navigation';
 
 const definitionName = 'User rack PC · 1U';
 const definitionId = 'def-user-rack-pc';
@@ -275,10 +276,7 @@ test('a PC library import adds the photographed model to an existing rack withou
   expect(before.definitions.some((definition) => definition.appearance === 'user-rack-pc')).toBe(
     false,
   );
-  await page
-    .locator('.workspace-tabs')
-    .getByRole('button', { name: 'Device Library', exact: true })
-    .click();
+  await openView(page, 'Device Library');
   await page
     .locator('.library.expanded input[type="file"]')
     .setInputFiles(resolve('examples/user-rack-pc.library.json'));
@@ -343,10 +341,7 @@ test('a photographed rear network port connects through the UI and retains ident
   expect(pcPort.id).toBe('rear-rj45');
   const source = { kind: 'device', deviceId: pc.id, portId: pcPort.id };
   const destination = { kind: 'device', deviceId: networkSwitch.id, portId: switchPort.id };
-  await page
-    .locator('.workspace-tabs')
-    .getByRole('button', { name: 'Connections', exact: true })
-    .click();
+  await openView(page, 'Connections');
   await page.getByRole('button', { name: 'New connection', exact: true }).click();
   const connection = page.getByRole('dialog', { name: 'New cable connection' });
   await connection.getByLabel('Cable ID', { exact: true }).fill('QA-PC-LAN');
@@ -383,10 +378,7 @@ test('a photographed rear network port connects through the UI and retains ident
   expect(after.devices.find((device) => device.id === pc.id)?.startU).toBe(9);
   expect(after.cables[0]).toMatchObject({ id: cableId, label: 'QA-PC-LAN', source, destination });
   expect(pcDefinition(after).ports).toEqual(pcDefinition(connected).ports);
-  await page
-    .locator('.workspace-tabs')
-    .getByRole('button', { name: 'Connections', exact: true })
-    .click();
+  await openView(page, 'Connections');
   const row = page.locator('.schedule-table tbody > tr');
   await expect(row).toHaveCount(1);
   await expect(row).toContainText(pcPort.name);

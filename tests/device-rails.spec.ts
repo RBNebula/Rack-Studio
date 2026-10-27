@@ -1,6 +1,7 @@
 import { test, expect } from '@playwright/test';
 import { readFile } from 'node:fs/promises';
 import type { Project } from '../src/model';
+import { openView } from './navigation';
 test.use({ baseURL: process.env.RACK_TEST_URL ?? 'http://127.0.0.1:5173' });
 test('sliding rails preserve cable identity, service extension and saved geometry', async ({
   page,
@@ -36,10 +37,7 @@ test('sliding rails preserve cable identity, service extension and saved geometr
   ).not.toBeChecked();
   await page.getByRole('button', { name: 'Left view', exact: true }).click();
   await page.locator('canvas').screenshot({ path: 'docs/screenshots/device-rails-closed.png' });
-  await page
-    .locator('.workspace-tabs')
-    .getByRole('button', { name: 'Connections', exact: true })
-    .click();
+  await openView(page, 'Connections');
   await page.getByRole('button', { name: 'New connection', exact: true }).click();
   const modal = page.getByRole('dialog');
   await modal.getByLabel('Cable ID', { exact: true }).fill('RAIL-USB');
@@ -79,10 +77,7 @@ test('sliding rails preserve cable identity, service extension and saved geometr
   await page.reload();
   await expect(page.locator('.installed-pills > button')).toHaveCount(2);
   expect((await exported()).devices).toEqual(extended.devices);
-  await page
-    .locator('.workspace-tabs')
-    .getByRole('button', { name: 'Connections', exact: true })
-    .click();
+  await openView(page, 'Connections');
   await expect(page.locator('.schedule-table tbody')).toContainText('Insufficient length');
   await page
     .locator('.workspace-tabs')

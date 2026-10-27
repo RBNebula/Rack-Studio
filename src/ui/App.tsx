@@ -16,17 +16,26 @@ import { analyseProject, csv } from '../engineering/analysis';
 import { ResizeHandle, useStoredState } from './Panels';
 import { exitViewportMode } from './ViewportMode';
 
-const tabs: [Workspace, string, string][] = [
-  ['designer', '3D Rack Designer', 'cube'],
-  ['model', 'Device Model Designer', 'cube'],
-  ['library', 'Device Library', 'box'],
-  ['connections', 'Connections', 'cable'],
-  ['schedule', 'Cable Schedule', 'grid'],
-  ['cuts', 'Cut List', 'ruler'],
-  ['procurement', 'Procurement', 'reel'],
-  ['power', 'Power & Weights', 'bolt'],
-  ['settings', 'Project Settings', 'settings'],
+/** Workspace views, grouped under five top-level tabs. View ids are unchanged state values. */
+const views: Record<Workspace, [string, string]> = {
+  designer: ['3D Rack Designer', 'cube'],
+  library: ['Device Library', 'box'],
+  model: ['Device Model Designer', 'cube'],
+  schedule: ['Cable Schedule', 'grid'],
+  connections: ['Connections', 'cable'],
+  cuts: ['Cut List', 'ruler'],
+  procurement: ['Procurement', 'reel'],
+  power: ['Power & Weights', 'bolt'],
+  settings: ['Project Settings', 'settings'],
+};
+const groups: { id: string; label: string; icon: string; views: Workspace[] }[] = [
+  { id: 'designer', label: '3D Rack Designer', icon: 'cube', views: ['designer'] },
+  { id: 'equipment', label: 'Equipment', icon: 'box', views: ['library', 'model'] },
+  { id: 'cabling', label: 'Cabling', icon: 'cable', views: ['schedule', 'connections'] },
+  { id: 'reports', label: 'Reports', icon: 'grid', views: ['cuts', 'procurement', 'power'] },
+  { id: 'project', label: 'Project Settings', icon: 'settings', views: ['settings'] },
 ];
+const groupOf = (view: Workspace) => groups.find((g) => g.views.includes(view)) ?? groups[0];
 const Scene = lazy(() => import('./Scene'));
 const ModelDesigner = lazy(() => import('./ModelDesigner'));
 async function save(p: Project, manual = false): Promise<boolean> {
@@ -71,6 +80,16 @@ export default function App() {
   );
   const [libraryOpen, setLibraryOpen] = useStoredState('rack-studio-library-open', true);
   const [inspectorOpen, setInspectorOpen] = useStoredState('rack-studio-inspector-open', true);
+  // The last view opened in each top-level tab, so returning to a tab restores it.
+  const [lastViews, setLastViews] = useStoredState<Record<string, string>>(
+    'rack-studio-last-views',
+    {},
+  );
+  const activeGroup = groupOf(workspace);
+  const openView = (id: Workspace) => {
+    setLastViews({ ...lastViews, [groupOf(id).id]: id });
+    set({ workspace: id, ...(['library', 'settings'].includes(id) ? { selection: null } : {}) });
+  };
   const panelStyle = {
     ...(libraryWidth && libraryOpen ? { '--library-w': `${libraryWidth}px` } : {}),
     ...(inspectorWidth && inspectorOpen ? { '--inspector-w': `${inspectorWidth}px` } : {}),
@@ -351,23 +370,40 @@ export default function App() {
         </div>
       </div>
       <nav className="workspace-tabs" aria-label="Workspace">
-        {tabs.map(([id, label, icon]) => (
+        {groups.map((g) => (
           <button
-            key={id}
+            key={g.id}
+            aria-current={activeGroup.id === g.id ? 'page' : undefined}
             onClick={() =>
-              set({
-                workspace: id,
-                ...(['library', 'settings'].includes(id) ? { selection: null } : {}),
-              })
+              openView(
+                g.views.includes(lastViews[g.id] as Workspace)
+                  ? (lastViews[g.id] as Workspace)
+                  : g.views[0],
+              )
             }
-            className={workspace === id ? 'active' : ''}
+            className={activeGroup.id === g.id ? 'active' : ''}
           >
-            <Icon name={icon} size={17} />
-            {label}
-            {id === 'schedule' && <span>{project.cables.length}</span>}
+            <Icon name={g.icon} size={17} />
+            {g.label}
+            {g.id === 'cabling' && <span>{project.cables.length}</span>}
           </button>
         ))}
       </nav>
+      {activeGroup.views.length > 1 && (
+        <nav className="workspace-subtabs" aria-label={`${activeGroup.label} views`}>
+          {activeGroup.views.map((id) => (
+            <button
+              key={id}
+              aria-current={workspace === id ? 'page' : undefined}
+              className={workspace === id ? 'active' : ''}
+              onClick={() => openView(id)}
+            >
+              <Icon name={views[id][1]} size={15} />
+              {views[id][0]}
+            </button>
+          ))}
+        </nav>
+      )}
       {!bannerHidden && (
         <div className="accuracy-banner" role="note">
           <Icon name="alert" size={16} />

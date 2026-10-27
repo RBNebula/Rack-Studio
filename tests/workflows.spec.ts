@@ -2,6 +2,7 @@ import { test as base, expect } from '@playwright/test';
 import type { Locator, Page } from '@playwright/test';
 import { readFile } from 'node:fs/promises';
 import { resolve } from 'node:path';
+import { openView } from './navigation';
 
 const test = base.extend<{ uncaughtErrors: string[] }>({
   uncaughtErrors: [
@@ -190,10 +191,7 @@ test('custom definition, port editing and embedded image survive a real local sa
   page,
 }) => {
   await open(page);
-  await page
-    .locator('.workspace-tabs')
-    .getByRole('button', { name: 'Device Library', exact: true })
-    .click();
+  await openView(page, 'Device Library');
   await page.getByRole('button', { name: 'New device', exact: true }).click();
   const dialog = page.getByRole('dialog');
   await dialog.getByLabel('Device name', { exact: true }).fill('QA compact switch');
@@ -234,10 +232,7 @@ test('custom definition, port editing and embedded image survive a real local sa
   await expect(page.locator('.toolbar-save')).toContainText(/Saved locally/);
   await page.reload();
   await expect(page.locator('canvas')).toBeVisible();
-  await page
-    .locator('.workspace-tabs')
-    .getByRole('button', { name: 'Device Library', exact: true })
-    .click();
+  await openView(page, 'Device Library');
   await page.getByLabel('Search equipment', { exact: true }).fill('QA compact switch');
   await expect(page.locator('.library-card')).toHaveCount(1);
   library = JSON.parse(
@@ -252,10 +247,7 @@ test('connections, master schedule, external length, reserve, CSV and project re
   page,
 }) => {
   await open(page);
-  await page
-    .locator('.workspace-tabs')
-    .getByRole('button', { name: 'Connections', exact: true })
-    .click();
+  await openView(page, 'Connections');
   await expect(page.locator('.schedule-table tbody > tr')).toHaveCount(2);
   const externalId = (await page.locator('.schedule-table .cable-id').allTextContents())[1].trim();
   await page.getByRole('button', { name: 'New connection', exact: true }).click();
@@ -270,10 +262,7 @@ test('connections, master schedule, external length, reserve, CSV and project re
   await dialog.getByLabel('Purpose', { exact: true }).fill('QA workstation network');
   await dialog.getByRole('button', { name: 'Connect ports', exact: true }).click();
   await expect(page.locator('.schedule-table tbody > tr')).toHaveCount(3);
-  await page
-    .locator('.workspace-tabs')
-    .getByRole('button', { name: /Cable Schedule/ })
-    .click();
+  await openView(page, 'Cable Schedule');
   await expect(
     page.getByRole('button', { name: 'End A allowance (mm)', exact: true }),
   ).toBeVisible();
@@ -316,10 +305,7 @@ test('connections, master schedule, external length, reserve, CSV and project re
     .click();
   await page.screenshot({ path: 'docs/screenshots/cable-schedule.png' });
 
-  await page
-    .locator('.workspace-tabs')
-    .getByRole('button', { name: 'Procurement', exact: true })
-    .click();
+  await openView(page, 'Procurement');
   await blurNumber(page.getByLabel('Fixed project reserve (mm)', { exact: true }), 300000);
   await expect(page.locator('.product-numbers > div').nth(2).locator('strong')).toHaveText('1');
   await expect(page.locator('.product-numbers > div').nth(3).locator('strong')).toHaveText('2');
@@ -329,10 +315,7 @@ test('connections, master schedule, external length, reserve, CSV and project re
   );
   expect(procurement).toContain('Cat6A');
   await page.screenshot({ path: 'docs/screenshots/procurement.png' });
-  await page
-    .locator('.workspace-tabs')
-    .getByRole('button', { name: 'Cut List', exact: true })
-    .click();
+  await openView(page, 'Cut List');
   const cuts = await downloadText(
     page,
     page.getByRole('button', { name: 'Export CSV', exact: true }),
@@ -344,10 +327,7 @@ test('connections, master schedule, external length, reserve, CSV and project re
   await expect(page.locator('.toolbar-save')).toContainText(/Saved locally/);
   await page.reload();
   await expect(page.locator('canvas')).toBeVisible();
-  await page
-    .locator('.workspace-tabs')
-    .getByRole('button', { name: /Cable Schedule/ })
-    .click();
+  await openView(page, 'Cable Schedule');
   await expect(page.locator('.schedule-table tbody > tr')).toHaveCount(3);
   await expect(purposeField(page, 'QA-NEW')).toHaveValue('QA edited purpose');
   await page.getByRole('button', { name: 'Open', exact: true }).click();
@@ -357,10 +337,7 @@ test('connections, master schedule, external length, reserve, CSV and project re
   await expect(page.locator('.toolbar-save')).toContainText('Opened from local storage');
   await expect(page.locator('.installed-pills > button')).toHaveCount(6);
 
-  await page
-    .locator('.workspace-tabs')
-    .getByRole('button', { name: /Cable Schedule/ })
-    .click();
+  await openView(page, 'Cable Schedule');
   const before = JSON.parse(
     await downloadText(page, page.getByRole('button', { name: 'Export project', exact: true })),
   ) as { cables: { id: string; label: string; purpose: string }[] };
@@ -477,10 +454,7 @@ test('imported power cable follows an existing curved run through UI edits and r
     .setInputFiles(resolve('examples/route-follow.rack.json'));
   await expect(page.locator('.installed-pills > button')).toHaveCount(3);
   await expect(page.locator('.header-project')).toContainText('Follow existing power cable');
-  await page
-    .locator('.workspace-tabs')
-    .getByRole('button', { name: /Cable Schedule/ })
-    .click();
+  await openView(page, 'Cable Schedule');
   await expect(page.locator('.schedule-table tbody > tr')).toHaveCount(2);
   await page.locator('.schedule-table').getByRole('button', { name: '1', exact: true }).click();
   let reference = page
@@ -508,10 +482,7 @@ test('imported power cable follows an existing curved run through UI edits and r
   await expect(page.locator('.toolbar-save')).toContainText(/Saved locally/);
   await page.reload();
   await expect(page.locator('.installed-pills > button')).toHaveCount(3);
-  await page
-    .locator('.workspace-tabs')
-    .getByRole('button', { name: /Cable Schedule/ })
-    .click();
+  await openView(page, 'Cable Schedule');
   await page.locator('.schedule-table').getByRole('button', { name: '1', exact: true }).click();
   reference = page
     .locator('.inspector')

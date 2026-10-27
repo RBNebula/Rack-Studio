@@ -724,6 +724,43 @@ svg {
   font-size: var(--fs-xs);
   padding: 2px 5px;
 }
+/* Second-level navigation for tabs that hold several views. */
+.workspace-subtabs {
+  display: flex;
+  align-items: center;
+  gap: var(--space-1);
+  height: 38px;
+  padding: 0 var(--space-5);
+  background: var(--surface-2);
+  border-bottom: 1px solid var(--line);
+  flex-shrink: 0;
+}
+.workspace-subtabs > button {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  height: 28px;
+  padding: 0 10px;
+  border: 1px solid transparent;
+  border-radius: var(--radius-md);
+  background: transparent;
+  color: var(--muted);
+  font-size: var(--fs-sm);
+  font-weight: 550;
+}
+.workspace-subtabs > button:hover {
+  color: var(--text);
+  background: var(--surface-3);
+}
+.workspace-subtabs > button.active {
+  color: var(--teal-text);
+  background: var(--surface);
+  border-color: var(--line);
+  box-shadow:
+    var(--shadow-xs),
+    inset 0 -2px 0 var(--teal);
+  font-weight: 650;
+}
 .accuracy-banner {
   display: flex;
   align-items: center;
@@ -2416,6 +2453,7 @@ td {
   .app-header,
   .project-toolbar,
   .workspace-tabs,
+  .workspace-subtabs,
   .accuracy-banner,
   .statusbar,
   .report-heading .button-row,

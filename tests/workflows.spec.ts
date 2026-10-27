@@ -2,7 +2,7 @@ import { test as base, expect } from '@playwright/test';
 import type { Locator, Page } from '@playwright/test';
 import { readFile } from 'node:fs/promises';
 import { resolve } from 'node:path';
-import { fileAction, fileItem, openView, selectInstalled, setView } from './navigation';
+import { fileAction, fileItem, openView, selectInstalled, setView, viewState } from './navigation';
 
 const test = base.extend<{ uncaughtErrors: string[] }>({
   uncaughtErrors: [
@@ -176,10 +176,7 @@ test('actual library drag, occupied drop, precise placement, undo/redo and camer
   await page.getByRole('button', { name: 'Redo', exact: true }).click();
   await expect(page.locator('.installed-pills > button')).toHaveCount(8);
   await setView(page, 'Rear');
-  await expect(page.getByRole('button', { name: 'Rear view', exact: true })).toHaveAttribute(
-    'aria-pressed',
-    'true',
-  );
+  await expect(viewState(page, 'Rear')).toHaveAttribute('aria-pressed', 'true');
   await page.getByRole('button', { name: 'Show measurements', exact: true }).click();
   await expect(page.locator('.scene-dimension')).not.toHaveCount(0);
   await page.getByRole('button', { name: 'Orbit 3D view', exact: true }).click();

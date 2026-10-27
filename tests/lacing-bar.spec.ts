@@ -2,7 +2,7 @@ import { test, expect, type Page } from '@playwright/test';
 import { readFile } from 'node:fs/promises';
 import { createExampleProject } from '../src/examples';
 import type { Project } from '../src/model';
-import { fileAction, setView } from './navigation';
+import { fileAction, setView, viewState } from './navigation';
 
 test.use({ baseURL: process.env.RACK_TEST_URL ?? 'http://127.0.0.1:5173' });
 test.setTimeout(120000);
@@ -35,9 +35,7 @@ async function settle(page: Page, u: number) {
     });
 }
 async function nativeDrop(page: Page, name: string, u: number, face: 'front' | 'rear') {
-  await page
-    .getByRole('button', { name: face === 'rear' ? 'Rear view' : 'Front view', exact: true })
-    .click();
+  await setView(page, face === 'rear' ? 'Rear' : 'Front');
   await expect(page.getByRole('combobox', { name: 'Drop mounting face', exact: true })).toHaveValue(
     face,
   );
@@ -99,10 +97,7 @@ test('native rear and front library drops follow the selected mounting face in a
   await expect(page.getByRole('combobox', { name: 'Drop mounting face', exact: true })).toHaveValue(
     'rear',
   );
-  await expect(page.getByRole('button', { name: 'Top view', exact: true })).toHaveAttribute(
-    'aria-pressed',
-    'true',
-  );
+  await expect(viewState(page, 'Top')).toHaveAttribute('aria-pressed', 'true');
   await settle(page, 8);
   await page.screenshot({ path: 'docs/screenshots/lacing-bar-top.png' });
   await page.getByRole('button', { name: 'Orbit 3D view', exact: true }).click();

@@ -3,7 +3,7 @@ import type { Page } from '@playwright/test';
 import { readFile } from 'node:fs/promises';
 import { resolve } from 'node:path';
 import type { DeviceDefinition, Project } from '../src/model';
-import { fileAction, openView } from './navigation';
+import { fileAction, openView, setView } from './navigation';
 
 const definitionName = 'User rack PC · 1U';
 const definitionId = 'def-user-rack-pc';
@@ -79,9 +79,7 @@ async function focusPC(page: Page, u: number, face: 'front' | 'rear', oblique = 
     .locator('.inspector')
     .getByRole('button', { name: 'Select rack', exact: true });
   if (await selectRack.count()) await selectRack.click();
-  await page
-    .getByRole('button', { name: face === 'front' ? 'Front view' : 'Rear view', exact: true })
-    .click();
+  await setView(page, face === 'front' ? 'Front' : 'Rear');
   const ortho = page.getByRole('button', { name: 'Orthographic camera', exact: true });
   if ((await ortho.getAttribute('aria-pressed')) !== 'true') await ortho.click();
   await page.getByRole('button', { name: 'Reset camera', exact: true }).click();

@@ -32,9 +32,7 @@ async function connect(page: Page, source: object, destination: object, label: s
 }
 
 async function capture(page: Page, face: 'front' | 'rear') {
-  await page
-    .getByRole('button', { name: face === 'front' ? 'Front view' : 'Rear view', exact: true })
-    .click();
+  await setView(page, face === 'front' ? 'Front' : 'Rear');
   const ortho = page.getByRole('button', { name: 'Orthographic camera', exact: true });
   if ((await ortho.getAttribute('aria-pressed')) !== 'true') await ortho.click();
   await page.getByRole('button', { name: 'Reset camera', exact: true }).click();

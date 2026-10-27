@@ -112,7 +112,7 @@ export function FileMenu({
         <button role="menuitem" onClick={choose(onSave)}>
           <Icon name="save" size={16} />
           Save
-          <kbd>Ctrl+S</kbd>
+          <kbd aria-hidden="true">Ctrl+S</kbd>
         </button>
         <span className="file-menu-divider" role="separator" />
         <label

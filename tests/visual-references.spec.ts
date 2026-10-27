@@ -3,7 +3,7 @@ import type { Locator, Page } from '@playwright/test';
 import { readFile } from 'node:fs/promises';
 import { resolve } from 'node:path';
 import type { Project } from '../src/model';
-import { fileAction } from './navigation';
+import { fileAction, setView } from './navigation';
 
 const test = base.extend<{ uncaughtErrors: string[] }>({
   uncaughtErrors: [
@@ -77,9 +77,7 @@ async function focusPlates(page: Page, face: 'front' | 'rear', oblique: boolean)
   const inspector = page.locator('.inspector');
   const selectRack = inspector.getByRole('button', { name: 'Select rack', exact: true });
   if (await selectRack.count()) await selectRack.click();
-  await page
-    .getByRole('button', { name: face === 'front' ? 'Front view' : 'Rear view', exact: true })
-    .click();
+  await setView(page, face === 'front' ? 'Front' : 'Rear');
   const canvas = await page.locator('canvas').boundingBox();
   if (!canvas) throw new Error('The rendered canvas must be visible.');
   const x = canvas.x + canvas.width / 2;

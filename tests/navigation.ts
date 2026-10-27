@@ -52,14 +52,23 @@ export async function fileAction(page: Page, item: FileItem) {
 
 export type CameraView = 'Front' | 'Rear' | 'Left' | 'Right' | 'Top';
 
-/** Chooses a named camera view from the view cube's menu. */
-export async function setView(page: Page, view: CameraView) {
+/** Opens the view cube's Camera views menu (if closed) and returns one named view in it. */
+export async function viewItem(page: Page, view: CameraView) {
   const toggle = page.getByRole('button', { name: 'Camera views', exact: true });
   if ((await toggle.getAttribute('aria-expanded')) !== 'true') await toggle.click();
-  await page
+  return page
     .getByRole('group', { name: 'Camera views', exact: true })
-    .getByRole('button', { name: `${view} view`, exact: true })
-    .click();
+    .getByRole('button', { name: `${view} view`, exact: true });
+}
+
+/** A named view's button in the (possibly closed) Camera views menu, for state assertions. */
+export function viewState(page: Page, view: CameraView) {
+  return page.locator(`.view-cube-menu button[aria-label="${view} view"]`);
+}
+
+/** Chooses a named camera view from the view cube's menu. */
+export async function setView(page: Page, view: CameraView) {
+  await (await viewItem(page, view)).click();
 }
 
 /** Selects installed equipment from the sidebar's Installed tab, then returns to the Library tab. */

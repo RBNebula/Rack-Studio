@@ -1,6 +1,6 @@
 import { test as base, expect } from '@playwright/test';
 import type { Page } from '@playwright/test';
-import { fileAction, selectInstalled } from './navigation';
+import { fileAction, selectInstalled, setView, viewState } from './navigation';
 
 const test = base.extend<{ uncaughtErrors: string[] }>({
   uncaughtErrors: [
@@ -50,12 +50,11 @@ async function placeShelf(page: Page, u: number, face: 'front' | 'rear') {
 }
 
 async function focusMountingFace(page: Page, u: number, face: 'front' | 'rear') {
-  const camera = page.getByRole('button', {
-    name: face === 'front' ? 'Front view' : 'Rear view',
-    exact: true,
-  });
-  await camera.click();
-  await expect(camera).toHaveAttribute('aria-pressed', 'true');
+  await setView(page, face === 'front' ? 'Front' : 'Rear');
+  await expect(viewState(page, face === 'front' ? 'Front' : 'Rear')).toHaveAttribute(
+    'aria-pressed',
+    'true',
+  );
   const cables = page.getByRole('button', { name: 'Show cables', exact: true });
   if ((await cables.getAttribute('aria-pressed')) === 'true') await cables.click();
   // Pan and orbit with real pointer controls; these do not modify the application model.

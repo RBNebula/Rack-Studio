@@ -362,8 +362,118 @@ export function deviceRailIssues(project: Project, device: Device): string[] {
         rearRailAt(deviceRack(project, device), device.startU)
     )
       issues.push('A rail assembly cannot span a change of front/rear post planes.');
+  if (d.supportRails)
+    issues.push(
+      'Sliding rails cannot be fitted to equipment carried on its fixed support rails. Remove the sliding rail assembly.',
+    );
   return issues;
 }
+
+/** World Y of the chassis bottom: the bearing level for shelves and fixed support rails. */
+export const chassisBottomY = (project: Project, device: Device): number =>
+  bodyBottom(project, device);
+
+/**
+ * Fixed L-section support rails of the device's definition, one per side, as real solids.
+ * Each rail runs between the inner faces of the front and rear posts at the device's U position,
+ * whatever face the device is mounted on. In device-local millimetres (x outward from the chassis
+ * side, z inward from the mounting face) the vertical leg occupies x [w/2, w/2 + t] and the
+ * flange x [w/2 + t - flange, w/2]; the flange top is the chassis bottom, so the chassis keeps
+ * the height its ears set. End tabs (thickness t, leg height) bear on the inside of each post and
+ * reach the post's outer edge where the screws pass; their outline is illustrative.
+ */
+export function deviceSupportRailBoxes(project: Project, device: Device): Obstacle[] {
+  const definition = definitionFor(project, device);
+  const rail = definition?.supportRails;
+  if (!definition || !rail || definition.mounting !== 'rails') return [];
+  const rack = deviceRack(project, device);
+  const span = railSpacingAt(rack, device.startU);
+  if (!Number.isFinite(span)) return [];
+  const sign = device.face === 'rear' ? -1 : 1,
+    plane = rackMountingPlane(project, device),
+    x0 = origin(rack)[0],
+    post = effectiveRailThicknessMm(rack),
+    bottom = bodyBottom(project, device),
+    t = rail.thicknessMm,
+    side0 = definition.widthMm / 2,
+    tabOuter = rack.railCentersMm / 2 + effectiveRailWidthMm(rack) / 2;
+  const legY: [number, number] = [bottom - t, bottom - t + rail.legHeightMm];
+  const box = (
+    id: string,
+    side: number,
+    x: [number, number],
+    y: [number, number],
+    z: [number, number],
+  ): Obstacle => {
+    const wx = x.map((v) => x0 + sign * side * v),
+      wz = z.map((v) => plane + sign * v);
+    return {
+      id: `support-rail:${device.id}:${side < 0 ? 'left' : 'right'}:${id}`,
+      min: [Math.min(...wx), y[0], Math.min(...wz)],
+      max: [Math.max(...wx), y[1], Math.max(...wz)],
+    };
+  };
+  const boxes: Obstacle[] = [];
+  for (const side of [-1, 1]) {
+    boxes.push(box('leg', side, [side0, side0 + t], legY, [post, span - post]));
+    if (rail.flangeWidthMm > t)
+      boxes.push(
+        box(
+          'flange',
+          side,
+          [side0 + t - rail.flangeWidthMm, side0],
+          [bottom - t, bottom],
+          [post, span - post],
+        ),
+      );
+    if (tabOuter > side0 + t) {
+      boxes.push(box('near-tab', side, [side0 + t, tabOuter], legY, [post, post + t]));
+      boxes.push(box('far-tab', side, [side0 + t, tabOuter], legY, [span - post - t, span - post]));
+    }
+  }
+  return boxes;
+}
+
+/** Placement failures caused by fixed support rails. Unknown data is advisory, not a failure. */
+export function deviceSupportRailIssues(project: Project, device: Device): string[] {
+  const definition = definitionFor(project, device);
+  const rail = definition?.supportRails;
+  if (!definition || !rail) return [];
+  const issues: string[] = [];
+  const rack = deviceRack(project, device);
+  if (definition.widthMm + 2 * rail.thicknessMm > rack.clearWidthMm + EPS)
+    issues.push('Chassis and fixed support rail legs exceed the rack clear opening.');
+  for (let u = device.startU; u < device.startU + definition.heightU; u++)
+    if (
+      frontRailAt(rack, u) !== frontRailAt(rack, device.startU) ||
+      rearRailAt(rack, u) !== rearRailAt(rack, device.startU)
+    )
+      issues.push('Fixed support rails cannot span a change of front/rear post planes.');
+  const span = railSpacingAt(rack, device.startU);
+  if (
+    Number.isFinite(span) &&
+    ((rail.spanMinMm !== null && span < rail.spanMinMm - EPS) ||
+      (rail.spanMaxMm !== null && span > rail.spanMaxMm + EPS))
+  )
+    issues.push(
+      `Rack screw-plane spacing ${round(span)} mm is outside the fixed support rail range ${rail.spanMinMm ?? 'unknown'}–${rail.spanMaxMm ?? 'unknown'} mm.`,
+    );
+  const boxes = deviceSupportRailBoxes(project, device);
+  if (boxes.some((b) => b.min[1] < origin(rack)[1] - EPS))
+    issues.push('Fixed support rail extends below the bottom of the rack U volume.');
+  if (boxes.some((b) => b.max[1] > origin(rack)[1] + rack.heightU * U_MM + EPS))
+    issues.push('Fixed support rail extends above the top of the rack U volume.');
+  if (
+    definition.massKg !== null &&
+    rail.loadRatingKg !== null &&
+    definition.massKg > rail.loadRatingKg + EPS
+  )
+    issues.push(
+      `Equipment mass ${definition.massKg} kg exceeds the fixed support rail load rating of ${rail.loadRatingKg} kg.`,
+    );
+  return issues;
+}
+const round = (value: number): number => Math.round(value * 1000) / 1000;
 
 function localToWorld(project: Project, device: Device, position: Vec3): Vec3 {
   const sign = device.face === 'rear' ? -1 : 1;
@@ -622,7 +732,11 @@ export function allObstacles(project: Project): Obstacle[] {
     ...(project.sharedMembers ?? []).flatMap((m) =>
       structuralMemberBoxes(m).map((b) => ({ ...b, id: `shared:${b.id}` })),
     ),
-    ...project.devices.flatMap((d) => [...deviceBoxes(project, d), ...deviceRailBoxes(project, d)]),
+    ...project.devices.flatMap((d) => [
+      ...deviceBoxes(project, d),
+      ...deviceRailBoxes(project, d),
+      ...deviceSupportRailBoxes(project, d),
+    ]),
     ...project.accessories.flatMap((a) => accessoryBoxes(project, a)),
   ];
 }
@@ -635,6 +749,7 @@ export function validatePlacement(project: Project, device: Device, ignoreId?: s
   if (!definition) return ['Device definition is missing.'];
   const issues: string[] = [
     ...deviceRailIssues(project, device),
+    ...deviceSupportRailIssues(project, device),
     ...validateShelfDefinition(definition),
     ...validatePlateDefinition(definition),
   ];
@@ -642,6 +757,11 @@ export function validatePlacement(project: Project, device: Device, ignoreId?: s
   const offset = origin(rack);
   const boxes = deviceBoxes(project, device),
     bounds = deviceBounds(project, device);
+  // The installed (seated) pose is always inside the exterior envelope. Only sliding service
+  // travel may carry the chassis out of the rack, and only in its extended pose.
+  const seatedBounds = device.rails?.extensionMm
+    ? deviceBounds(project, { ...device, rails: { ...device.rails, extensionMm: 0 } })
+    : bounds;
   const sweptBoxes = boxes.map((box) => {
     const dz = (device.face === 'rear' ? -1 : 1) * (device.rails?.extensionMm ?? 0);
     return {
@@ -679,15 +799,13 @@ export function validatePlacement(project: Project, device: Device, ignoreId?: s
   }
   for (const section of covered) {
     if (
-      (bounds.min[2] < offset[2] - rack.frontInsetMm - EPS &&
-        !(device.rails && device.face === 'front')) ||
-      (bounds.max[2] >
+      seatedBounds.min[2] < offset[2] - rack.frontInsetMm - EPS ||
+      seatedBounds.max[2] >
         offset[2] +
           section.overallDepthMm -
           rack.frontInsetMm -
           (rack.frameStyle === 'explicit' ? 0 : rack.frameMm) +
-          EPS &&
-        !(device.rails && device.face === 'rear'))
+          EPS
     ) {
       issues.push(`Physical depth exceeds the usable envelope in depth section ${section.id}.`);
     }
@@ -697,7 +815,8 @@ export function validatePlacement(project: Project, device: Device, ignoreId?: s
       issues.push(
         `${device.face === 'rear' ? 'Rear' : 'Front'}-mounted equipment spans a change in ${device.face} mounting plane.`,
       );
-    if (definition.mounting === 'rails' && !device.rails) {
+    // Fixed support rails carry their own spacing range (checked in deviceSupportRailIssues).
+    if (definition.mounting === 'rails' && !device.rails && !definition.supportRails) {
       if (definition.railMinMm === null || definition.railMaxMm === null)
         issues.push(
           'Rail mounting requires an explicit compatible minimum and maximum rail spacing.',
@@ -806,10 +925,16 @@ export function validatePlacement(project: Project, device: Device, ignoreId?: s
     if (sweptBoxes.some((box) => intersects(box, obstacle)))
       issues.push(`Physical collision with ${obstacle.id}.`);
   }
-  for (const ownRail of deviceRailBoxes(project, device))
+  // The device's own chassis against its own fixed support rails is already checked above
+  // (the flange top and leg side are tangent contact, not penetration).
+  for (const ownRail of [
+    ...deviceRailBoxes(project, device),
+    ...deviceSupportRailBoxes(project, device),
+  ])
     for (const obstacle of allObstacles(project)) {
       if (
         obstacle.id.startsWith(`rail:${device.id}:`) ||
+        obstacle.id.startsWith(`support-rail:${device.id}:`) ||
         obstacle.id.startsWith(`device:${device.id}:`)
       )
         continue;

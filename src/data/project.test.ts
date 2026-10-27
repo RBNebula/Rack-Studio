@@ -269,4 +269,51 @@ describe('versioned project persistence and authoritative relationships', () => 
     inverted.definitions.find((d) => d.id === 'def-server')!.power!.nominalW = 900;
     expect(() => parseProject(JSON.stringify(inverted))).toThrow(/Invalid project/);
   });
+
+  it('round-trips a distributor total output limit and rejects an invalid one on import', () => {
+    const project = example();
+    const pdu = project.definitions.find((d) => d.id === 'def-pdu')!;
+    pdu.powerBanks = [
+      {
+        id: 'top',
+        name: 'Group 1',
+        portIds: ['iec1', 'iec2'],
+        maxCurrentA: 10,
+        outletMaxCurrentA: null,
+        voltageV: 230,
+        evidence: 'verified',
+        source: 'Datasheet',
+      },
+    ];
+    pdu.powerOutputLimit = {
+      maxVA: 3000,
+      maxW: 2700,
+      maxCurrentA: null,
+      voltageV: 230,
+      evidence: 'verified',
+      source: 'Datasheet',
+    };
+    const restored = parseProject(serializeProject(project));
+    expect(restored).toEqual(project);
+    expect(restored.definitions.find((d) => d.id === 'def-pdu')!.powerOutputLimit).toEqual(
+      pdu.powerOutputLimit,
+    );
+    expect(analysePower(restored).distributors[0].outputLimit).toMatchObject({
+      maxVA: 3000,
+      maxW: 2700,
+      maxCurrentA: null,
+      status: 'ok',
+    });
+    // Definitions without the field load unchanged.
+    expect(restored.definitions.find((d) => d.id === 'def-switch')).not.toHaveProperty(
+      'powerOutputLimit',
+    );
+    const unrated = structuredClone(project);
+    unrated.definitions.find((d) => d.id === 'def-pdu')!.powerOutputLimit!.maxVA = null;
+    unrated.definitions.find((d) => d.id === 'def-pdu')!.powerOutputLimit!.maxW = null;
+    expect(() => parseProject(JSON.stringify(unrated))).toThrow(/at least one of maxVA/);
+    const unbanked = structuredClone(project);
+    delete unbanked.definitions.find((d) => d.id === 'def-pdu')!.powerBanks;
+    expect(() => parseProject(JSON.stringify(unbanked))).toThrow(/requires power banks/);
+  });
 });

@@ -58,6 +58,14 @@
         "source": "printed on unit front panel (user photo): \"MAX CURRENT PER OUTLET 10 AMPS, MAX CURRENT PER OUTLET BANK (B1 OR B2) 16 AMPS\" and \"OUTPUT: 220-240 VAC 50/60HZ, 32A\". 230 V is the nominal value within the printed 220–240 V range. Each bank has its own breaker (B1 top row outlets 1–8, B2 bottom row outlets 9–16)."
       }
     ],
+    "powerOutputLimit": {
+      "maxVA": null,
+      "maxW": null,
+      "maxCurrentA": 32,
+      "voltageV": 230,
+      "evidence": "user-entered",
+      "source": "printed on unit front panel (user photo)"
+    },
     "railMinMm": null,
     "railMaxMm": null,
     "screwOffsetsMm": [22.225, 66.675],

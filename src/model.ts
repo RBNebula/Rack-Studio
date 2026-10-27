@@ -80,6 +80,20 @@ export const powerBankSchema = z.object({
   source: z.string(),
 });
 export type PowerBank = z.infer<typeof powerBankSchema>;
+/**
+ * Total output rating of a power distributor (UPS or PDU) across all of its banks, for example a
+ * UPS rated 3000 VA / 2700 W. Each limit is null when not rated; at least one must be set.
+ * `voltageV` converts the total load to amps for `maxCurrentA`.
+ */
+export const powerOutputLimitSchema = z.object({
+  maxVA: positive.nullable().default(null),
+  maxW: positive.nullable().default(null),
+  maxCurrentA: positive.nullable().default(null),
+  voltageV: positive,
+  evidence: evidenceSchema,
+  source: z.string(),
+});
+export type PowerOutputLimit = z.infer<typeof powerOutputLimitSchema>;
 const base64 = z.string().regex(/^[A-Za-z0-9+/]*={0,2}$/, 'Expected base64 data.');
 /**
  * Display mesh tessellated from an imported STEP model, in device-local millimetres: x across
@@ -108,6 +122,76 @@ export const meshAssetSchema = z.object({
   omittedParts: z.number().int().nonnegative(),
 });
 export type MeshAsset = z.infer<typeof meshAssetSchema>;
+/**
+ * Fixed (non-sliding) L-section support rails supplied with a rail-mounted unit, one per side.
+ * Each rail is screwed to the front and rear rack posts at the unit's U position, just behind
+ * the screw holes (between the inner faces of the posts). The horizontal flange lies under the
+ * chassis bottom; the vertical leg runs alongside the chassis side, inside the clear opening.
+ * The chassis keeps its ear-defined height: the flange top touches the chassis bottom and the
+ * flange thickness is taken from the space under the chassis (see docs/device-rails.md).
+ * Millimetres; an unknown range or rating is null, never zero.
+ */
+export const supportRailsSchema = z.object({
+  kind: z.literal('fixed-l'),
+  /** Compatible front-to-rear rack screw-plane spacing (rear minus front rail plane). */
+  spanMinMm: positive.nullable(),
+  spanMaxMm: positive.nullable(),
+  /** Overall vertical leg height, from the underside of the flange. */
+  legHeightMm: positive,
+  /** Overall horizontal flange width, from the outer face of the vertical leg. */
+  flangeWidthMm: positive,
+  /** Sheet thickness of both legs. */
+  thicknessMm: positive,
+  /** Rated load carried by the pair, kg. */
+  loadRatingKg: positive.nullable(),
+  evidence: evidenceSchema,
+  source: z.string(),
+});
+export type SupportRails = z.infer<typeof supportRailsSchema>;
+/** Definition-level consistency of fixed support rails; shared by the schema and the editor. */
+export function supportRailsDefinitionIssues(definition: {
+  mounting: string;
+  bodyMode: string;
+  plate: unknown;
+  shelf: unknown;
+  lacing?: unknown;
+  railMinMm: number | null;
+  railMaxMm: number | null;
+  supportRails?: SupportRails;
+}): { path: (string | number)[]; message: string }[] {
+  const rails = definition.supportRails;
+  if (!rails) return [];
+  const issues: { path: (string | number)[]; message: string }[] = [];
+  if (
+    definition.mounting !== 'rails' ||
+    definition.bodyMode !== 'box' ||
+    definition.plate ||
+    definition.shelf ||
+    definition.lacing
+  )
+    issues.push({
+      path: ['supportRails'],
+      message:
+        'Fixed support rails require rails mounting and a chassis box (no plate, shelf or lacing bar) to bear on.',
+    });
+  if (definition.railMinMm !== null || definition.railMaxMm !== null)
+    issues.push({
+      path: ['supportRails'],
+      message:
+        'With fixed support rails the compatible rail spacing belongs to the rails (spanMinMm/spanMaxMm); railMinMm and railMaxMm must be empty.',
+    });
+  if (rails.spanMinMm !== null && rails.spanMaxMm !== null && rails.spanMinMm > rails.spanMaxMm)
+    issues.push({
+      path: ['supportRails', 'spanMinMm'],
+      message: 'Support rail minimum spacing exceeds its maximum spacing.',
+    });
+  if (rails.flangeWidthMm <= rails.thicknessMm || rails.legHeightMm <= rails.thicknessMm)
+    issues.push({
+      path: ['supportRails', 'thicknessMm'],
+      message: 'Support rail flange width and leg height must both exceed the sheet thickness.',
+    });
+  return issues;
+}
 export const definitionSchema = z
   .object({
     id: z.string().min(1),
@@ -136,9 +220,12 @@ export const definitionSchema = z
     massKg: nonnegative.nullable(),
     power: powerDrawSchema.optional(),
     powerBanks: z.array(powerBankSchema).optional(),
+    powerOutputLimit: powerOutputLimitSchema.optional(),
     railMinMm: nonnegative.nullable(),
     railMaxMm: positive.nullable(),
     screwOffsetsMm: z.array(nonnegative),
+    /** Fixed L-section support rails supplied with the unit; absent on older definitions. */
+    supportRails: supportRailsSchema.optional(),
     ports: z.array(portSchema),
     parts: z.array(boxSchema),
     frontImage: z.string().nullable(),
@@ -158,6 +245,8 @@ export const definitionSchema = z
       .optional(),
   })
   .superRefine((definition, context) => {
+    for (const issue of supportRailsDefinitionIssues(definition))
+      context.addIssue({ code: 'custom', ...issue });
     if (
       definition.lacing &&
       (definition.bodyMode !== 'parts' ||
@@ -216,6 +305,25 @@ export const definitionSchema = z
         bankedPorts.add(id);
       }
     });
+    const outputLimit = definition.powerOutputLimit;
+    if (outputLimit) {
+      if (
+        outputLimit.maxVA === null &&
+        outputLimit.maxW === null &&
+        outputLimit.maxCurrentA === null
+      )
+        context.addIssue({
+          code: 'custom',
+          path: ['powerOutputLimit'],
+          message: 'A total output limit needs at least one of maxVA, maxW or maxCurrentA.',
+        });
+      if (!definition.powerBanks?.length)
+        context.addIssue({
+          code: 'custom',
+          path: ['powerOutputLimit'],
+          message: 'A total output limit requires power banks.',
+        });
+    }
     if (definition.power?.nominalW != null && definition.power.maxW != null)
       if (definition.power.nominalW > definition.power.maxW)
         context.addIssue({

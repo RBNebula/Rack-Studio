@@ -5,6 +5,8 @@ import { analysePower } from './power';
 import {
   BANK_COLUMNS,
   EQUIPMENT_COLUMNS,
+  NOT_RATED,
+  OUTPUT_LIMIT_COLUMNS,
   NOT_APPLICABLE,
   NOT_CONNECTED,
   buildPowerReport,
@@ -597,5 +599,113 @@ describe('power and weights verification cases', () => {
     expect(text).toContain('"PC, ""desk""\nrow 2","User rack PC"');
     for (const prefix of ['=', '+', '-', '@', '\t'])
       expect(text).not.toMatch(new RegExp(`(^|,)"\\${prefix === '\t' ? 't' : prefix}`, 'm'));
+  });
+});
+
+describe('power and weights distributor total output', () => {
+  const withLimit = (patch: Partial<NonNullable<DeviceDefinition['powerOutputLimit']>> = {}) => {
+    const p = fixture();
+    p.definitions.find((d) => d.id === 'def-fx-pdu')!.powerOutputLimit = {
+      maxVA: 3000,
+      maxW: 2700,
+      maxCurrentA: 13,
+      voltageV: 230,
+      evidence: 'verified',
+      source: 'Datasheet',
+      ...patch,
+    };
+    return p;
+  };
+  const limitColumn = (name: (typeof OUTPUT_LIMIT_COLUMNS)[number]) =>
+    OUTPUT_LIMIT_COLUMNS.indexOf(name);
+
+  it('has no total output row without a limit and says so in the CSV', () => {
+    const p = fixture();
+    const report = buildPowerReport(p);
+    expect(report.outputLimitColumns).toEqual([...OUTPUT_LIMIT_COLUMNS]);
+    expect(report.distributors[0].outputLimit).toBeNull();
+    const lines = powerReportCsv(p).slice(1).split('\r\n');
+    const at = lines.indexOf('"Total output"');
+    expect(lines[at - 1]).toBe('');
+    expect(lines[at - 2]).toMatch(/^"PDU","Bank B"/);
+    expect(lines[at + 1]).toBe(OUTPUT_LIMIT_COLUMNS.map((c) => `"${c}"`).join(','));
+    expect(lines[at + 2]).toBe('"No placed distributor has a total output limit."');
+    expect(lines[at + 3]).toBe('');
+    expect(lines[at + 4]).toBe('"Totals"');
+  });
+
+  it('lists the limit, the dual-fed device once, lower bounds and Unknown', () => {
+    const report = buildPowerReport(withLimit());
+    const row = report.distributors[0].outputLimit!;
+    expect(row.status).toBe('incomplete');
+    // Server 450 W (dual-fed, once) + PC 300 W; the switch's draw is unknown.
+    expect(row.cells).toEqual([
+      'PDU',
+      3000,
+      2700,
+      13,
+      230,
+      '≥ 230',
+      '≥ 750',
+      '≥ 3.26',
+      '≥ 27.8',
+      'VA ≥ 25 %; W ≥ 27.8 %; A ≥ 25.1 %',
+      'Incomplete',
+      'Switch: No nominal or maximum draw recorded for its equipment model.',
+      'verified (Datasheet)',
+    ]);
+    expect(report.provisionalNote).toMatch(
+      /^5 of 5 devices, 0 of 1 total output limit and 2 of 2 banks use example/,
+    );
+    expect(report.notes).toContain(
+      'A distributor’s total output counts every device it supplies once across all of its banks, including equipment behind a chained PDU. Watts are compared with the VA limit as volt-amperes (power factor 1). The worst rated limit (VA, W or A) sets the utilisation and status, with the same 80 % warning threshold.',
+    );
+    // With only the unknown switch connected, nothing is known: Unknown, never 0.
+    const unknown = withLimit();
+    unknown.cables = unknown.cables.filter((c) => c.id === 'P4');
+    const cells = buildPowerReport(unknown).distributors[0].outputLimit!.cells;
+    expect(cells[limitColumn('Max (W)')]).toBeNull();
+    expect(cells[limitColumn('Utilisation (%)')]).toBeNull();
+    expect(cells[limitColumn('Utilisation by limit')]).toBe('VA Unknown; W Unknown; A Unknown');
+    expect(reportCellText(cells[limitColumn('Max (A)')])).toBe('Unknown');
+    expect(powerReportCsv(unknown)).toContain(
+      '"PDU",3000,2700,13,230,"Unknown","Unknown","Unknown","Unknown","VA Unknown; W Unknown; A Unknown","Incomplete"',
+    );
+  });
+
+  it('reports a complete warning and an unrated limit, and writes CSV rows', () => {
+    const p = withLimit({ maxCurrentA: null, evidence: 'example', source: '' });
+    p.definitions.find((d) => d.id === 'def-fx-switch')!.power = {
+      nominalW: 50,
+      maxW: 100,
+      evidence: 'verified',
+      source: '',
+    };
+    p.definitions.find((d) => d.id === 'def-fx-pc')!.power!.maxW = 2000;
+    p.devices.find((d) => d.id === 'pdu')!.name = '=PDU';
+    const row = buildPowerReport(p).distributors[0].outputLimit!;
+    // 450 + 2000 + 100 = 2550 W of 2700 W = 94.4 %.
+    expect(row.status).toBe('warning');
+    expect(row.cells).toEqual([
+      '=PDU',
+      3000,
+      2700,
+      NOT_RATED,
+      230,
+      280,
+      2550,
+      11.09,
+      94.4,
+      'VA 85 %; W 94.4 %',
+      'Warning',
+      'None',
+      'example',
+    ]);
+    const lines = powerReportCsv(p).slice(1).split('\r\n');
+    const at = lines.indexOf('"Total output"');
+    expect(lines[at + 2]).toBe(
+      '"\'=PDU",3000,2700,"Not rated",230,280,2550,11.09,94.4,"VA 85 %; W 94.4 %","Warning","None","example"',
+    );
+    expect(powerReportCsv(p)).not.toMatch(/(^|,)"=/m);
   });
 });

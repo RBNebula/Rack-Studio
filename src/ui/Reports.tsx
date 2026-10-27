@@ -754,6 +754,7 @@ const wrappingColumns = new Set([
   'Consumers (outlets; max load)',
   'Unknown draw',
   'Rating evidence',
+  'Utilisation by limit',
 ]);
 function PowerCell({ value, column }: { value: ReportCell; column: string }) {
   const className = [
@@ -785,6 +786,8 @@ function PowerWeightsReport() {
   const statusColumn = report.bankColumns.indexOf('Status');
   // Banks are grouped under their distributor, so its name column is dropped on screen.
   const bankColumns = report.bankColumns.slice(1);
+  const outputStatusColumn = report.outputLimitColumns.indexOf('Status');
+  const outputLimitColumns = report.outputLimitColumns.slice(1);
   const printed = new Date().toLocaleDateString('en-GB', {
     day: 'numeric',
     month: 'long',
@@ -877,7 +880,9 @@ function PowerWeightsReport() {
       <section className="surface" aria-label="Power distribution">
         <div className="section-title">
           <h2>Power distribution</h2>
-          <span>Bank loads at maximum draw; a feeding UPS is listed before its PDUs</span>
+          <span>
+            Total output and bank loads at maximum draw; a feeding UPS is listed before its PDUs
+          </span>
         </div>
         {report.distributors.length === 0 && (
           <p className="empty-note">
@@ -901,8 +906,36 @@ function PowerWeightsReport() {
                 Input: {d.inputMax} max · {d.inputNominal} nominal
               </span>
             </div>
+            {d.outputLimit && (
+              <div className="table-scroll">
+                <table className="power-output-limit" aria-label={`${d.name} total output`}>
+                  <thead>
+                    <tr>
+                      {outputLimitColumns.map((c) => (
+                        <th key={c}>{c}</th>
+                      ))}
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr>
+                      {d.outputLimit.cells.slice(1).map((cell, i) =>
+                        i + 1 === outputStatusColumn ? (
+                          <td key={i}>
+                            <Badge tone={powerStatusTone[d.outputLimit!.status]}>
+                              {reportCellText(cell)}
+                            </Badge>
+                          </td>
+                        ) : (
+                          <PowerCell key={i} value={cell} column={outputLimitColumns[i]} />
+                        ),
+                      )}
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            )}
             <div className="table-scroll">
-              <table>
+              <table className="power-banks" aria-label={`${d.name} power banks`}>
                 <thead>
                   <tr>
                     {bankColumns.map((c) => (

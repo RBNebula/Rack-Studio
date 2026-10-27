@@ -77,3 +77,15 @@ export async function selectInstalled(page: Page, name: string) {
   await page.locator('.installed-pills > button').filter({ hasText: name }).click();
   await page.getByRole('tab', { name: 'Library', exact: true }).click();
 }
+
+/**
+ * Loads the original example rack (patch panel, switch, server, shelf, PC, PDU and two cables)
+ * through the real import input. The application starts empty and no longer ships that equipment;
+ * the fixture keeps it under test-only qa-… definition ids (see scripts/make-test-fixtures.mjs).
+ */
+export async function openExample(page: Page, fixture = 'example-project') {
+  await page
+    .getByLabel('Import project JSON', { exact: true })
+    .setInputFiles(`tests/fixtures/${fixture}.rack.json`);
+  await page.locator('.statusbar').getByText('Project imported', { exact: false }).waitFor();
+}

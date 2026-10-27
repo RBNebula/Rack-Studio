@@ -2,7 +2,7 @@ import { test as base, expect } from '@playwright/test';
 import type { Locator, Page } from '@playwright/test';
 import { readFile, writeFile } from 'node:fs/promises';
 import { resolve } from 'node:path';
-import { openView, selectInstalled } from './navigation';
+import { openExample, openView, selectInstalled } from './navigation';
 import type { View } from './navigation';
 
 const test = base.extend<{ uncaughtErrors: string[] }>({
@@ -35,6 +35,7 @@ async function open(page: Page) {
   await page.goto('/');
   await expect(page.locator('canvas')).toBeVisible();
   await expect(page.locator('.rack-u-label').first()).toBeVisible();
+  await openExample(page);
   await expect(page.locator('.installed-pills > button')).toHaveCount(6);
 }
 const tab = (page: Page, name: string | RegExp) =>

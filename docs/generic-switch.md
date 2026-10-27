@@ -13,7 +13,7 @@ Every socket is a persistent cable endpoint. RJ45 supports the existing Ethernet
 
 Save your project and refresh the application. Search for **Generic 24-port switch**. New projects include it. Existing projects show **Add generic 24-port switch**, which adds this definition without replacing any installed equipment or current cable connections. Place it precisely or drag it into a rack. Both front and rear mounting are supported.
 
-The original temporary **24-port network switch** remains available for existing projects and demo connections, including its old rear-uplink identifier. It is a separate definition. Replacing a connected device requires an explicit port mapping; this update does not silently reassign its cables.
+The original temporary **24-port network switch** was retired on 28 October 2026 (see the user guide). Opening a project that still contains it removes it and its cables; this generic switch is the remaining switch definition.
 
 Use **Equipment → Device Library → Edit** to adjust chassis dimensions, ears, socket coordinates/sizes, names and evidence. **Visual model → Generic equipment / explicit components** switches off the detailed switch appearance if you need a different construction. The detailed shell derives its connector apertures and number labels from the same editable port records. Socket positions do not rescale automatically when the chassis is resized.
 

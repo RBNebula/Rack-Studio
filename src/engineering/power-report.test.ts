@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import type { DeviceDefinition, Endpoint, Port, Project } from '../model';
-import { baseCable, createExampleProject } from '../examples';
+import { baseCable, createExampleProject } from '../testing/legacy-example';
 import { analysePower } from './power';
 import {
   BANK_COLUMNS,

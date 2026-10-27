@@ -2,7 +2,7 @@ import { test as base, expect } from '@playwright/test';
 import type { Locator, Page } from '@playwright/test';
 import { readFile } from 'node:fs/promises';
 import type { Project } from '../src/model';
-import { fileAction, openView, selectInstalled, setView } from './navigation';
+import { fileAction, openExample, openView, selectInstalled, setView } from './navigation';
 
 const test = base.extend<{ uncaughtErrors: string[] }>({
   uncaughtErrors: [
@@ -29,6 +29,7 @@ async function openBlank(page: Page) {
   await page.goto('/');
   await expect(page.locator('canvas')).toBeVisible();
   await expect(page.locator('.rack-u-label').first()).toBeVisible();
+  await openExample(page);
   await expect(page.locator('.installed-pills > button')).toHaveCount(6);
   await fileAction(page, 'New');
   await expect(page.locator('.installed-pills > button')).toHaveCount(0);
@@ -195,9 +196,9 @@ test('generic shelf depth, usable depth and entered supports survive front and r
 }) => {
   await openBlank(page);
   await openView(page, 'Device Library');
-  await page.getByRole('button', { name: 'Edit 1U vented shelf', exact: true }).click();
+  await page.getByRole('button', { name: 'Edit 1U shelf', exact: true }).click();
   const editor = page.getByRole('dialog');
-  await expect(editor).toHaveAccessibleName('Device definition · 1U vented shelf');
+  await expect(editor).toHaveAccessibleName('Device definition · 1U shelf');
   await editor.getByLabel('Device name', { exact: true }).fill('Configurable reference shelf');
   await editor
     .getByRole('textbox', { name: 'Specification source / verification notes', exact: true })
@@ -299,7 +300,7 @@ test('pending shelf supports block saving and inactive supports stay absent when
   page,
 }) => {
   await openBlank(page);
-  await page.getByRole('button', { name: 'Edit 1U vented shelf', exact: true }).click();
+  await page.getByRole('button', { name: 'Edit 1U shelf', exact: true }).click();
   const editor = page.getByRole('dialog');
   await editor
     .getByRole('combobox', { name: 'Shelf mounting arrangement', exact: true })
@@ -333,7 +334,7 @@ test('pending shelf supports block saving and inactive supports stay absent when
   await editor.getByRole('button', { name: 'Save definition', exact: true }).click();
   await expect(editor).toHaveCount(0);
   const project = await exported(page);
-  const shelf = project.definitions.find((definition) => definition.name === '1U vented shelf');
+  const shelf = project.definitions.find((definition) => definition.name === '1U shelf');
   expect(shelf?.shelf).toBeNull();
   expect(shelf?.bodyMode).toBe('parts');
   expect(shelf?.parts.map((part) => part.name)).toContain('Parametric shelf floor');

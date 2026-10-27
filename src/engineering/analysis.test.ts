@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { baseCable, createExampleProject } from '../examples';
+import { baseCable, createExampleProject } from '../testing/legacy-example';
 import type { Cable, Port, Project } from '../model';
 import { parseProject, serializeProject } from '../data/project';
 import {

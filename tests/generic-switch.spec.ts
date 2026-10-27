@@ -114,6 +114,11 @@ test('generic single-row switch adds to an existing library, connects RJ45/SFP/A
   await expect(page.locator('.rack-u-label').first()).toBeVisible();
   const old: Project = JSON.parse(await readFile('examples/wiring-guides.rack.json', 'utf8'));
   old.definitions = old.definitions.filter((d) => d.id !== 'def-generic-switch-24');
+  // The shipped library no longer has a generic PDU; take the test-only one from the fixture.
+  const fixture: Project = JSON.parse(
+    await readFile('tests/fixtures/example-project.rack.json', 'utf8'),
+  );
+  old.definitions.push(fixture.definitions.find((d) => d.id === 'qa-pdu')!);
   await page.getByLabel('Import project JSON', { exact: true }).setInputFiles({
     name: 'existing-project.rack.json',
     mimeType: 'application/json',
@@ -127,7 +132,7 @@ test('generic single-row switch adds to an existing library, connects RJ45/SFP/A
   expect(d.ports).toHaveLength(27);
   await place(page, d.name, 16);
   await place(page, d.name, 18);
-  const pdu = p.definitions.find((d) => d.id === 'def-pdu')!;
+  const pdu = p.definitions.find((d) => d.id === 'qa-pdu')!;
   await place(page, pdu.name, 3);
   p = await exported(page);
   const switches = p.devices.filter((v) => v.definitionId === d.id),

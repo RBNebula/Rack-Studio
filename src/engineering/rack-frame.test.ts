@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { createExampleProject } from '../examples';
+import { createExampleProject } from '../testing/legacy-example';
 import { clone, rackSchema, type Device, type Rack } from '../model';
 import { allObstacles, segmentHitsBox, U_MM, validatePlacement } from './geometry';
 import { genericRackFrameBoxes } from './rack-frame';

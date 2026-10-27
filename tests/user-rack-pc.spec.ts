@@ -267,7 +267,7 @@ test('a PC library import adds the photographed model to an existing rack withou
   await expect(page.locator('canvas')).toBeVisible();
   await page
     .getByLabel('Import project JSON', { exact: true })
-    .setInputFiles(resolve('examples/route-follow.rack.json'));
+    .setInputFiles(resolve('tests/fixtures/route-follow.rack.json'));
   await expect(page.locator('.statusbar')).toContainText('Project imported');
   await expect(page.locator('.installed-pills > button')).toHaveCount(3);
   const before = await exported(page);

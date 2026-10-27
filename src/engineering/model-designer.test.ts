@@ -1,7 +1,7 @@
 import { expect, it } from 'vitest';
 import { designerIssues, traySlots } from './model-designer';
 import { createUserRackPc } from '../models/user-rack-pc';
-import { createWorkspaceProject } from '../examples';
+import { createWorkspaceProject } from '../testing/legacy-example';
 import { parseProject, serializeProject } from '../data/project';
 it('rejects an 18-inch chassis and components extending outside the face', () => {
   const d = createUserRackPc();

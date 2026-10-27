@@ -1,6 +1,6 @@
 import { beforeEach, describe, expect, it } from 'vitest';
 import { useStore } from '../state';
-import { createWorkspaceProject } from '../examples';
+import { createWorkspaceProject } from '../testing/legacy-example';
 import { clickWiringGuide, connectWiringPort, placeWiringGuide } from './wiringActions';
 import type { Endpoint } from '../model';
 import { parseProject, serializeProject } from '../data/project';

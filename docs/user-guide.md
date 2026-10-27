@@ -2,7 +2,7 @@
 
 ![Actual Rack Studio browser viewport](screenshots/rack-designer.png)
 
-The opening project is an illustrative20U rack. Its numerical dimensions are examples. Rack depth means the distance between the front and rear screw planes; U1 starts at the bottom, and a new rack has no depth step. Square holes with cage nuts are the current default.
+Rack Studio opens on an empty, illustrative 20U rack; drag equipment from the library to start. Its numerical dimensions are examples. Rack depth means the distance between the front and rear screw planes; U1 starts at the bottom, and a new rack has no depth step. Square holes with cage nuts are the current default.
 
 ## Workspace layout
 
@@ -18,6 +18,10 @@ The properties panel groups fields into titled sections (for equipment: Identity
 
 Hover or keyboard-focus any icon button for its tooltip. The **?** button opens the quick guide.
 
+## Retired equipment
+
+On 28 October 2026 the owner withdrew these built-in and catalogue devices: Cisco C1300-48P-4G, Connectix CCS 20/20 Cat6A · 24 port, 24-port network switch, 24-port patch panel, 2U rack server, Compact computer, 1U power distribution, AVoIP encoder and 1U horizontal manager. They are no longer in the library, and Rack Studio now opens on an empty rack. Opening, restoring or importing a project that still contains them removes those definitions, their installed devices and every cable attached to them; the status bar names what was removed. A device you created yourself is kept even if it shares a name. The vented shelves are now called **1U shelf** and **2U shelf**.
+
 ## Configure and install
 
 Select an installed rack chassis and enable **Fit sliding rack rails**. **Pull device forward on rails** selects the example service position, using the user-confirmed 500 mm rail projection and approximate 600 mm chassis protrusion. Member dimensions, mounting height and chassis lead are editable; post spacing has no invented kit min/max. Supplied cables keep their lengths and can become insufficient. See [sliding rail guide](device-rails.md).
@@ -31,7 +35,7 @@ Drag a device from the library onto a U location. The preview shows the snapped 
 
 Orbit with the left mouse button on empty workspace, pan with the right button, and zoom with the wheel; the viewport footer repeats these controls. The view cube in the top-left corner of the design zone turns with the camera: click a face (Front, Rear, Left, Right, Top) to view from that side, the house icon for the 3D view, or the ▾ menu for any named view; Ortho changes projection. The viewport tools sit in the **Design zone** bar beside Connect and Add object: the **Front/Rear** mount dropdown, **Tools** and **Wiring** (click the icon to toggle the mode, or its ▾ caret to jump straight to a sub-tool such as Move, Measure or Waypoints), Ortho, and the labels, dimension guides and cables toggles. Hover any icon for its name. a switched-on toggle shows a teal chip with an underline. **Mount** turns amber when new drops will mount on the rear face. An empty rack shows a drag-to-place hint naming the current mounting face. When a port or cable obscures a device, open the sidebar's **Installed** tab, which lists every installed device by U position and mounting face, and click it there.
 
-Catalogue cards for the requested Cisco/Connectix/APC models include published facts and unresolved fields. Configure measured geometry before saving them into the usable library. Zero in an incomplete draft is an unanswered field and blocks saving. Do not copy maximum overall width into a chassis-width field, or assume catalogue depth starts at the mounting ears. Generic examples can be used while the exact mechanical drawings are unavailable.
+Catalogue cards for the requested APC models include published facts and unresolved fields. Configure measured geometry before saving them into the usable library. Zero in an incomplete draft is an unanswered field and blocks saving. Do not copy maximum overall width into a chassis-width field, or assume catalogue depth starts at the mounting ears. Generic examples can be used while the exact mechanical drawings are unavailable.
 
 ## Define ports and cables
 

@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useId, useState } from 'react';
 import { useStore } from '../state';
 import { clone, uid, definitionSchema } from '../model';
 import type { DeviceDefinition, PhysicalBox, Port, ShelfConfiguration } from '../model';
@@ -37,8 +37,74 @@ const categories = [
   'Cable management',
   'Custom equipment',
 ];
+/** True for brush-plate definitions: the built-in one, or a copy that keeps its name. */
+const isBrushPlate = (d: DeviceDefinition) => d.id === 'def-brush' || /brush plate/i.test(d.name);
+
+/**
+ * Brush plate thumbnail: a black 1U plate with slotted ears and a bristle-filled cable opening,
+ * styled after the owner's reference photo. The opening is drawn from the definition's border
+ * parts, so the thumbnail follows edits; nothing here is a measured dimension.
+ */
+function BrushPlateMini({ definition: d }: { definition: DeviceDefinition }) {
+  const bristles = useId();
+  const half = d.faceWidthMm / 2;
+  const top = d.parts.find((p) => p.id === 'top');
+  const bottom = d.parts.find((p) => p.id === 'bottom');
+  const left = d.parts.find((p) => p.id === 'left');
+  const right = d.parts.find((p) => p.id === 'right');
+  // Opening between the border strips, in face coordinates (y down from the top edge).
+  const x0 = left ? left.position[0] + left.size[0] / 2 : -201;
+  const x1 = right ? right.position[0] - right.size[0] / 2 : 201;
+  const y0 = top ? d.heightMm - (top.position[1] - top.size[1] / 2) : 8;
+  const y1 = bottom ? d.heightMm - (bottom.position[1] + bottom.size[1] / 2) : 36;
+  return (
+    <div className="device-mini plate-mini" style={{ background: 'transparent', padding: 0 }}>
+      <svg
+        viewBox={`${-half} 0 ${d.faceWidthMm} ${d.heightMm}`}
+        width="100%"
+        height="100%"
+        preserveAspectRatio="none"
+        role="img"
+        aria-label="Brush plate with a bristle-filled cable opening"
+      >
+        <defs>
+          <pattern id={bristles} width="3" height="6" patternUnits="userSpaceOnUse">
+            <rect width="3" height="6" fill="#08090a" />
+            <path d="M0.7 0V6M2.2 0V6" stroke="#4a4f55" strokeWidth="0.7" />
+            <path d="M1.45 0V6" stroke="#25282c" strokeWidth="0.5" />
+          </pattern>
+        </defs>
+        <rect x={-half} y="0" width={d.faceWidthMm} height={d.heightMm} rx="1.5" fill="#1c1e20" />
+        <rect
+          x={Math.min(x0, x1)}
+          y={Math.min(y0, y1)}
+          width={Math.abs(x1 - x0)}
+          height={Math.abs(y1 - y0)}
+          fill={`url(#${bristles})`}
+          stroke="#0a0b0c"
+          strokeWidth="1"
+        />
+        {[-1, 1].flatMap((side) =>
+          d.screwOffsetsMm.map((offset) => (
+            <rect
+              key={`${side}-${offset}`}
+              x={side * (half - 8) - 5}
+              y={d.heightMm - offset - 3.2}
+              width="10"
+              height="6.4"
+              rx="3.2"
+              fill="#e8ecef"
+            />
+          )),
+        )}
+      </svg>
+    </div>
+  );
+}
+
 export function DeviceMini({ definition: d }: { definition: DeviceDefinition }) {
   if (d.plate) return <PlateMini definition={d} />;
+  if (isBrushPlate(d) && !d.frontImage) return <BrushPlateMini definition={d} />;
   if (d.lacing)
     return (
       <div className="device-mini">

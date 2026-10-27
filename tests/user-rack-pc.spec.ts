@@ -324,7 +324,7 @@ test('a photographed rear network port connects through the UI and retains ident
 }) => {
   await openBlank(page);
   await place(page, definitionName, 8, 'front');
-  await place(page, '24-port network switch', 16, 'front');
+  await place(page, 'Generic 24-port switch · 1U', 16, 'front');
   const initial = await exported(page);
   const pc = initial.devices.find((device) => device.definitionId === definitionId);
   const pcPort = pcDefinition(initial).ports.find(

@@ -338,8 +338,12 @@ test('connections, master schedule, external length, reserve, CSV and project re
   await expect(purposeField(page, 'QA-NEW')).toHaveValue('QA edited purpose');
   await fileAction(page, 'Open');
   const saved = page.getByRole('dialog', { name: 'Open local project' });
-  await expect(saved.locator('.saved-project')).toHaveCount(1);
-  await saved.locator('.saved-project').click();
+  // The empty starting rack is saved too when the example is imported; open the example.
+  const example = saved
+    .locator('.saved-project')
+    .filter({ hasText: 'Vehicle communications · example' });
+  await expect(example).toHaveCount(1);
+  await example.click();
   await expect(page.locator('.toolbar-save')).toContainText('Opened from local storage');
   await expect(page.locator('.installed-pills > button')).toHaveCount(6);
 

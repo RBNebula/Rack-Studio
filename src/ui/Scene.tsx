@@ -111,6 +111,16 @@ const centerOf = (box: Obstacle): Vec3 =>
   box.min.map((value, i) => (value + box.max[i]) / 2) as Vec3;
 const sizeOf = (box: Obstacle): Vec3 => box.max.map((value, i) => value - box.min[i]) as Vec3;
 const OverlayHost = createContext<HTMLDivElement | null>(null);
+/** Layout size of each overlay host (same box as the canvas), kept by one ResizeObserver so
+ * labels can compare it with the renderer size without forcing a layout every frame. */
+const hostSizes = new WeakMap<Element, { width: number; height: number }>();
+function observeHost(host: HTMLDivElement) {
+  if (hostSizes.has(host)) return;
+  hostSizes.set(host, { width: host.clientWidth, height: host.clientHeight });
+  new ResizeObserver(([entry]) =>
+    hostSizes.set(host, { width: entry.contentRect.width, height: entry.contentRect.height }),
+  ).observe(host);
+}
 
 /** Each mount owns a fresh DOM container. Deferred root cleanup therefore cannot
  * delete a later StrictMode mount's children, and Canvas never shares its DOM
@@ -135,6 +145,7 @@ function SceneLabel({
   const scratch = useMemo(() => new THREE.Vector3(), []);
   useLayoutEffect(() => {
     if (!host) return;
+    observeHost(host);
     const container = document.createElement('div');
     // Hidden until the first frame places it, so it is never seen (or clicked) at the origin.
     container.style.cssText =
@@ -165,7 +176,7 @@ function SceneLabel({
       </div>,
     );
   }, [host, children, style, center, zIndexRange]);
-  useFrame(({ camera, size, gl }) => {
+  useFrame(({ camera, size }) => {
     if (!object.current || !element.current) return;
     object.current.updateWorldMatrix(true, false);
     object.current.getWorldPosition(scratch);
@@ -173,10 +184,9 @@ function SceneLabel({
     element.current.style.display = scratch.z < -1 || scratch.z > 1 ? 'none' : 'block';
     // While the viewport is being resized (e.g. a mode drawer opening), the projection can lag
     // the real canvas size for a frame; keep labels hidden until both agree.
-    const box = gl.domElement.parentElement;
+    const box = host ? hostSizes.get(host) : undefined;
     const current =
-      !box ||
-      (Math.abs(box.clientWidth - size.width) < 1 && Math.abs(box.clientHeight - size.height) < 1);
+      !box || (Math.abs(box.width - size.width) < 1 && Math.abs(box.height - size.height) < 1);
     element.current.style.visibility = current ? 'visible' : 'hidden';
     element.current.style.transform = `translate3d(${((scratch.x + 1) * size.width) / 2}px,${((1 - scratch.y) * size.height) / 2}px,0)`;
   });

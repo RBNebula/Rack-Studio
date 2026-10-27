@@ -18,6 +18,12 @@ The properties panel groups fields into titled sections (for equipment: Identity
 
 Hover or keyboard-focus any icon button for its tooltip. The **?** button opens the quick guide.
 
+## 2D rack elevations
+
+The **3D / 2D** switch in the **Design zone** bar swaps the 3D viewport for flat elevations; the library and properties panel stay beside it, and the 3D camera is kept for when you switch back. Each rack shows its **Front** then its **Rear**, and racks run left to right as seen from the front, so a second rack shows as left front, left rear, right front, right rear. U numbers run up the left of each face. Equipment mounted on the other face appears as a dashed outline, because deep equipment can still occupy the space behind.
+
+Drag a library card onto a face to place it at that U. Drag installed equipment to another U, the other face or another rack. While you drag, a green box with "no conflict detected" shows a valid drop; red shows the first reason it is blocked. Drops run the same placement checks as the 3D viewport. A blocked drop shows the reason and changes nothing, and freestanding equipment snaps onto a shelf at the target U. Shelf equipment moves with its shelf. A shelf carrying equipment cannot change rack until that equipment is moved off it. Click a device to select it for the properties panel; with a device focused, the Up and Down arrow keys move it by 1U. Wiring and modelling tools act on the 3D scene, so switching to 2D leaves them.
+
 ## Retired equipment
 
 On 28 October 2026 the owner withdrew these built-in and catalogue devices: Cisco C1300-48P-4G, Connectix CCS 20/20 Cat6A · 24 port, 24-port network switch, 24-port patch panel, 2U rack server, Compact computer, 1U power distribution, AVoIP encoder and 1U horizontal manager. They are no longer in the library, and Rack Studio now opens on an empty rack. Opening, restoring or importing a project that still contains them removes those definitions, their installed devices and every cable attached to them; the status bar names what was removed. A device you created yourself is kept even if it shares a name. The vented shelves are now called **1U shelf** and **2U shelf**.

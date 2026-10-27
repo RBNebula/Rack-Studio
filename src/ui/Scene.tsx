@@ -1,5 +1,4 @@
 import {
-  useDeferredValue,
   createContext,
   useCallback,
   useContext,
@@ -533,11 +532,6 @@ export default function Scene() {
     () => (preview && dragDeviceId ? relocated(project, preview) : project),
     [project, preview, dragDeviceId],
   );
-  // While a move/rotate preview is live, cables re-route from a deferred copy: the dragged
-  // object follows the pointer at once and routes catch up when React has time. Outside a
-  // preview, and on release, cables use the current project immediately.
-  const deferredProject = useDeferredValue(previewProject);
-  const cableProject = modelPreview ? deferredProject : previewProject;
   const label =
     preview && draggedDefinition
       ? `U${preview.startU}${draggedDefinition.heightU > 1 ? `–${preview.startU + draggedDefinition.heightU - 1}` : ''}`
@@ -853,7 +847,7 @@ export default function Scene() {
               project.cables
                 .filter((c) => shown('cable', c.id))
                 .map((cable) => (
-                  <RenderedCable key={cable.id} project={cableProject} cable={cable} />
+                  <RenderedCable key={cable.id} project={previewProject} cable={cable} />
                 ))}
             {showLabels && (
               <group position={mmToScene(origin(activeRack))}>

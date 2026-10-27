@@ -1092,6 +1092,10 @@ function CameraRig({
       enabled={!dragging}
       enableDamping
       dampingFactor={0.12}
+      // On-demand rendering: three.js stops reporting changes once a damped step moves less than
+      // ~1 mm, which can leave part of a zoomed-in pan unapplied. Keep frames coming briefly after
+      // each change so the easing always finishes.
+      onChange={() => invalidate(45)}
       minDistance={0.25}
       maxDistance={12}
       minZoom={70}

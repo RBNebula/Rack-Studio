@@ -44,11 +44,11 @@ Under **Rack assemblies**, choose **Add adjacent rack** for an empty rack with t
 
 ## Finalise equipment in Rack Studio
 
-Yes: use **Device Library → Edit** for an existing definition, especially the photographed PC. It preserves its detailed reference appearance while you correct measured height, chassis/ear dimensions, ports, ear thickness, support requirements and evidence. The **Device Model Designer** is suited to creating a new unit from a blank chassis and placing sockets, fans and grilles on its faces. Its schematic preview does not replace a measured mechanical drawing.
+Yes: use **Equipment → Device Library → Edit** for an existing definition, especially the photographed PC. It preserves its detailed reference appearance while you correct measured height, chassis/ear dimensions, ports, ear thickness, support requirements and evidence. The **Device Model Designer** is suited to creating a new unit from a blank chassis and placing sockets, fans and grilles on its faces. Its schematic preview does not replace a measured mechanical drawing.
 
 The PC's 1U allocation, 431.8 mm chassis width, 482.6 mm ear width and 381 mm depth are user supplied. Physical height, port centres and fittings still need calibration. Cisco C1300-48P-4G, the Cable Monkey/Connectix panel, APC SMT3000RMI2UC and AP7922B remain catalogue drafts until the missing dimensions/ear datums and port positions are supplied. See [equipment sources](equipment-sources.md). Do not mark a whole model verified just because its product name or one dimension is known.
 
-Save the project, then **Device Library → Export library** for a reusable definitions file and **Export project** for a complete backup. Libraries currently belong to each project; import the exported library into other projects deliberately. Share those JSON files together with remaining measurements/photos for review. There is no automatic shared cloud library.
+Save the project, then **Equipment → Device Library → Export library** for a reusable definitions file and **Export project** for a complete backup. Libraries currently belong to each project; import the exported library into other projects deliberately. Share those JSON files together with remaining measurements/photos for review. There is no automatic shared cloud library.
 
 ## Validation
 

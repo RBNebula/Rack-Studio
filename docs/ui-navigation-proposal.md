@@ -1,6 +1,6 @@
 # Proposal: fewer top-level workspace tabs
 
-Status: **proposed, not implemented.** Nothing in this document changes the application until the owner approves it. Written 27 October 2026 alongside the UI polish branch.
+Status: **option 3 approved by the owner and implemented, 27 October 2026.** The fifth tab keeps the label **Project Settings** rather than "Project", so its name and the existing test stay unchanged. Workspace view ids are unchanged; browser tests reach grouped views through `tests/navigation.ts`. The original proposal text follows.
 
 ## Problem
 

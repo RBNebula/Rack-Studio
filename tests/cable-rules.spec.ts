@@ -4,7 +4,7 @@ import { readFile } from 'node:fs/promises';
 import { resolve } from 'node:path';
 import type { Cable, DeviceDefinition, Project } from '../src/model';
 import { routeCable } from '../src/engineering/routing';
-import { fileAction, openView, selectInstalled, setView } from './navigation';
+import { fileAction, openExample, openView, selectInstalled, setView } from './navigation';
 
 /**
  * Regression workflows for the connector-lead bend-radius fix and gendered IEC 60320 couplers:
@@ -38,6 +38,7 @@ async function open(page: Page) {
   await page.goto('/');
   await expect(page.locator('canvas')).toBeVisible();
   await expect(page.locator('.rack-u-label').first()).toBeVisible();
+  await openExample(page);
   await expect(page.locator('.installed-pills > button')).toHaveCount(6);
 }
 async function blurNumber(field: Locator, value: number | string) {

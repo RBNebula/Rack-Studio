@@ -1,3 +1,1 @@
 ﻿"Cable ID","Supply","Product","Source termination","Destination termination","Required cut (mm)","Supplied assembly (mm)","Allocated reel","Validation"
-"0","preterminated","Cat6A blue · example","PC 1 · Ethernet","Network switch 1 · Rear uplink","Unknown",2000,"","Unverified model"
-"1","bulk","Cat6A blue · example","Patch panel 1 · Port 1","User position 1 · Network port 1",6740,"Unknown","cat6a-blue:purchase-1","Unverified model"

@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { createWorkspaceProject } from '../examples';
+import { createWorkspaceProject } from '../testing/legacy-example';
 import { clone, definitionSchema, type Device } from '../model';
 import { parseProject, serializeProject } from '../data/project';
 import {

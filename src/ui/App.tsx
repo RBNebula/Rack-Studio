@@ -6,6 +6,7 @@ import { createExampleProject, createWorkspaceProject } from '../examples';
 import { repository } from '../data/storage';
 import type { ProjectSummary } from '../data/storage';
 import { parseProject, serializeProject } from '../data/project';
+import { removeRetiredEquipment, retiredNotice } from '../data/retired';
 import type { Project } from '../model';
 import Library from './Library';
 import Inspector, { RackInspector, addAccessory } from './Inspector';
@@ -39,6 +40,11 @@ const groups: { id: string; label: string; icon: string; views: Workspace[] }[] 
 const groupOf = (view: Workspace) => groups.find((g) => g.views.includes(view)) ?? groups[0];
 const Scene = lazy(() => import('./Scene'));
 const ModelDesigner = lazy(() => import('./ModelDesigner'));
+/** Opening a saved or imported project removes equipment retired from Rack Studio. */
+function withoutRetired(p: Project): { project: Project; notice: string } {
+  const result = removeRetiredEquipment(p);
+  return { project: result.project, notice: retiredNotice(result) };
+}
 async function save(p: Project, manual = false): Promise<boolean> {
   const store = useStore.getState();
   store.set({ saveStatus: 'Saving…' });
@@ -127,8 +133,12 @@ export default function App() {
             useStore.getState().project.revision === opening.revision &&
             !useStore.getState().dirty
           ) {
-            useStore.getState().replace(p);
-            useStore.getState().set({ saveStatus: 'Restored from local storage' });
+            const retired = withoutRetired(p);
+            useStore.getState().replace(retired.project);
+            useStore.getState().set({
+              saveStatus: 'Restored from local storage',
+              ...(retired.notice ? { notice: retired.notice, dirty: true } : {}),
+            });
           }
         }
       } catch (error) {
@@ -236,13 +246,18 @@ export default function App() {
     if (!file) return;
     try {
       if (file.size > 30_000_000) throw new Error('Project exceeds the 30 MB import limit.');
-      const p = parseProject(await file.text());
+      const retired = withoutRetired(parseProject(await file.text()));
       if (!(await save(project))) return;
-      s.replace(p);
+      s.replace(retired.project);
       set({
         dirty: true,
         workspace: 'designer',
-        notice: 'Project imported; embedded assets and physical connection records restored.',
+        notice: [
+          'Project imported; embedded assets and physical connection records restored.',
+          retired.notice,
+        ]
+          .filter(Boolean)
+          .join(' '),
       });
     } catch (error) {
       set({ error: error instanceof Error ? error.message : String(error) });
@@ -702,8 +717,13 @@ export default function App() {
                       if (!(await save(project))) return;
                       const loaded = await repository.load(p.id);
                       if (loaded) {
-                        s.replace(loaded);
-                        set({ workspace: 'designer', saveStatus: 'Opened from local storage' });
+                        const retired = withoutRetired(loaded);
+                        s.replace(retired.project);
+                        set({
+                          workspace: 'designer',
+                          saveStatus: 'Opened from local storage',
+                          ...(retired.notice ? { notice: retired.notice, dirty: true } : {}),
+                        });
                         setDialog(null);
                       }
                     } catch (error) {

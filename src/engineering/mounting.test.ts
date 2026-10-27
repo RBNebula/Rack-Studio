@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { createExampleProject } from '../examples';
+import { createExampleProject } from '../testing/legacy-example';
 import { clone, definitionSchema, projectSchema, type Device, type Project } from '../model';
 import {
   allObstacles,

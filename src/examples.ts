@@ -22,10 +22,6 @@ const port = (
   direction: surface === 'front' ? [0, 0, -1] : [0, 0, 1],
   multiple: false,
 });
-const networkPorts = (count: number, z = -2, surface: Port['surface'] = 'front') =>
-  Array.from({ length: count }, (_, i) =>
-    port(`p${i + 1}`, `Port ${i + 1}`, -178 + i * 15.5, 21, z, surface),
-  );
 const definition = (
   id: string,
   name: string,
@@ -65,25 +61,7 @@ const definition = (
 });
 export function exampleDefinitions(): DeviceDefinition[] {
   const definitions = [
-    definition('def-switch', '24-port network switch', 'Network switches', 1, 280, {
-      ports: [...networkPorts(24), port('uplink', 'Rear uplink', 150, 21, 282, 'rear')],
-      color: '#475967',
-    }),
-    definition('def-patch', '24-port patch panel', 'Patch panels', 1, 90, {
-      ports: networkPorts(24),
-      color: '#283540',
-    }),
-    definition('def-server', '2U rack server', 'Servers', 2, 620, {
-      mounting: 'rails',
-      railMinMm: 600,
-      railMaxMm: 740,
-      ports: [
-        port('net', 'Ethernet', 155, 24, 622, 'rear'),
-        port('power', 'IEC power', -145, 24, 622, 'rear', 'IEC-C14'),
-      ],
-      color: '#64717e',
-    }),
-    definition('def-shelf', '2U vented shelf', 'Shelves', 2, 450, {
+    definition('def-shelf', '2U shelf', 'Shelves', 2, 450, {
       mounting: 'shelf',
       widthMm: 440,
       heightMm: U * 2,
@@ -94,7 +72,7 @@ export function exampleDefinitions(): DeviceDefinition[] {
       ],
       color: '#374552',
     }),
-    definition('def-shelf-1', '1U vented shelf', 'Shelves', 1, 450, {
+    definition('def-shelf-1', '1U shelf', 'Shelves', 1, 450, {
       mounting: 'shelf',
       widthMm: 440,
       heightMm: U,
@@ -104,37 +82,6 @@ export function exampleDefinitions(): DeviceDefinition[] {
         { id: 'right', name: 'Right bracket', position: [218, 21.5, 225], size: [4, 43, 450] },
       ],
       color: '#374552',
-    }),
-    definition('def-pc', 'Compact computer', 'Computers', 2, 300, {
-      mounting: 'freestanding',
-      widthMm: 300,
-      heightMm: 60,
-      faceWidthMm: 300,
-      screwOffsetsMm: [],
-      ports: [
-        port('net', 'Ethernet', 110, 24, 302, 'rear'),
-        port('usb', 'USB-C', 80, 24, 302, 'rear', 'USB-C'),
-      ],
-      parts: [
-        { id: 'lid', name: 'Example overhanging lid', position: [0, 59, 145], size: [320, 4, 310] },
-      ],
-      color: '#465668',
-    }),
-    definition('def-pdu', '1U power distribution', 'Power equipment', 1, 45, {
-      ports: Array.from({ length: 6 }, (_, i) =>
-        port(`iec${i + 1}`, `Outlet ${i + 1}`, -160 + i * 64, 22, -2, 'front', 'IEC-C13'),
-      ),
-      color: '#222e3b',
-    }),
-    definition('def-av', 'AVoIP encoder', 'AVoIP equipment', 1, 200, {
-      ports: [
-        port('net', 'Network', -100, 21, -2),
-        port('hdmi', 'HDMI', 50, 21, -2, 'front', 'HDMI'),
-      ],
-      color: '#315162',
-    }),
-    definition('def-manager', '1U horizontal manager', 'Cable management', 1, 75, {
-      color: '#354350',
     }),
     ...[1, 2, 3, 4].map((u) =>
       definition(`def-blank-${u}`, `${u}U blank plate`, 'Custom equipment', u, 10, {
@@ -326,34 +273,9 @@ export function createExampleProject(populated = true): Project {
     },
   };
   if (populated) {
+    // The retired example equipment (switch, patch panel, server, PC, PDU) is gone; the stepped
+    // demonstration keeps its shelf and tray. Test fixtures live in src/testing/legacy-example.ts.
     p.devices = [
-      {
-        id: 'patch-1',
-        definitionId: 'def-patch',
-        name: 'Patch panel 1',
-        startU: 18,
-        face: 'front',
-        supportId: null,
-        installation: 'installed',
-      },
-      {
-        id: 'switch-1',
-        definitionId: 'def-switch',
-        name: 'Network switch 1',
-        startU: 16,
-        face: 'front',
-        supportId: null,
-        installation: 'installed',
-      },
-      {
-        id: 'server-1',
-        definitionId: 'def-server',
-        name: 'Server 1',
-        startU: 8,
-        face: 'front',
-        supportId: null,
-        installation: 'installed',
-      },
       {
         id: 'shelf-1',
         definitionId: 'def-shelf',
@@ -362,38 +284,6 @@ export function createExampleProject(populated = true): Project {
         face: 'front',
         supportId: null,
         installation: 'installed',
-      },
-      {
-        id: 'pc-1',
-        definitionId: 'def-pc',
-        name: 'PC 1',
-        startU: 3,
-        face: 'front',
-        supportId: 'shelf-1',
-        installation: 'installed',
-      },
-      {
-        id: 'pdu-1',
-        definitionId: 'def-pdu',
-        name: 'Rear PDU 1',
-        startU: 12,
-        face: 'rear',
-        supportId: null,
-        installation: 'installed',
-      },
-    ];
-    p.cables = [
-      { ...baseCable('NET-001'), purpose: 'PC network uplink' },
-      {
-        ...baseCable('NET-002'),
-        source: { kind: 'device', deviceId: 'patch-1', portId: 'p1' },
-        destination: { kind: 'external', destinationId: 'desk-1', portId: 'network' },
-        exitId: 'exit-1',
-        supply: 'bulk',
-        suppliedLengthMm: null,
-        color: '#629aff',
-        purpose: 'Operator workstation network',
-        notes: 'External run has not been surveyed.',
       },
     ];
     p.accessories = [

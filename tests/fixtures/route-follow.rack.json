@@ -1,0 +1,314 @@
+{
+  "schemaVersion": 1,
+  "id": "example-follow-existing-power-run",
+  "name": "Follow existing power cable - illustrative geometry",
+  "revision": 0,
+  "updatedAt": "2026-10-22T17:00:00.000Z",
+  "rack": {
+    "id": "rack-1",
+    "name": "Illustrative 20U rack - dimensions require verification",
+    "heightU": 20,
+    "outerWidthMm": 600,
+    "clearWidthMm": 450,
+    "railCentersMm": 465.1,
+    "frontInsetMm": 50,
+    "frameMm": 20,
+    "railWidthMm": null,
+    "railThicknessMm": null,
+    "frameStyle": "generic",
+    "endPanels": null,
+    "depthMeaning": "unconfirmed",
+    "fixedFace": "unconfirmed",
+    "holeType": "square",
+    "evidence": "example",
+    "color": "#293543",
+    "sections": [
+      {
+        "id": "lower",
+        "startU": 1,
+        "endU": 15,
+        "overallDepthMm": 800,
+        "frontRailZMm": 0,
+        "rearRailZMm": 700
+      },
+      {
+        "id": "upper",
+        "startU": 16,
+        "endU": 20,
+        "overallDepthMm": 750,
+        "frontRailZMm": 0,
+        "rearRailZMm": 650
+      }
+    ],
+    "members": [],
+    "showPanels": false
+  },
+  "definitions": [
+    {
+      "id": "qa-pdu",
+      "name": "1U power distribution",
+      "manufacturer": "Generic example",
+      "model": "Illustrative geometry",
+      "category": "Power equipment",
+      "widthMm": 430,
+      "heightU": 1,
+      "heightMm": 42.95,
+      "depthMm": 45,
+      "faceWidthMm": 482.6,
+      "earThicknessMm": null,
+      "shelf": null,
+      "plate": null,
+      "appearance": null,
+      "mounting": "direct",
+      "bodyMode": "box",
+      "color": "#222e3b",
+      "evidence": "example",
+      "source": "Configurable example; no manufacturer specification supplied.",
+      "massKg": null,
+      "railMinMm": null,
+      "railMaxMm": null,
+      "screwOffsetsMm": [6.35, 38.1],
+      "ports": [
+        {
+          "id": "iec1",
+          "name": "Outlet 1",
+          "connector": "IEC-C13",
+          "surface": "front",
+          "position": [-160, 22, -2],
+          "direction": [0, 0, -1],
+          "multiple": false
+        },
+        {
+          "id": "iec2",
+          "name": "Outlet 2",
+          "connector": "IEC-C13",
+          "surface": "front",
+          "position": [-96, 22, -2],
+          "direction": [0, 0, -1],
+          "multiple": false
+        },
+        {
+          "id": "iec3",
+          "name": "Outlet 3",
+          "connector": "IEC-C13",
+          "surface": "front",
+          "position": [-32, 22, -2],
+          "direction": [0, 0, -1],
+          "multiple": false
+        },
+        {
+          "id": "iec4",
+          "name": "Outlet 4",
+          "connector": "IEC-C13",
+          "surface": "front",
+          "position": [32, 22, -2],
+          "direction": [0, 0, -1],
+          "multiple": false
+        },
+        {
+          "id": "iec5",
+          "name": "Outlet 5",
+          "connector": "IEC-C13",
+          "surface": "front",
+          "position": [96, 22, -2],
+          "direction": [0, 0, -1],
+          "multiple": false
+        },
+        {
+          "id": "iec6",
+          "name": "Outlet 6",
+          "connector": "IEC-C13",
+          "surface": "front",
+          "position": [160, 22, -2],
+          "direction": [0, 0, -1],
+          "multiple": false
+        }
+      ],
+      "parts": [],
+      "frontImage": null,
+      "rearImage": null
+    },
+    {
+      "id": "def-demo-pc",
+      "name": "Example compact rack PC",
+      "manufacturer": "Generic example",
+      "model": "Illustrative power-only chassis",
+      "category": "Computers",
+      "widthMm": 300,
+      "heightU": 1,
+      "heightMm": 42.95,
+      "depthMm": 200,
+      "faceWidthMm": 482.6,
+      "earThicknessMm": null,
+      "shelf": null,
+      "plate": null,
+      "appearance": null,
+      "mounting": "direct",
+      "bodyMode": "box",
+      "color": "#477088",
+      "evidence": "example",
+      "source": "Synthetic editable example; not a manufacturer specification.",
+      "massKg": null,
+      "railMinMm": null,
+      "railMaxMm": null,
+      "screwOffsetsMm": [6.35, 38.1],
+      "ports": [
+        {
+          "id": "power",
+          "name": "IEC power inlet",
+          "connector": "IEC-C14",
+          "surface": "rear",
+          "position": [80, 22, 202],
+          "direction": [0, 0, 1],
+          "multiple": false
+        }
+      ],
+      "parts": [],
+      "frontImage": null,
+      "rearImage": null
+    }
+  ],
+  "devices": [
+    {
+      "id": "pc-1",
+      "definitionId": "def-demo-pc",
+      "name": "PC 1",
+      "startU": 4,
+      "face": "front",
+      "supportId": null,
+      "installation": "installed"
+    },
+    {
+      "id": "pc-2",
+      "definitionId": "def-demo-pc",
+      "name": "PC 2",
+      "startU": 7,
+      "face": "front",
+      "supportId": null,
+      "installation": "installed"
+    },
+    {
+      "id": "pdu-1",
+      "definitionId": "qa-pdu",
+      "name": "Rear PDU 1",
+      "startU": 13,
+      "face": "rear",
+      "supportId": null,
+      "installation": "installed"
+    }
+  ],
+  "cables": [
+    {
+      "id": "cable-power-reference",
+      "label": "0",
+      "name": "PC 1 to PDU - positioned reference power run",
+      "source": {
+        "kind": "device",
+        "deviceId": "pc-1",
+        "portId": "power"
+      },
+      "destination": {
+        "kind": "device",
+        "deviceId": "pdu-1",
+        "portId": "iec1"
+      },
+      "purpose": "",
+      "type": "IEC power",
+      "color": "#f0b45c",
+      "diameterMm": 8,
+      "minBendRadiusMm": 40,
+      "clearanceMm": 5,
+      "waypoints": [
+        [100, 300, 1050],
+        [100, 550, 1050]
+      ],
+      "followCableId": null,
+      "followStartPercent": 15,
+      "followEndPercent": 85,
+      "followOffsetMm": null,
+      "exitId": null,
+      "supply": "preterminated",
+      "productId": "",
+      "suppliedLengthMm": 2000,
+      "externalLengthMm": null,
+      "serviceMm": 0,
+      "terminationAMm": 0,
+      "terminationBMm": 0,
+      "otherMm": 0,
+      "roundToMm": 10,
+      "manualOverrideMm": null,
+      "overrideReason": "",
+      "status": "planned",
+      "notes": "Synthetic geometric example. The minimum bend radius and all equipment/port dimensions require verification. Reference route only; no cable dynamics."
+    },
+    {
+      "id": "cable-power-follower",
+      "label": "1",
+      "name": "PC 2 to PDU - follows cable 0",
+      "source": {
+        "kind": "device",
+        "deviceId": "pc-2",
+        "portId": "power"
+      },
+      "destination": {
+        "kind": "device",
+        "deviceId": "pdu-1",
+        "portId": "iec2"
+      },
+      "purpose": "",
+      "type": "IEC power",
+      "color": "#49d0c4",
+      "diameterMm": 8,
+      "minBendRadiusMm": 30,
+      "clearanceMm": 5,
+      "waypoints": [],
+      "followCableId": "cable-power-reference",
+      "followStartPercent": 35,
+      "followEndPercent": 65,
+      "followOffsetMm": null,
+      "exitId": null,
+      "supply": "preterminated",
+      "productId": "",
+      "suppliedLengthMm": 2000,
+      "externalLengthMm": null,
+      "serviceMm": 0,
+      "terminationAMm": 0,
+      "terminationBMm": 0,
+      "otherMm": 0,
+      "roundToMm": 10,
+      "manualOverrideMm": null,
+      "overrideReason": "",
+      "status": "planned",
+      "notes": "Select this cable to inspect the follow relationship and endpoint breakouts. Example bend radius is configurable and unverified. No flexible physics or tie anchoring is claimed."
+    }
+  ],
+  "exits": [],
+  "destinations": [],
+  "accessories": [],
+  "looms": [],
+  "products": [],
+  "stock": [],
+  "settings": {
+    "reservePercent": 0,
+    "reserveFixedMm": 0,
+    "contingencyPercent": 0,
+    "cablePrefix": "NET",
+    "scheduleColumns": [
+      "id",
+      "source",
+      "destination",
+      "purpose",
+      "type",
+      "supply",
+      "route",
+      "external",
+      "terminationA",
+      "terminationB",
+      "terminationTotal",
+      "required",
+      "status"
+    ],
+    "author": "Rack Studio illustrative example",
+    "notes": "Deterministic geometric reuse: cable 1 follows a selected middle arc-length range of cable 0 with a separate parallel centreline and independent endpoint breakouts. All geometry and bend values are illustrative. No flexible-cable physics, installed slack, manufacturer compatibility or load certification is claimed. Both positioned routes deliberately extend behind the rack for a visible return path; rear working clearance is unverified. The supplied 2 m assemblies retain their physical lengths; spare slack is not physically modelled. Select cable 1, whose reference is cable 0 (PC 1 power inlet to PDU outlet 1), to edit the shared range35-65 percent or automatic offset."
+  }
+}

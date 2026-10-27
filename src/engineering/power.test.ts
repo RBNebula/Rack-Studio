@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import type { Cable, DeviceDefinition, Endpoint, Port, Project } from '../model';
-import { baseCable, createExampleProject } from '../examples';
+import { baseCable, createExampleProject } from '../testing/legacy-example';
 import { analyseProject } from './analysis';
 import {
   POWER_WARNING_UTILISATION,

@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { createWorkspaceProject, baseCable } from '../examples';
+import { createWorkspaceProject, baseCable } from '../testing/legacy-example';
 import type { Device } from '../model';
 import {
   deviceRailBoxes,

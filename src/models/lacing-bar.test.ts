@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { createExampleProject } from '../examples';
+import { createExampleProject } from '../testing/legacy-example';
 import { definitionSchema, type Device } from '../model';
 import { createLacingBar, lacingBarParts } from './lacing-bar';
 import { definitionParts } from '../engineering/shelves';

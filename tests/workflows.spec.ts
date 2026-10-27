@@ -2,7 +2,15 @@ import { test as base, expect } from '@playwright/test';
 import type { Locator, Page } from '@playwright/test';
 import { readFile } from 'node:fs/promises';
 import { resolve } from 'node:path';
-import { fileAction, fileItem, openView, selectInstalled, setView, viewState } from './navigation';
+import {
+  fileAction,
+  fileItem,
+  openExample,
+  openView,
+  selectInstalled,
+  setView,
+  viewState,
+} from './navigation';
 
 const test = base.extend<{ uncaughtErrors: string[] }>({
   uncaughtErrors: [
@@ -27,6 +35,7 @@ async function open(page: Page) {
   await page.goto('/');
   await expect(page.locator('canvas')).toBeVisible();
   await expect(page.locator('.rack-u-label').first()).toBeVisible();
+  await openExample(page);
   await expect(page.locator('.installed-pills > button')).toHaveCount(6);
   await expect(page.locator('.depth-section')).toHaveCount(1);
   await expect(page.getByLabel('Mounting hole type', { exact: true })).toHaveValue('square');
@@ -329,8 +338,12 @@ test('connections, master schedule, external length, reserve, CSV and project re
   await expect(purposeField(page, 'QA-NEW')).toHaveValue('QA edited purpose');
   await fileAction(page, 'Open');
   const saved = page.getByRole('dialog', { name: 'Open local project' });
-  await expect(saved.locator('.saved-project')).toHaveCount(1);
-  await saved.locator('.saved-project').click();
+  // The empty starting rack is saved too when the example is imported; open the example.
+  const example = saved
+    .locator('.saved-project')
+    .filter({ hasText: 'Vehicle communications · example' });
+  await expect(example).toHaveCount(1);
+  await example.click();
   await expect(page.locator('.toolbar-save')).toContainText('Opened from local storage');
   await expect(page.locator('.installed-pills > button')).toHaveCount(6);
 
@@ -449,7 +462,7 @@ test('imported power cable follows an existing curved run through UI edits and r
   await open(page);
   await page
     .getByLabel('Import project JSON', { exact: true })
-    .setInputFiles(resolve('examples/route-follow.rack.json'));
+    .setInputFiles(resolve('tests/fixtures/route-follow.rack.json'));
   await expect(page.locator('.installed-pills > button')).toHaveCount(3);
   await page.getByRole('button', { name: 'Project Settings', exact: true }).click();
   await expect(page.locator('.header-project')).toContainText('Follow existing power cable');

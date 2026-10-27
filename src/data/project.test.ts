@@ -1,8 +1,8 @@
 import { describe, expect, it } from 'vitest';
-import { createExampleProject } from '../examples';
+import { createExampleProject } from '../testing/legacy-example';
 import { endpointPort } from '../engineering/connectivity';
 import { analysePower } from '../engineering/power';
-import { baseCable } from '../examples';
+import { baseCable } from '../testing/legacy-example';
 import type { Project } from '../model';
 import { parseProject, serializeProject, validateReferences } from './project';
 

@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import { createGenericSwitch, switchMountingSlots } from './generic-switch';
-import { createWorkspaceProject, baseCable } from '../examples';
+import { createWorkspaceProject, baseCable } from '../testing/legacy-example';
 import { parseProject, serializeProject } from '../data/project';
 import {
   deviceEarBoxes,

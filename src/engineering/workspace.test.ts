@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import * as THREE from 'three';
-import { createWorkspaceProject, baseCable } from '../examples';
+import { createWorkspaceProject, baseCable } from '../testing/legacy-example';
 import type { Accessory, Device, Vec3 } from '../model';
 import { clone } from '../model';
 import { parseProject, serializeProject, validateReferences } from '../data/project';

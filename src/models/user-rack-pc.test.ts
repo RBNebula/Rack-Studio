@@ -1,7 +1,7 @@
 import { readFileSync } from 'node:fs';
 import { describe, expect, it } from 'vitest';
 import { createUserRackPc } from './user-rack-pc';
-import { baseCable, createWorkspaceProject } from '../examples';
+import { baseCable, createWorkspaceProject } from '../testing/legacy-example';
 import { definitionSchema, portSchema, type Device } from '../model';
 import { parseProject, serializeProject } from '../data/project';
 import {

@@ -1,6 +1,6 @@
 import { beforeEach, describe, expect, it } from 'vitest';
 import { useStore } from './state';
-import { createExampleProject, createWorkspaceProject } from './examples';
+import { createExampleProject, createWorkspaceProject } from './testing/legacy-example';
 import { parseProject, serializeProject } from './data/project';
 import {
   analysePower,
@@ -8,7 +8,7 @@ import {
   setDefinitionPower,
   setPowerBank,
 } from './engineering/power';
-import { baseCable } from './examples';
+import { baseCable } from './testing/legacy-example';
 
 beforeEach(() => {
   useStore.getState().replace(createWorkspaceProject());

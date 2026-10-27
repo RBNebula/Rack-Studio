@@ -1,7 +1,8 @@
 import { describe, it, expect } from 'vitest';
-import { createWorkspaceProject, baseCable } from '../testing/legacy-example';
-import type { Device } from '../model';
+import { createExampleProject, createWorkspaceProject, baseCable } from '../testing/legacy-example';
+import type { Device, Project } from '../model';
 import {
+  deviceBoxes,
   deviceRailBoxes,
   devicePosition,
   portWorld,
@@ -152,4 +153,88 @@ describe('telescoping device rails', () => {
     expect(restored.devices[0].rails).toEqual(d.rails);
     expect(restored.cables[0]).toEqual(c);
   });
+});
+
+// Regression: a per-device rails record used to skip the exterior depth-envelope check on its
+// own face, even seated at 0 mm extension. The example rack allows 50 mm in front of the front
+// rails (front inset) and 30 mm behind the rear rails (800 - 50 inset - 20 frame - 700).
+describe('rails record and the installed depth envelope', () => {
+  function bezelled(face: Device['face'], bezelMm: number) {
+    const p = createExampleProject(false);
+    p.definitions.push({
+      ...p.definitions.find((x) => x.id === 'def-switch')!,
+      id: 'def-bezel',
+      heightU: 2,
+      heightMm: 86,
+      depthMm: 630,
+      ports: [],
+      parts: [
+        {
+          id: 'bezel',
+          name: 'Front bezel',
+          position: [0, 43, -bezelMm / 2],
+          size: [430, 86, bezelMm],
+        },
+      ],
+    });
+    const d: Device = {
+      id: 'ups',
+      definitionId: 'def-bezel',
+      name: 'UPS',
+      startU: 1,
+      face,
+      supportId: null,
+      installation: 'installed',
+    };
+    p.devices = [d];
+    return { p, d };
+  }
+  const zExtreme = (p: Project, d: Device) => {
+    const z = deviceBoxes(p, d).flatMap((b) => [b.min[2], b.max[2]]);
+    return d.face === 'front' ? Math.min(...z) : Math.max(...z);
+  };
+  it.each([
+    ['front', 60, -60],
+    ['rear', 40, 740],
+  ] as const)(
+    'reports a %s bezel overrun with a seated rails record exactly as without one',
+    (face, bezelMm, extreme) => {
+      const { p, d } = bezelled(face, bezelMm);
+      expect(zExtreme(p, d)).toBe(extreme);
+      expect(validatePlacement(p, d)).toContain(
+        'Physical depth exceeds the usable envelope in depth section lower.',
+      );
+      d.rails = { ...rails(), chassisLeadMm: 0 };
+      expect(zExtreme(p, d)).toBe(extreme);
+      expect(validatePlacement(p, d)).toContain(
+        'Physical depth exceeds the usable envelope in depth section lower.',
+      );
+    },
+  );
+  it.each([
+    ['front', 50],
+    ['rear', 30],
+  ] as const)(
+    'accepts a %s bezel exactly at the envelope limit with a rails record',
+    (face, mm) => {
+      const { p, d } = bezelled(face, mm);
+      d.rails = { ...rails(), chassisLeadMm: 0 };
+      expect(validatePlacement(p, d)).toEqual([]);
+    },
+  );
+  it.each(['front', 'rear'] as const)(
+    'keeps checking the seated %s envelope while service travel carries the chassis outside',
+    (face) => {
+      const over = bezelled(face, face === 'front' ? 60 : 40);
+      over.d.rails = { ...rails(), extensionMm: 600 };
+      expect(validatePlacement(over.p, over.d)).toContain(
+        'Physical depth exceeds the usable envelope in depth section lower.',
+      );
+      const ok = bezelled(face, face === 'front' ? 50 : 30);
+      ok.d.rails = { ...rails(), extensionMm: 600 };
+      // Extended 600 mm outward: 650 mm in front of the front rails, or 630 mm behind the rear.
+      expect(zExtreme(ok.p, ok.d)).toBe(face === 'front' ? -650 : 1330);
+      expect(validatePlacement(ok.p, ok.d)).toEqual([]);
+    },
+  );
 });

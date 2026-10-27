@@ -108,6 +108,76 @@ export const meshAssetSchema = z.object({
   omittedParts: z.number().int().nonnegative(),
 });
 export type MeshAsset = z.infer<typeof meshAssetSchema>;
+/**
+ * Fixed (non-sliding) L-section support rails supplied with a rail-mounted unit, one per side.
+ * Each rail is screwed to the front and rear rack posts at the unit's U position, just behind
+ * the screw holes (between the inner faces of the posts). The horizontal flange lies under the
+ * chassis bottom; the vertical leg runs alongside the chassis side, inside the clear opening.
+ * The chassis keeps its ear-defined height: the flange top touches the chassis bottom and the
+ * flange thickness is taken from the space under the chassis (see docs/device-rails.md).
+ * Millimetres; an unknown range or rating is null, never zero.
+ */
+export const supportRailsSchema = z.object({
+  kind: z.literal('fixed-l'),
+  /** Compatible front-to-rear rack screw-plane spacing (rear minus front rail plane). */
+  spanMinMm: positive.nullable(),
+  spanMaxMm: positive.nullable(),
+  /** Overall vertical leg height, from the underside of the flange. */
+  legHeightMm: positive,
+  /** Overall horizontal flange width, from the outer face of the vertical leg. */
+  flangeWidthMm: positive,
+  /** Sheet thickness of both legs. */
+  thicknessMm: positive,
+  /** Rated load carried by the pair, kg. */
+  loadRatingKg: positive.nullable(),
+  evidence: evidenceSchema,
+  source: z.string(),
+});
+export type SupportRails = z.infer<typeof supportRailsSchema>;
+/** Definition-level consistency of fixed support rails; shared by the schema and the editor. */
+export function supportRailsDefinitionIssues(definition: {
+  mounting: string;
+  bodyMode: string;
+  plate: unknown;
+  shelf: unknown;
+  lacing?: unknown;
+  railMinMm: number | null;
+  railMaxMm: number | null;
+  supportRails?: SupportRails;
+}): { path: (string | number)[]; message: string }[] {
+  const rails = definition.supportRails;
+  if (!rails) return [];
+  const issues: { path: (string | number)[]; message: string }[] = [];
+  if (
+    definition.mounting !== 'rails' ||
+    definition.bodyMode !== 'box' ||
+    definition.plate ||
+    definition.shelf ||
+    definition.lacing
+  )
+    issues.push({
+      path: ['supportRails'],
+      message:
+        'Fixed support rails require rails mounting and a chassis box (no plate, shelf or lacing bar) to bear on.',
+    });
+  if (definition.railMinMm !== null || definition.railMaxMm !== null)
+    issues.push({
+      path: ['supportRails'],
+      message:
+        'With fixed support rails the compatible rail spacing belongs to the rails (spanMinMm/spanMaxMm); railMinMm and railMaxMm must be empty.',
+    });
+  if (rails.spanMinMm !== null && rails.spanMaxMm !== null && rails.spanMinMm > rails.spanMaxMm)
+    issues.push({
+      path: ['supportRails', 'spanMinMm'],
+      message: 'Support rail minimum spacing exceeds its maximum spacing.',
+    });
+  if (rails.flangeWidthMm <= rails.thicknessMm || rails.legHeightMm <= rails.thicknessMm)
+    issues.push({
+      path: ['supportRails', 'thicknessMm'],
+      message: 'Support rail flange width and leg height must both exceed the sheet thickness.',
+    });
+  return issues;
+}
 export const definitionSchema = z
   .object({
     id: z.string().min(1),
@@ -139,6 +209,8 @@ export const definitionSchema = z
     railMinMm: nonnegative.nullable(),
     railMaxMm: positive.nullable(),
     screwOffsetsMm: z.array(nonnegative),
+    /** Fixed L-section support rails supplied with the unit; absent on older definitions. */
+    supportRails: supportRailsSchema.optional(),
     ports: z.array(portSchema),
     parts: z.array(boxSchema),
     frontImage: z.string().nullable(),
@@ -158,6 +230,8 @@ export const definitionSchema = z
       .optional(),
   })
   .superRefine((definition, context) => {
+    for (const issue of supportRailsDefinitionIssues(definition))
+      context.addIssue({ code: 'custom', ...issue });
     if (
       definition.lacing &&
       (definition.bodyMode !== 'parts' ||

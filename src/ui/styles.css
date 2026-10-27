@@ -728,13 +728,13 @@ svg {
   display: flex;
   align-items: center;
   gap: var(--space-2);
-  padding: var(--space-2) 22px;
+  padding: 3px 14px 3px 22px;
   background: var(--warn-bg);
   color: var(--warn);
   border-bottom: 1px solid var(--warn-line);
   font-size: var(--fs-xs);
   flex-shrink: 0;
-  min-height: 34px;
+  min-height: 30px;
 }
 .accuracy-banner > strong {
   font-weight: 600;
@@ -2444,4 +2444,139 @@ td {
   .report-heading {
     margin-top: 20px;
   }
+}
+/* Device model designer: same document/card structure as the report workspaces. */
+.model-designer .report-heading {
+  align-items: flex-end;
+}
+.model-designer .report-heading p {
+  max-width: 640px;
+}
+.designer-source {
+  align-items: flex-end;
+}
+.designer-source .field {
+  margin: 0;
+  min-width: 240px;
+}
+.model-designer-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1.15fr) minmax(360px, 1fr);
+  gap: var(--space-5);
+  align-items: start;
+}
+.model-designer-grid .surface {
+  margin-bottom: var(--space-5);
+}
+.model-designer-grid .section-title {
+  margin-top: 0;
+}
+.model-preview-card {
+  position: sticky;
+  top: 0;
+}
+.model-preview {
+  height: 360px;
+  border-radius: var(--radius-md);
+  overflow: hidden;
+  background: #e9eef0;
+  border: 1px solid var(--line);
+}
+.segmented {
+  display: inline-flex;
+  padding: 3px;
+  gap: 2px;
+  border-radius: var(--radius-md);
+  background: var(--surface-3);
+  border: 1px solid var(--line);
+}
+.segmented > button {
+  border: 0;
+  background: transparent;
+  border-radius: var(--radius-sm);
+  padding: 5px 10px;
+  font-size: var(--fs-sm);
+  font-weight: 600;
+  color: var(--muted);
+}
+.segmented > button[aria-pressed='true'] {
+  background: var(--surface);
+  color: var(--teal-text);
+  box-shadow:
+    var(--shadow-xs),
+    inset 0 -2px 0 var(--teal);
+}
+.component-palette {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin: 0 0 var(--space-3);
+}
+.component-palette > .button {
+  min-height: var(--control-h-sm);
+  padding: 4px 10px;
+  font-size: var(--fs-xs);
+  cursor: grab;
+  border-style: dashed;
+}
+.selected-component {
+  flex-wrap: wrap;
+  align-items: flex-end;
+  margin-top: var(--space-3);
+  padding-top: var(--space-2);
+  border-top: 1px solid var(--line-soft);
+}
+.model-designer-actions {
+  position: sticky;
+  bottom: -28px;
+  display: flex;
+  gap: var(--space-2);
+  justify-content: flex-end;
+  margin: 0 -30px -28px;
+  padding: var(--space-3) 30px;
+  background: var(--surface);
+  border-top: 1px solid var(--line);
+  z-index: 3;
+}
+@media (max-width: 1250px) {
+  .model-designer-grid {
+    grid-template-columns: 1fr;
+  }
+  .model-preview-card {
+    position: static;
+  }
+}
+/* Accuracy: a compact, session-dismissible strip plus an always-visible header badge. */
+.accuracy-banner > .icon-button {
+  width: 24px;
+  height: 24px;
+  color: var(--warn);
+  margin-left: 2px;
+}
+.accuracy-banner > .icon-button:hover:not(:disabled) {
+  background: var(--warn-line);
+  color: var(--warn);
+}
+.accuracy-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  height: 22px;
+  padding: 0 8px;
+  border-radius: var(--radius-sm);
+  border: 1px solid #8a6a2e;
+  background: #3a2f1a;
+  color: #f3cf8a;
+  font-size: var(--fs-2xs);
+  font-weight: 650;
+  letter-spacing: 0.6px;
+  text-transform: uppercase;
+}
+.accuracy-badge:hover {
+  background: #4a3b1f;
+}
+.accuracy-badge.verified {
+  border-color: var(--navy-line);
+  background: var(--navy-2);
+  color: var(--navy-text);
 }

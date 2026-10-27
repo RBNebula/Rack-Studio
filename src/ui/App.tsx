@@ -76,6 +76,22 @@ export default function App() {
     ...(inspectorWidth && inspectorOpen ? { '--inspector-w': `${inspectorWidth}px` } : {}),
   } as CSSProperties;
   const analysis = analyseProject(project);
+  const verified = project.rack.evidence === 'verified';
+  const [bannerHidden, setBannerHidden] = useState(() => {
+    try {
+      return sessionStorage.getItem('rack-studio-accuracy-hidden') === '1';
+    } catch {
+      return false;
+    }
+  });
+  const hideBanner = (hidden: boolean) => {
+    setBannerHidden(hidden);
+    try {
+      sessionStorage.setItem('rack-studio-accuracy-hidden', hidden ? '1' : '0');
+    } catch {
+      // Storage unavailable: the choice lasts until reload.
+    }
+  };
   useEffect(() => {
     let active = true;
     const opening = useStore.getState().project;
@@ -235,6 +251,20 @@ export default function App() {
           <span className="project-dot" />
           <span>{project.name}</span>
           <Badge>LOCAL PROJECT</Badge>
+          <button
+            className={`accuracy-badge ${verified ? 'verified' : ''}`}
+            aria-expanded={!bannerHidden}
+            aria-label={`${verified ? 'Model verification' : 'Illustrative engineering model'}: ${bannerHidden ? 'show' : 'hide'} accuracy notice`}
+            data-tooltip={
+              verified
+                ? 'Rack marked verified; cable specifications and routes must also be verified'
+                : 'Dimensions and port positions need confirmation · click to show the notice'
+            }
+            onClick={() => hideBanner(!bannerHidden)}
+          >
+            <Icon name="alert" size={13} />
+            {verified ? 'Verify cables' : 'Illustrative model'}
+          </button>
         </div>
         <button
           className="avatar"
@@ -338,22 +368,27 @@ export default function App() {
           </button>
         ))}
       </nav>
-      <div className="accuracy-banner">
-        <Icon name="alert" size={16} />
-        <strong>
-          {project.rack.evidence === 'verified'
-            ? 'Model verification'
-            : 'Illustrative engineering model'}
-        </strong>
-        <span>
-          {project.rack.evidence === 'verified'
-            ? 'Cable specifications and routes must also be verified.'
-            : 'Rack construction, equipment dimensions and port positions need confirmation. Calculations describe this model.'}
-        </span>
-        <button onClick={() => set({ workspace: 'settings', selection: null })}>
-          Review specifications <Icon name="chevron" size={14} />
-        </button>
-      </div>
+      {!bannerHidden && (
+        <div className="accuracy-banner" role="note">
+          <Icon name="alert" size={16} />
+          <strong>{verified ? 'Model verification' : 'Illustrative engineering model'}</strong>
+          <span>
+            {verified
+              ? 'Cable specifications and routes must also be verified.'
+              : 'Rack construction, equipment dimensions and port positions need confirmation. Calculations describe this model.'}
+          </span>
+          <button onClick={() => set({ workspace: 'settings', selection: null })}>
+            Review specifications <Icon name="chevron" size={14} />
+          </button>
+          <IconButton
+            icon="x"
+            size={14}
+            label="Hide accuracy notice for this session"
+            tooltip="Hide for this session · the header badge keeps it available"
+            onClick={() => hideBanner(true)}
+          />
+        </div>
+      )}
       <div
         className={`workspace-body ${workspace === 'designer' ? `designer-layout ${libraryOpen ? '' : 'library-collapsed'} ${inspectorOpen ? '' : 'inspector-collapsed'}` : editingReport ? 'report-layout' : ''}`}
         style={workspace === 'designer' ? panelStyle : undefined}

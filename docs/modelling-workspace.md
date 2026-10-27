@@ -16,7 +16,7 @@ For length, close Modelling tools, select the tray and drag its green far-end **
 
 Select a free point or line guide, choose **Move**, then drag it directly. A line translates as one object; **Rotate** rotates it about its centre. Linked cables recalculate from the same guide identity. Surface waypoints created in Wiring remain world-fixed after placement; their 10 mm offset is not a persistent surface binding.
 
-**Measure** records the straight distance between two clicked physical surface points, in millimetres. Escape cancels an unfinished measurement. Measurements persist in the project; they are world-space observations and do not automatically follow later equipment moves. Delete obsolete measurements from the panel.
+**Measure** records the straight distance between two clicked physical surface points, in millimetres. Escape cancels an unfinished measurement and returns to Select; Escape again (or **Exit** on the viewport mode pill) closes Modelling tools. The tools panel docks at the left edge of the viewport and can be hidden to a slim tab. Measurements persist in the project; they are world-space observations and do not automatically follow later equipment moves. Delete obsolete measurements from the panel.
 
 **Hide selected**, **Isolate selected** and **Show all objects** affect the view only. Hidden objects still participate in placement and cable collision checks. Isolating a rack displays its frame and installed devices; unrelated guides, trays and cables are hidden. Visibility and tool state are temporary, not installation changes.
 

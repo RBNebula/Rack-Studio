@@ -4,6 +4,16 @@
 
 The opening project is an illustrative20U rack. Its numerical dimensions are examples. Rack depth means the distance between the front and rear screw planes; U1 starts at the bottom, and a new rack has no depth step. Square holes with cage nuts are the current default.
 
+## Workspace layout
+
+The amber **Illustrative engineering model** strip under the tabs states that dimensions and port positions need confirmation. Its × hides it for the current browser session only; the amber **Illustrative model** badge beside the project name stays visible and reopens it. A rack marked verified shows **Verify cables** instead, because cable specifications and routes still need verification.
+
+In the 3D Rack Designer, the equipment library (left) and properties panel (right) collapse with the panel icon in their headings and reopen from the labelled rail. Drag a panel's inner edge, or focus it and use the arrow keys (Shift for larger steps), to resize it. Widths and open/closed state are remembered in this browser.
+
+The properties panel groups fields into titled sections (for equipment: Identity, Position & mounting, Rails, Power & weight, Ports; for cables: Identity, Specification, Length breakdown, Route; for the rack: Identity, Dimensions, Construction, Mounting & depth, Structural members). Click a section heading to collapse or expand it; each section type remembers its state. Caveats appear as one-line notes, amber for provisional or unverified data, with **Why?** for the full explanation. Route issues, length warnings and placement errors are always shown above the sections. Equipment name, rack and position edits show **Unapplied** until you press **Apply position**.
+
+Hover or keyboard-focus any icon button for its tooltip. The **?** button opens the quick guide.
+
 ## Configure and install
 
 Select an installed rack chassis and enable **Fit sliding rack rails**. **Pull device forward on rails** selects the example service position, using the user-confirmed 500 mm rail projection and approximate 600 mm chassis protrusion. Member dimensions, mounting height and chassis lead are editable; post spacing has no invented kit min/max. Supplied cables keep their lengths and can become insufficient. See [sliding rail guide](device-rails.md).
@@ -15,7 +25,7 @@ For a rear-mounted device, click **Rear** above the viewport, then drag from the
 
 Drag a device from the library onto a U location. The preview shows the snapped position and any error; invalid drops do not install. The plus icon on a card opens precise placement, including front/rear face and a supporting shelf for a freestanding computer. Select installed equipment to change its name or U position. Moving equipment retains its cable IDs and updates its port endpoints. Undo/redo are available from the toolbar and Ctrl+Z/Ctrl+Shift+Z.
 
-Orbit with the left mouse button on empty workspace, pan with the right button, and zoom with the wheel. Front/rear/left/right/top/3D buttons position the camera; Ortho changes projection. Measurements and labels are independently visible. Selecting equipment can be done through the installed-equipment strip when a port or cable obscures it.
+Orbit with the left mouse button on empty workspace, pan with the right button, and zoom with the wheel; the viewport footer repeats these controls. Front/rear/left/right/top/3D buttons position the camera; Ortho changes projection. Labels, dimension guides and cables are independent icon toggles; a switched-on toggle shows a teal chip with an underline. **Mount** turns amber when new drops will mount on the rear face. An empty rack shows a drag-to-place hint naming the current mounting face. Selecting equipment can be done through the installed-equipment strip when a port or cable obscures it.
 
 Catalogue cards for the requested Cisco/Connectix/APC models include published facts and unresolved fields. Configure measured geometry before saving them into the usable library. Zero in an incomplete draft is an unanswered field and blocks saving. Do not copy maximum overall width into a chassis-width field, or assume catalogue depth starts at the mounting ears. Generic examples can be used while the exact mechanical drawings are unavailable.
 
@@ -34,7 +44,7 @@ Choose Follow an existing cable run to reuse a section of another route. Set the
 
 ## External runs and lengths
 
-For interactive rack cabling, open **Wiring** in the 3D viewport. **Connect ports** uses two socket clicks. **Waypoints** places guides 10 mm outward from clicked surfaces; Shift-click starts a line and a second click finishes it. Choose a cable, enter **Link cable**, and click guides in route order. Reverse/reorder/unlink in the route list, or edit shared guide coordinates. Guides stay fixed in world space when equipment moves. See [the Wiring mode guide](wiring-mode.md).
+For interactive rack cabling, open **Wiring** in the 3D viewport. Its panel docks at the left of the viewport (hide it with its panel icon; the mode stays active), and a dark pill under the toolbar states the active tool and what the next click does, for example "Wiring · Connect ports — click the source port". **Esc** cancels a pending click; with nothing pending, **Esc** or the pill's **Exit** leaves the mode. **Tools** works the same way. **Connect ports** uses two socket clicks. **Waypoints** places guides 10 mm outward from clicked surfaces; Shift-click starts a line and a second click finishes it. Choose a cable, enter **Link cable**, and click guides in route order. Reverse/reorder/unlink in the route list, or edit shared guide coordinates. Guides stay fixed in world space when equipment moves. See [the Wiring mode guide](wiring-mode.md).
 
 Create a rack exit in a clear opening, then a named logical destination from Connections. Connect a rack port to that destination through the exit. Enter the surveyed external distance on the cable. Until entered, the total required length remains unknown even though the rack-side route has a calculated length.
 

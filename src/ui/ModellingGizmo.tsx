@@ -8,11 +8,7 @@ import type { Vec3 } from '../model';
 export function ModellingGizmo() {
   const s = useStore(),
     ref = useRef<THREE.Group>(null!),
-    dragging = useRef(false),
-    // Live preview is coalesced to one update per animation frame and skipped when the snapped
-    // pose has not changed; the committed edit on release is unchanged.
-    frame = useRef(0),
-    lastPreview = useRef('');
+    dragging = useRef(false);
   const pose = objectPose(s.project, s.selection);
   const controls = useThree((state) => state.controls) as { enabled: boolean } | null;
   useEffect(() => {
@@ -62,16 +58,8 @@ export function ModellingGizmo() {
           dragging.current = true;
         }}
         onObjectChange={() => {
-          if (!dragging.current || frame.current) return;
-          frame.current = requestAnimationFrame(() => {
-            frame.current = 0;
-            if (!dragging.current || !ref.current || !s.selection) return;
-            const v = values();
-            const key = JSON.stringify([v.position, v.rotationDeg]);
-            if (key === lastPreview.current) return;
-            lastPreview.current = key;
-            s.set({ modelPreview: { selection: s.selection, ...v } });
-          });
+          if (dragging.current && ref.current && s.selection)
+            s.set({ modelPreview: { selection: s.selection, ...values() } });
         }}
         onMouseUp={() => {
           if (ref.current && s.selection) {
@@ -81,9 +69,6 @@ export function ModellingGizmo() {
             );
           }
           dragging.current = false;
-          cancelAnimationFrame(frame.current);
-          frame.current = 0;
-          lastPreview.current = '';
           s.set({ modelPreview: null });
         }}
       />

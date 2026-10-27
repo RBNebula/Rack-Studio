@@ -80,6 +80,34 @@ export const powerBankSchema = z.object({
   source: z.string(),
 });
 export type PowerBank = z.infer<typeof powerBankSchema>;
+const base64 = z.string().regex(/^[A-Za-z0-9+/]*={0,2}$/, 'Expected base64 data.');
+/**
+ * Display mesh tessellated from an imported STEP model, in device-local millimetres: x across
+ * (+X shows on the left from the front), y up from the body bottom, z rearwards from the model's
+ * front face. Positions are int16 steps of `quantumMm` about the centre of `boundsMm`. Placement
+ * and collisions use the definition's box dimensions, never this mesh.
+ */
+export const meshAssetSchema = z.object({
+  source: z.literal('step'),
+  fileName: z.string(),
+  boundsMm: z.object({ min: vectorSchema, max: vectorSchema }),
+  quantumMm: positive,
+  /** Where the mesh sits relative to the chassis datum (front ear plane or shelf setback). */
+  offsetMm: vectorSchema,
+  groups: z
+    .array(
+      z.object({
+        color: z.string(),
+        positions: base64,
+        indices: base64,
+        indexBytes: z.union([z.literal(2), z.literal(4)]),
+      }),
+    )
+    .min(1),
+  triangles: z.number().int().nonnegative(),
+  omittedParts: z.number().int().nonnegative(),
+});
+export type MeshAsset = z.infer<typeof meshAssetSchema>;
 export const definitionSchema = z
   .object({
     id: z.string().min(1),
@@ -93,6 +121,9 @@ export const definitionSchema = z
     depthMm: nonnegative,
     faceWidthMm: positive,
     earThicknessMm: positive.nullable().default(null),
+    /** Freestanding equipment only: how far behind the shelf's front plane the chassis sits. */
+    shelfSetbackMm: nonnegative.optional(),
+    mesh: meshAssetSchema.optional(),
     shelf: shelfSchema.nullable().default(null),
     plate: plateSchema.nullable().default(null),
     lacing: z.object({ barWidthMm: positive, barHeightMm: positive }).optional(),

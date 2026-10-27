@@ -16,6 +16,7 @@ import { DefinitionPowerFields } from './PowerPanel';
 import { powerDefinitionIssues } from '../engineering/power';
 import { portRotationDeg } from '../engineering/ports';
 import { createGenericSwitch } from '../models/generic-switch';
+import { StepImport } from './StepImport';
 const genericSwitch = createGenericSwitch();
 import { createLacingBar } from '../models/lacing-bar';
 const lacingBar = createLacingBar();
@@ -279,6 +280,7 @@ export default function Library({
   const [search, setSearch] = useState('');
   const [category, setCategory] = useState('All equipment');
   const [editing, setEditing] = useState<DeviceDefinition | null>(null);
+  const [stepOpen, setStepOpen] = useState(false);
   const [placing, setPlacing] = useState<DeviceDefinition | null>(null);
   const definitions = project.definitions.filter(
     (d) =>
@@ -336,6 +338,7 @@ export default function Library({
           >
             <Icon name="plus" />
           </button>
+          <IconButton icon="upload" label="Import STEP model" onClick={() => setStepOpen(true)} />
           {onCollapse && (
             <IconButton icon="panel-left" label="Collapse equipment library" onClick={onCollapse} />
           )}
@@ -625,6 +628,7 @@ export default function Library({
         </div>
       )}
       {editing && <DeviceEditor initial={editing} onClose={() => setEditing(null)} />}{' '}
+      {stepOpen && <StepImport onClose={() => setStepOpen(false)} />}
       {placing && <PlacementDialog definition={placing} onClose={() => setPlacing(null)} />}
     </section>
   );

@@ -1,6 +1,6 @@
 import type { Device, Project } from '../model';
 import { validatePlacement } from './geometry';
-/** Project a complete move before validation so supported objects move together. */
+/** Project a complete move before validation so supported objects move together, including to another rack. */
 export function projectWithPlacement(project: Project, candidate: Device): Project {
   const old = project.devices.find((d) => d.id === candidate.id);
   const affected = new Set([candidate.id]);
@@ -18,7 +18,7 @@ export function projectWithPlacement(project: Project, candidate: Device): Proje
     d.id === candidate.id
       ? candidate
       : affected.has(d.id)
-        ? { ...d, startU: d.startU + delta, face: candidate.face }
+        ? { ...d, startU: d.startU + delta, face: candidate.face, rackId: candidate.rackId }
         : d,
   );
   if (!old) devices.push(candidate);
@@ -34,4 +34,17 @@ export function placementIssues(project: Project, candidate: Device): string[] {
         .flatMap((d) => validatePlacement(draft, d, d.id)),
     ),
   ];
+}
+
+/** The bottom of a support chain: a shelf for the equipment on it, else the device itself. */
+export function supportRoot(project: Project, device: Device): Device {
+  const seen = new Set<string>();
+  let current = device;
+  while (current.supportId && !seen.has(current.id)) {
+    seen.add(current.id);
+    const support = project.devices.find((d) => d.id === current.supportId);
+    if (!support) break;
+    current = support;
+  }
+  return current;
 }

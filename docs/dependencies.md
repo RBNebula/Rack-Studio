@@ -22,6 +22,7 @@ Public npm metadata and official documentation were checked on 22 October 2026. 
 | @playwright/test | 1.64.1 | [Package metadata](https://registry.npmjs.org/@playwright/test/1.64.1); requires Node >=20 |
 | @types/react, @types/react-dom | 19.3.0 | [React types](https://registry.npmjs.org/@types/react/19.3.0), [React DOM types](https://registry.npmjs.org/@types/react-dom/19.3.0); matching React 19 types |
 | @types/three | 0.186.0 | [Package metadata](https://registry.npmjs.org/@types/three/0.186.0); matching Three revision |
+| occt-import-js | 0.0.23 | [Package metadata](https://registry.npmjs.org/occt-import-js/0.0.23) (published 3 December 2024); OpenCascade STEP reader compiled to WebAssembly, LGPL-2.1. It runs only in the STEP import worker, and its `.wasm` is a separate, replaceable asset fetched on first import |
 | @types/node | 24.10.0 | [Package metadata](https://registry.npmjs.org/@types/node/24.10.0); Node 24 API types |
 
 Fiber 10 was still an alpha when checked; the stable Fiber 9 line is used. The [official v9 release list](https://github.com/pmndrs/react-three-fiber/releases) identifies the stable and alpha releases.

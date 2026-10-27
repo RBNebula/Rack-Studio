@@ -3,7 +3,7 @@ import type { CSSProperties, DragEvent, KeyboardEvent, PointerEvent } from 'reac
 import type { Device, Project, Rack } from '../model';
 import { useStore } from '../state';
 import { U_MM } from '../engineering/geometry';
-import { placementIssues } from '../engineering/placement';
+import { placementIssues, supportRoot } from '../engineering/placement';
 import { deviceRack, origin, racks } from '../engineering/space';
 import { DeviceMini } from './Library';
 import { commitPlacement } from './placementActions';
@@ -22,7 +22,7 @@ interface Target {
   u: number;
 }
 /** What is being dragged: a library definition or an installed device. */
-type Payload = { definitionId: string } | { deviceId: string; grabU: number };
+type Payload = { definitionId: string } | { deviceId: string; grabU: number; selectId?: string };
 
 // Pixel chrome per face (U-number gutter + borders) and gaps; keep in step with styles.css.
 const FRAME_CHROME = 32;
@@ -31,20 +31,6 @@ const RACK_GAP = 40;
 
 export const elevationOrder = (p: Project): Rack[] =>
   [...racks(p)].sort((a, b) => origin(b)[0] - origin(a)[0]);
-
-function dependents(p: Project, id: string): Set<string> {
-  const found = new Set<string>();
-  let changed = true;
-  while (changed) {
-    changed = false;
-    for (const d of p.devices)
-      if (d.supportId && (d.supportId === id || found.has(d.supportId)) && !found.has(d.id)) {
-        found.add(d.id);
-        changed = true;
-      }
-  }
-  return found;
-}
 
 /** Candidate device for a drop target, with UI-level blocks the engineering checks do not cover. */
 export function elevationCandidate(
@@ -79,8 +65,6 @@ export function elevationCandidate(
     }
   }
   const blocks: string[] = [];
-  if (existing && deviceRack(p, existing).id !== rack.id && dependents(p, existing.id).size)
-    blocks.push('Move the equipment standing on it first; supported equipment cannot change rack.');
   return {
     candidate: {
       ...(existing ?? {
@@ -109,9 +93,11 @@ export default function RackElevations() {
   const ordered = elevationOrder(project);
   const single = ordered.length === 1;
   // Installed devices move with pointer events (HTML5 drag cancels on re-render and skips touch).
-  const moving = useRef<{ deviceId: string; grabU: number } | null>(null);
+  const moving = useRef<{ deviceId: string; grabU: number; selectId: string } | null>(null);
   const press = useRef<{
     deviceId: string;
+    /** The device that was grabbed; `deviceId` is its shelf when it stands on one. */
+    selectId: string;
     grabU: number;
     x: number;
     y: number;
@@ -218,7 +204,12 @@ export default function RackElevations() {
       deviceRack(project, old).id === rack.id
     )
       return;
-    commitPlacement(result.candidate, result.blocks, where(rack, face, single));
+    commitPlacement(
+      result.candidate,
+      result.blocks,
+      where(rack, face, single),
+      'selectId' in p ? p.selectId : undefined,
+    );
   }
   function end() {
     moving.current = null;
@@ -231,8 +222,8 @@ export default function RackElevations() {
     if (!start || start.id !== e.pointerId) return;
     if (!moving.current) {
       if (Math.hypot(e.clientX - start.x, e.clientY - start.y) < 5) return;
-      moving.current = { deviceId: start.deviceId, grabU: start.grabU };
-      set({ selection: { kind: 'device', id: start.deviceId } });
+      moving.current = { deviceId: start.deviceId, grabU: start.grabU, selectId: start.selectId };
+      set({ selection: { kind: 'device', id: start.selectId } });
     }
     retarget(targetAt(e.clientX, e.clientY));
   }
@@ -240,13 +231,16 @@ export default function RackElevations() {
     const step = event.key === 'ArrowUp' ? 1 : event.key === 'ArrowDown' ? -1 : 0;
     if (!step) return;
     event.preventDefault();
-    const rack = deviceRack(project, device);
+    // Equipment on a shelf moves with its shelf.
+    const root = supportRoot(project, device);
+    const rack = deviceRack(project, root);
     const result = elevationCandidate(
       project,
-      { deviceId: device.id, grabU: 0 },
-      { rackId: rack.id, face: device.face, u: device.startU + step },
+      { deviceId: root.id, grabU: 0 },
+      { rackId: rack.id, face: root.face, u: root.startU + step },
     );
-    if (result) commitPlacement(result.candidate, result.blocks, where(rack, device.face, single));
+    if (result)
+      commitPlacement(result.candidate, result.blocks, where(rack, root.face, single), device.id);
   }
 
   const status = preview
@@ -366,9 +360,15 @@ export default function RackElevations() {
                                 const fromTop = Math.floor(
                                   ((e.clientY - box.top) / box.height) * definition.heightU,
                                 );
+                                // Equipment on a shelf drags its shelf, so the pair moves together.
+                                const root = supportRoot(project, device);
                                 press.current = {
-                                  deviceId: device.id,
-                                  grabU: Math.max(0, definition.heightU - 1 - fromTop),
+                                  deviceId: root.id,
+                                  selectId: device.id,
+                                  grabU: Math.max(
+                                    0,
+                                    device.startU + definition.heightU - 1 - fromTop - root.startU,
+                                  ),
                                   x: e.clientX,
                                   y: e.clientY,
                                   id: e.pointerId,
@@ -381,7 +381,14 @@ export default function RackElevations() {
                                   place(targetAt(e.clientX, e.clientY));
                                 else press.current = null;
                               }}
-                              onPointerCancel={end}
+                              onPointerCancel={(e) => {
+                                // Chrome also cancels the last hovered device's pointer when a
+                                // library drag starts; only end this device's own press.
+                                if (press.current?.id !== e.pointerId) return;
+                                press.current = null;
+                                moving.current = null;
+                                setTarget(null);
+                              }}
                             >
                               <DeviceMini definition={definition} />
                               <span className="elevation-label">{device.name}</span>

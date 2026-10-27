@@ -41,7 +41,11 @@ import {
   U_MM,
   uBottom,
 } from '../engineering/geometry';
-import { placementIssues, projectWithPlacement as relocated } from '../engineering/placement';
+import {
+  placementIssues,
+  projectWithPlacement as relocated,
+  supportRoot,
+} from '../engineering/placement';
 import type { Obstacle } from '../engineering/geometry';
 import { routeCable } from '../engineering/routing';
 import type { CableRoute } from '../engineering/routing';
@@ -53,6 +57,7 @@ import { LacingBarGeometry } from './LacingBarGeometry';
 import { PortGlyph } from './PortGlyph';
 import { portFaceAngle } from '../engineering/ports';
 import { FaceFeatures } from './FaceFeatures';
+import { StepModelGeometry } from './StepModelGeometry';
 import { PerforatedTray } from './PerforatedTray';
 import { addAccessory } from './Inspector';
 import { DeviceRails } from './DeviceRails';
@@ -93,6 +98,8 @@ interface SceneBridge {
 }
 interface PointerDrag {
   deviceId: string;
+  /** The device clicked; deviceId is its shelf when it stands on one. */
+  selectId: string;
   startX: number;
   startY: number;
   offsetMm: number;
@@ -369,6 +376,9 @@ export default function Scene() {
         (useStore.getState().showModelTools && useStore.getState().modelTool !== 'select')
       )
         return;
+      // Equipment standing on a shelf drags its shelf, so the pair moves together.
+      const grabbed = device;
+      device = supportRoot(useStore.getState().project, device);
       const point = bridge.current?.pointAt(
         event.clientX,
         event.clientY,
@@ -377,6 +387,7 @@ export default function Scene() {
       );
       pointerDrag.current = {
         deviceId: device.id,
+        selectId: grabbed.id,
         startX: event.clientX,
         startY: event.clientY,
         offsetMm: point
@@ -389,7 +400,7 @@ export default function Scene() {
       };
       (event.target as CaptureTarget | null)?.setPointerCapture(event.pointerId);
       set({
-        selection: { kind: 'device', id: device.id },
+        selection: { kind: 'device', id: grabbed.id },
         dragDeviceId: device.id,
         dragDefinitionId: null,
         previewU: device.startU,
@@ -419,7 +430,13 @@ export default function Scene() {
       const current = pointerDrag.current;
       if (!current || current.pointerId !== event.pointerId) return;
       event.stopPropagation();
-      if (current.moved) commit(updatePreview(event.clientX, event.clientY, current.offsetMm));
+      if (current.moved)
+        commit(
+          updatePreview(event.clientX, event.clientY, current.offsetMm),
+          [],
+          '',
+          current.selectId,
+        );
       (event.target as CaptureTarget | null)?.releasePointerCapture(event.pointerId);
       clearDrag();
     },
@@ -1347,6 +1364,14 @@ function EquipmentModel({
           definition={definition}
           dimmed={dimmed}
         />
+      ) : definition.mesh ? (
+        <StepModelGeometry
+          project={project}
+          device={device}
+          definition={{ ...definition, mesh: definition.mesh }}
+          selected={selected}
+          dimmed={dimmed}
+        />
       ) : (
         boxes.map((box) => (
           <SolidBox
@@ -1371,6 +1396,7 @@ function EquipmentModel({
         <FaceFeatures definition={definition} />
       </group>
       {!definition.plate &&
+        !definition.mesh &&
         definition.appearance === null &&
         definition.mounting !== 'shelf' &&
         definition.bodyMode !== 'parts' && (
@@ -1401,6 +1427,7 @@ function EquipmentModel({
         )}
       {!definition.plate &&
         !definition.lacing &&
+        !definition.mesh &&
         definition.appearance === null &&
         hasRackEars(definition) && (
           <EarMountingMarks
@@ -1411,6 +1438,7 @@ function EquipmentModel({
           />
         )}
       {!definition.plate &&
+        !definition.mesh &&
         definition.appearance === null &&
         definition.mounting !== 'shelf' &&
         definition.bodyMode !== 'parts' &&

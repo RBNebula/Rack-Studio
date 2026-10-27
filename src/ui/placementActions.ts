@@ -12,6 +12,8 @@ export function commitPlacement(
   candidate: Device | null,
   extraIssues: string[] = [],
   where = '',
+  /** Device to select afterwards; defaults to the moved one (a shelf's equipment keeps focus). */
+  selectId?: string,
 ): boolean {
   const state = useStore.getState();
   if (!candidate) {
@@ -37,6 +39,6 @@ export function commitPlacement(
     )
   )
     return false;
-  state.set({ selection: { kind: 'device', id: installed.id } });
+  state.set({ selection: { kind: 'device', id: selectId ?? installed.id } });
   return true;
 }

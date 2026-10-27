@@ -22,7 +22,18 @@ Hover or keyboard-focus any icon button for its tooltip. The **?** button opens 
 
 The **3D / 2D** switch in the **Design zone** bar swaps the 3D viewport for flat elevations; the library and properties panel stay beside it, and the 3D camera is kept for when you switch back. Each rack shows its **Front** then its **Rear**, and racks run left to right as seen from the front, so a second rack shows as left front, left rear, right front, right rear. U numbers run up the left of each face. Equipment mounted on the other face appears as a dashed outline, because deep equipment can still occupy the space behind.
 
-Drag a library card onto a face to place it at that U. Drag installed equipment to another U, the other face or another rack. While you drag, a green box with "no conflict detected" shows a valid drop; red shows the first reason it is blocked. Drops run the same placement checks as the 3D viewport. A blocked drop shows the reason and changes nothing, and freestanding equipment snaps onto a shelf at the target U. Shelf equipment moves with its shelf. A shelf carrying equipment cannot change rack until that equipment is moved off it. Click a device to select it for the properties panel; with a device focused, the Up and Down arrow keys move it by 1U. Wiring and modelling tools act on the 3D scene, so switching to 2D leaves them.
+Drag a library card onto a face to place it at that U. Drag installed equipment to another U, the other face or another rack. While you drag, a green box with "no conflict detected" shows a valid drop; red shows the first reason it is blocked. Drops run the same placement checks as the 3D viewport. A blocked drop shows the reason and changes nothing, and freestanding equipment snaps onto a shelf at the target U. A shelf and the equipment on it are linked: dragging either one moves both, including to the other face or another rack. Click a device to select it for the properties panel; with a device focused, the Up and Down arrow keys move it by 1U. Wiring and modelling tools act on the 3D scene, so switching to 2D leaves them.
+
+## Import a STEP model
+
+Use the upload icon (**Import STEP model**) in the equipment library heading to add a manufacturer CAD model (`.stp` or `.step`). The file is read in the browser by the OpenCascade kernel; a detailed assembly can take about a minute. Nothing is uploaded.
+
+- **Orientation.** By default the model's CAD front view (its +Z face, Y up) faces the rack front. If the front and rear previews show the wrong side, choose another **Front of the model** or **Up** axis.
+- **Hidden parts.** With **Omit internal parts** on, boards and components that no outside view can see are left out. This keeps the project file small: the Pepwave MAX BR2 Pro 5G model drops from 341,000 to about 96,000 triangles, roughly 1.6 MB.
+- **Model has rack ears.** The unit mounts on the rails. Its front sits the **ear offset** (default 4 mm) forward of the screw plane, and the body is centred in the U you drop it on. The chassis width behind the ears is measured from the model; check it.
+- **Model has no rack ears.** The unit is freestanding. It must stand on a shelf (1U or 2U), set back the **set back from shelf front** distance (default 50 mm) behind the shelf front, on either mounting face. The shelf and the unit then move together.
+
+Dimensions are the CAD bounding box. They are recorded as user-entered evidence, not a verified mounting interface. A STEP file carries no ports, mass or power, so add those in the definition editor. The 3D view shows the CAD mesh, while placement and collision checks use the definition's box dimensions. The library card and the 2D view use front and rear pictures rendered from the model.
 
 ## Retired equipment
 

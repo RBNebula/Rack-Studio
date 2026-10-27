@@ -23,7 +23,7 @@ import {
 } from '@react-three/drei';
 import * as THREE from 'three';
 import type { Cable, Device, DeviceDefinition, Project, Rack, Vec3 } from '../model';
-import { cableLabel, uid, clone } from '../model';
+import { cableLabel, clone } from '../model';
 import { useStore } from '../state';
 import {
   allObstacles,
@@ -58,6 +58,7 @@ import { addAccessory } from './Inspector';
 import { DeviceRails } from './DeviceRails';
 import { WiringPicker } from './WiringPicker';
 import { clickWiringGuide, connectWiringPort } from './wiringActions';
+import { commitPlacement } from './placementActions';
 import { ModeIndicator, SceneDrawer, viewportMode } from './ViewportMode';
 import { ViewCube, ViewCubeSync } from './ViewCube';
 import { ChoiceMenu, useStoredState } from './Panels';
@@ -223,7 +224,6 @@ export default function Scene() {
     hiddenKeys,
     isolateKey,
     set,
-    edit,
   } = useStore();
   const project = useMemo(() => {
     if (!modelPreview) return storedProject;
@@ -339,39 +339,7 @@ export default function Scene() {
     [candidateAt],
   );
 
-  const commit = useCallback(
-    (candidate: Device | null) => {
-      const state = useStore.getState();
-      if (!candidate) {
-        state.set({
-          error: 'Release over the rack to choose a mounting position.',
-          previewU: null,
-        });
-        return;
-      }
-      const issues = placementIssues(state.project, candidate);
-      if (issues.length) {
-        state.set({
-          error: `Cannot place ${candidate.name} at U${candidate.startU}: ${issues.join(' ')}`,
-        });
-        return;
-      }
-      const moving = state.project.devices.some((device) => device.id === candidate.id);
-      const installed = moving ? candidate : { ...candidate, id: uid('device') };
-      const next = relocated(state.project, installed);
-      if (
-        edit(
-          `${moving ? 'Moved' : 'Placed'} ${installed.name} at U${installed.startU}. Connected cables remain linked; review their route validation. Installation animations are not implemented.`,
-          (draft) => {
-            draft.devices = next.devices;
-          },
-        )
-      ) {
-        set({ selection: { kind: 'device', id: installed.id } });
-      }
-    },
-    [edit, set],
-  );
+  const commit = commitPlacement;
 
   const clearDrag = useCallback(() => {
     pointerDrag.current = null;

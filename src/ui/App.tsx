@@ -17,6 +17,7 @@ import { analyseProject, csv } from '../engineering/analysis';
 import { ResizeHandle, useStoredState } from './Panels';
 import { FileMenu } from './FileMenu';
 import { exitViewportMode } from './ViewportMode';
+import RackElevations from './RackElevations';
 
 /** Workspace views, grouped under five top-level tabs. View ids are unchanged state values. */
 const views: Record<Workspace, [string, string]> = {
@@ -87,6 +88,7 @@ export default function App() {
   );
   const [libraryOpen, setLibraryOpen] = useStoredState('rack-studio-library-open', true);
   const [inspectorOpen, setInspectorOpen] = useStoredState('rack-studio-inspector-open', true);
+  const [designView, setDesignView] = useStoredState<'3d' | '2d'>('rack-studio-design-view', '3d');
   // The last view opened in each top-level tab, so returning to a tab restores it.
   const [lastViews, setLastViews] = useStoredState<Record<string, string>>(
     'rack-studio-last-views',
@@ -418,9 +420,26 @@ export default function App() {
                 <span>Equipment library</span>
               </button>
             )}
-            <div className="designer-centre">
+            <div className={`designer-centre view-${designView}`}>
               <div className="designer-heading">
                 <span className="eyebrow">DESIGN ZONE</span>
+                <div className="design-view-switch" role="group" aria-label="Design view">
+                  {(['3d', '2d'] as const).map((v) => (
+                    <button
+                      key={v}
+                      type="button"
+                      aria-pressed={designView === v}
+                      data-tooltip={v === '3d' ? '3D rack view' : '2D front and rear elevations'}
+                      onClick={() => {
+                        // Wiring and modelling tools act on the 3D scene, so leave them first.
+                        if (v === '2d') exitViewportMode();
+                        setDesignView(v);
+                      }}
+                    >
+                      {v.toUpperCase()}
+                    </button>
+                  ))}
+                </div>
                 <div className="designer-toolbar" id="designer-toolbar" />
                 <div className="button-row">
                   <Button icon="cable" onClick={() => setDialog('connection')}>
@@ -477,9 +496,11 @@ export default function App() {
                   </details>
                 </div>
               </div>
+              {/* The 3D scene stays mounted in 2D so the camera is kept; CSS hides it. */}
               <Suspense fallback={<div className="scene-fallback">Loading 3D workspace…</div>}>
                 <Scene />
               </Suspense>
+              {designView === '2d' && <RackElevations />}
             </div>
             {inspectorOpen ? (
               <div className="side-panel right">

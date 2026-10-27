@@ -40,7 +40,7 @@
   --warn-line: #ecdcc0;
   --warn-fill: #d59a3f;
   --error: #a8433e;
-  --red: var(--error);
+  --red: #b84e49;
   --error-bg: #fdf0ee;
   --error-line: #ecc9c3;
   --good: #23775c;
@@ -2391,6 +2391,10 @@ td {
   }
   .power-document table {
     font-size: 8.5px;
+  }
+  .power-document table .badge {
+    font-size: inherit;
+    padding: 2px 4px;
   }
   .power-document th,
   .power-document td {

@@ -1,30 +1,44 @@
 import { lazy, Suspense, useEffect, useState } from 'react';
-import type { ReactNode } from 'react';
+import type { CSSProperties, ReactNode } from 'react';
 import { useStore } from '../state';
 import type { Workspace } from '../state';
 import { createExampleProject, createWorkspaceProject } from '../examples';
 import { repository } from '../data/storage';
 import type { ProjectSummary } from '../data/storage';
 import { parseProject, serializeProject } from '../data/project';
+import { removeRetiredEquipment, retiredNotice } from '../data/retired';
 import type { Project } from '../model';
 import Library from './Library';
 import Inspector, { RackInspector, addAccessory } from './Inspector';
 import Reports from './Reports';
 import { ConnectionDialog, DestinationDialog, ExitDialog } from './Forms';
-import { Button, Icon, Badge, Field, Modal, download } from './shared';
+import { Button, Icon, IconButton, Badge, Field, Modal, TooltipLayer, download } from './shared';
 import { analyseProject, csv } from '../engineering/analysis';
+import { ResizeHandle, useStoredState } from './Panels';
+import { FileMenu } from './FileMenu';
+import { exitViewportMode } from './ViewportMode';
+import RackElevations from './RackElevations';
 
-const tabs: [Workspace, string, string][] = [
-  ['designer', '3D Rack Designer', 'cube'],
-  ['model', 'Device Model Designer', 'cube'],
-  ['library', 'Device Library', 'box'],
-  ['connections', 'Connections', 'cable'],
-  ['schedule', 'Cable Schedule', 'grid'],
-  ['cuts', 'Cut List', 'ruler'],
-  ['procurement', 'Procurement', 'reel'],
-  ['power', 'Power & Weights', 'bolt'],
-  ['settings', 'Project Settings', 'settings'],
+/** Workspace views, grouped under five top-level tabs. View ids are unchanged state values. */
+const views: Record<Workspace, [string, string]> = {
+  designer: ['3D Rack Designer', 'cube'],
+  library: ['Device Library', 'box'],
+  model: ['Device Model Designer', 'cube'],
+  schedule: ['Cable Schedule', 'grid'],
+  connections: ['Connections', 'cable'],
+  cuts: ['Cut List', 'ruler'],
+  procurement: ['Procurement', 'reel'],
+  power: ['Power & Weights', 'bolt'],
+  settings: ['Project Settings', 'settings'],
+};
+const groups: { id: string; label: string; icon: string; views: Workspace[] }[] = [
+  { id: 'designer', label: '3D Rack Designer', icon: 'cube', views: ['designer'] },
+  { id: 'equipment', label: 'Equipment', icon: 'box', views: ['library', 'model'] },
+  { id: 'cabling', label: 'Cabling', icon: 'cable', views: ['schedule', 'connections'] },
+  { id: 'reports', label: 'Reports', icon: 'grid', views: ['cuts', 'procurement', 'power'] },
+  { id: 'project', label: 'Project Settings', icon: 'settings', views: ['settings'] },
 ];
+const groupOf = (view: Workspace) => groups.find((g) => g.views.includes(view)) ?? groups[0];
 const Scene = lazy(() => import('./Scene'));
 const ModelDesigner = lazy(() => import('./ModelDesigner'));
 let persistenceRequested = false;
@@ -33,6 +47,11 @@ function requestPersistentStorage() {
   if (persistenceRequested) return;
   persistenceRequested = true;
   void navigator.storage?.persist?.().catch(() => false);
+}
+/** Opening a saved or imported project removes equipment retired from Rack Studio. */
+function withoutRetired(p: Project): { project: Project; notice: string } {
+  const result = removeRetiredEquipment(p);
+  return { project: result.project, notice: retiredNotice(result) };
 }
 async function save(p: Project, manual = false): Promise<boolean> {
   const store = useStore.getState();
@@ -66,7 +85,49 @@ export default function App() {
     'open' | 'connection' | 'destination' | 'exit' | 'help' | null
   >(null);
   const [savedProjects, setSavedProjects] = useState<ProjectSummary[]>([]);
+  // Designer side panels: null width = the responsive default from CSS.
+  const [libraryWidth, setLibraryWidth] = useStoredState<number | null>(
+    'rack-studio-library-width',
+    null,
+  );
+  const [inspectorWidth, setInspectorWidth] = useStoredState<number | null>(
+    'rack-studio-inspector-width',
+    null,
+  );
+  const [libraryOpen, setLibraryOpen] = useStoredState('rack-studio-library-open', true);
+  const [inspectorOpen, setInspectorOpen] = useStoredState('rack-studio-inspector-open', true);
+  const [designView, setDesignView] = useStoredState<'3d' | '2d'>('rack-studio-design-view', '3d');
+  // The last view opened in each top-level tab, so returning to a tab restores it.
+  const [lastViews, setLastViews] = useStoredState<Record<string, string>>(
+    'rack-studio-last-views',
+    {},
+  );
+  const activeGroup = groupOf(workspace);
+  const openView = (id: Workspace) => {
+    setLastViews({ ...lastViews, [groupOf(id).id]: id });
+    set({ workspace: id, ...(['library', 'settings'].includes(id) ? { selection: null } : {}) });
+  };
+  const panelStyle = {
+    ...(libraryWidth && libraryOpen ? { '--library-w': `${libraryWidth}px` } : {}),
+    ...(inspectorWidth && inspectorOpen ? { '--inspector-w': `${inspectorWidth}px` } : {}),
+  } as CSSProperties;
   const analysis = analyseProject(project);
+  const verified = project.rack.evidence === 'verified';
+  const [bannerHidden, setBannerHidden] = useState(() => {
+    try {
+      return sessionStorage.getItem('rack-studio-accuracy-hidden') === '1';
+    } catch {
+      return false;
+    }
+  });
+  const hideBanner = (hidden: boolean) => {
+    setBannerHidden(hidden);
+    try {
+      sessionStorage.setItem('rack-studio-accuracy-hidden', hidden ? '1' : '0');
+    } catch {
+      // Storage unavailable: the choice lasts until reload.
+    }
+  };
   useEffect(() => {
     let active = true;
     const opening = useStore.getState().project;
@@ -82,18 +143,16 @@ export default function App() {
             useStore.getState().project.revision === opening.revision &&
             !useStore.getState().dirty
           ) {
-            useStore.getState().replace(p);
+            const retired = withoutRetired(p);
+            useStore.getState().replace(retired.project);
             useStore.getState().set({
               saveStatus: 'Restored from local storage',
-              notice: 'Reopened your last project.',
+              notice: retired.notice || 'Reopened your last project.',
+              ...(retired.notice ? { dirty: true } : {}),
             });
             return;
           }
         }
-        if (active && !useStore.getState().notice)
-          useStore.getState().set({
-            notice: 'New blank rack. Open Tutorial rack for a worked example.',
-          });
       } catch (error) {
         if (active)
           useStore.getState().set({
@@ -127,21 +186,33 @@ export default function App() {
         if (e.shiftKey) useStore.getState().redo();
         else useStore.getState().undo();
       }
-      if (e.key === 'Escape' && useStore.getState().wiringTool !== 'off') {
-        useStore.getState().set({
-          wiringSource: null,
-          wiringLineStart: null,
-          notice: 'Pending wiring action cancelled.',
-        });
+      // Esc first cancels a pending click sequence; with nothing pending it leaves the mode.
+      const state = useStore.getState();
+      if (e.key === 'Escape' && state.wiringTool !== 'off' && !state.showModelTools) {
+        if (state.wiringSource || state.wiringLineStart || typing)
+          state.set({
+            wiringSource: null,
+            wiringLineStart: null,
+            notice: 'Pending wiring action cancelled.',
+          });
+        else {
+          exitViewportMode();
+          state.set({ notice: 'Wiring mode closed.' });
+        }
         return;
       }
-      if (e.key === 'Escape' && useStore.getState().showModelTools) {
-        useStore.getState().set({
-          measureStart: null,
-          modelPreview: null,
-          modelTool: 'select',
-          notice: 'Pending modelling action cancelled.',
-        });
+      if (e.key === 'Escape' && state.showModelTools) {
+        if (state.measureStart || state.modelPreview || state.modelTool !== 'select' || typing)
+          state.set({
+            measureStart: null,
+            modelPreview: null,
+            modelTool: 'select',
+            notice: 'Pending modelling action cancelled.',
+          });
+        else {
+          exitViewportMode();
+          state.set({ notice: 'Modelling tools closed.' });
+        }
         return;
       }
       if (e.key === 'Escape')
@@ -192,13 +263,18 @@ export default function App() {
     if (!file) return;
     try {
       if (file.size > 30_000_000) throw new Error('Project exceeds the 30 MB import limit.');
-      const p = parseProject(await file.text());
+      const retired = withoutRetired(parseProject(await file.text()));
       if (!(await save(project))) return;
-      s.replace(p);
+      s.replace(retired.project);
       set({
         dirty: true,
         workspace: 'designer',
-        notice: 'Project imported; embedded assets and physical connection records restored.',
+        notice: [
+          'Project imported; embedded assets and physical connection records restored.',
+          retired.notice,
+        ]
+          .filter(Boolean)
+          .join(' '),
       });
     } catch (error) {
       set({ error: error instanceof Error ? error.message : String(error) });
@@ -221,146 +297,172 @@ export default function App() {
       <header className="app-header">
         <div className="brand">
           <span className="brand-symbol">
-            <Icon name="cube" size={25} />
+            <Icon name="cube" size={23} />
           </span>
           <strong>
             rack<span>studio</span>
           </strong>
-          <span className="brand-divider" />
-          <span className="header-description">Engineering workspace</span>
         </div>
-        <div className="header-project">
-          <span className="project-dot" />
-          <span>{project.name}</span>
-          <Badge>LOCAL PROJECT</Badge>
-        </div>
-        <button
-          className="avatar"
-          title="Local project settings"
-          aria-label="Project settings"
-          onClick={() => set({ workspace: 'settings', selection: null })}
-        >
-          RS
-        </button>
-      </header>
-      <div className="project-toolbar">
-        <div className="button-row">
-          <Button icon="plus" onClick={() => void newProject()}>
-            New
-          </Button>
-          <Button icon="folder" onClick={() => void openProjects()}>
-            Open
-          </Button>
-          <Button icon="cube" onClick={() => void newProject('tutorial')}>
-            Tutorial rack
-          </Button>
-          <Button icon="save" onClick={() => void save(project, true)}>
-            Save
-          </Button>
-          <span className="toolbar-divider" />
-          <label className="button">
-            <Icon name="upload" />
-            Import
-            <input
-              aria-label="Import project JSON"
-              type="file"
-              hidden
-              accept="application/json,.json"
-              onChange={(e) => {
-                void importProject(e.target.files?.[0]);
-                e.target.value = '';
-              }}
-            />
-          </label>
-          <Button
-            icon="download"
-            onClick={() =>
-              download(
-                `${project.name.replaceAll(/[^a-z0-9]/gi, '-')}.rack.json`,
-                serializeProject(project),
-                'application/json',
-              )
-            }
-          >
-            Export project
-          </Button>
-          <span className="toolbar-divider" />
-          <button
-            className="icon-button"
-            title="Undo (Ctrl+Z)"
-            aria-label="Undo"
+        <FileMenu
+          onNew={() => void newProject()}
+          onOpen={() => void openProjects()}
+          onTutorial={() => void newProject('tutorial')}
+          onSave={() => void save(project, true)}
+          onImport={(file) => void importProject(file)}
+          onExport={() =>
+            download(
+              `${project.name.replaceAll(/[^a-z0-9]/gi, '-')}.rack.json`,
+              serializeProject(project),
+              'application/json',
+            )
+          }
+        />
+        <nav className="workspace-tabs" aria-label="Workspace">
+          {groups.map((g) => (
+            <button
+              key={g.id}
+              aria-current={activeGroup.id === g.id ? 'page' : undefined}
+              onClick={() =>
+                openView(
+                  g.views.includes(lastViews[g.id] as Workspace)
+                    ? (lastViews[g.id] as Workspace)
+                    : g.views[0],
+                )
+              }
+              className={activeGroup.id === g.id ? 'active' : ''}
+            >
+              <Icon name={g.icon} size={16} />
+              {g.label}
+              {g.id === 'cabling' && <span>{project.cables.length}</span>}
+            </button>
+          ))}
+        </nav>
+        <div className="header-actions">
+          <IconButton
+            icon="undo"
+            size={18}
+            label="Undo"
+            tooltip="Undo (Ctrl+Z)"
             disabled={s.past.length === 0}
             onClick={s.undo}
-          >
-            <Icon name="undo" />
-          </button>
-          <button
-            className="icon-button"
-            title="Redo (Ctrl+Shift+Z)"
-            aria-label="Redo"
+          />
+          <IconButton
+            icon="redo"
+            size={18}
+            label="Redo"
+            tooltip="Redo (Ctrl+Shift+Z)"
             disabled={s.future.length === 0}
             onClick={s.redo}
+          />
+          <span className="toolbar-divider" />
+          <div className="toolbar-save" role="status">
+            <span className={s.dirty ? 'unsaved-dot' : 'saved-dot'} />
+            {s.saveStatus}
+          </div>
+          <button
+            className="help-button"
+            onClick={() => setDialog('help')}
+            aria-label="Quick guide"
+            data-tooltip="Quick guide and shortcuts"
           >
-            <Icon name="redo" />
-          </button>
-        </div>
-        <div className="toolbar-save">
-          <span className={s.dirty ? 'unsaved-dot' : 'saved-dot'} />
-          {s.saveStatus}
-          <button className="help-button" onClick={() => setDialog('help')} title="Quick guide">
             ?
           </button>
-        </div>
-      </div>
-      <nav className="workspace-tabs" aria-label="Workspace">
-        {tabs.map(([id, label, icon]) => (
           <button
-            key={id}
-            onClick={() =>
-              set({
-                workspace: id,
-                ...(['library', 'settings'].includes(id) ? { selection: null } : {}),
-              })
-            }
-            className={workspace === id ? 'active' : ''}
+            className="avatar"
+            data-tooltip="Project settings"
+            aria-label="Project settings"
+            onClick={() => openView('settings')}
           >
-            <Icon name={icon} size={17} />
-            {label}
-            {id === 'schedule' && <span>{project.cables.length}</span>}
+            RS
           </button>
-        ))}
-      </nav>
-      <div className="accuracy-banner">
-        <Icon name="alert" size={16} />
-        <strong>
-          {project.rack.evidence === 'verified'
-            ? 'Model verification'
-            : 'Illustrative engineering model'}
-        </strong>
-        <span>
-          {project.rack.evidence === 'verified'
-            ? 'Cable specifications and routes must also be verified.'
-            : 'Rack construction, equipment dimensions and port positions need confirmation. Calculations describe this model.'}
-        </span>
-        <button onClick={() => set({ workspace: 'settings', selection: null })}>
-          Review specifications <Icon name="chevron" size={14} />
-        </button>
-      </div>
+        </div>
+      </header>
+      {activeGroup.views.length > 1 && (
+        <nav className="workspace-subtabs" aria-label={`${activeGroup.label} views`}>
+          {activeGroup.views.map((id) => (
+            <button
+              key={id}
+              aria-current={workspace === id ? 'page' : undefined}
+              className={workspace === id ? 'active' : ''}
+              onClick={() => openView(id)}
+            >
+              <Icon name={views[id][1]} size={15} />
+              {views[id][0]}
+            </button>
+          ))}
+        </nav>
+      )}
+      {!bannerHidden && (
+        <div className="accuracy-banner" role="note">
+          <Icon name="alert" size={16} />
+          <strong>{verified ? 'Model verification' : 'Illustrative engineering model'}</strong>
+          <span>
+            {verified
+              ? 'Cable specifications and routes must also be verified.'
+              : 'Rack construction, equipment dimensions and port positions need confirmation. Calculations describe this model.'}
+          </span>
+          <button onClick={() => set({ workspace: 'settings', selection: null })}>
+            Review specifications <Icon name="chevron" size={14} />
+          </button>
+          <IconButton
+            icon="x"
+            size={14}
+            label="Hide accuracy notice for this session"
+            tooltip="Hide for this session · the status-bar badge keeps it available"
+            onClick={() => hideBanner(true)}
+          />
+        </div>
+      )}
       <div
-        className={`workspace-body ${workspace === 'designer' ? 'designer-layout' : editingReport ? 'report-layout' : ''}`}
+        className={`workspace-body ${workspace === 'designer' ? `designer-layout ${libraryOpen ? '' : 'library-collapsed'} ${inspectorOpen ? '' : 'inspector-collapsed'}` : editingReport ? 'report-layout' : ''}`}
+        style={workspace === 'designer' ? panelStyle : undefined}
       >
         {workspace === 'designer' ? (
           <>
-            <Library />
-            <div className="designer-centre">
+            {libraryOpen ? (
+              <div className="side-panel left">
+                <Library onCollapse={() => setLibraryOpen(false)} />
+                <ResizeHandle
+                  label="Resize equipment library"
+                  side="left"
+                  width={libraryWidth ?? 244}
+                  min={200}
+                  max={420}
+                  onChange={setLibraryWidth}
+                />
+              </div>
+            ) : (
+              <button
+                className="side-rail left"
+                aria-label="Expand equipment library"
+                data-tooltip="Expand equipment library"
+                onClick={() => setLibraryOpen(true)}
+              >
+                <Icon name="panel-right" size={18} />
+                <span>Equipment library</span>
+              </button>
+            )}
+            <div className={`designer-centre view-${designView}`}>
               <div className="designer-heading">
-                <div>
-                  <span className="eyebrow">RACK DESIGN</span>
-                  <h1>
-                    {project.rack.name}
-                    <Badge>{project.rack.heightU}U</Badge>
-                  </h1>
+                <span className="eyebrow">DESIGN ZONE</span>
+                <div className="design-view-switch" role="group" aria-label="Design view">
+                  {(['3d', '2d'] as const).map((v) => (
+                    <button
+                      key={v}
+                      type="button"
+                      aria-pressed={designView === v}
+                      data-tooltip={v === '3d' ? '3D rack view' : '2D front and rear elevations'}
+                      onClick={() => {
+                        // Wiring and modelling tools act on the 3D scene, so leave them first.
+                        if (v === '2d') exitViewportMode();
+                        setDesignView(v);
+                      }}
+                    >
+                      {v.toUpperCase()}
+                    </button>
+                  ))}
                 </div>
+                <div className="designer-toolbar" id="designer-toolbar" />
                 <div className="button-row">
                   <Button icon="cable" onClick={() => setDialog('connection')}>
                     Connect
@@ -416,32 +518,40 @@ export default function App() {
                   </details>
                 </div>
               </div>
+              {/* The 3D scene stays mounted in 2D so the camera is kept; CSS hides it. */}
               <Suspense fallback={<div className="scene-fallback">Loading 3D workspace…</div>}>
                 <Scene />
               </Suspense>
-              <div className="installed-strip">
-                <div>
-                  <Icon name="layers" size={16} />
-                  <strong>Installed equipment</strong>
-                  <span>{project.devices.length}</span>
-                </div>
-                <div className="installed-pills">
-                  {project.devices.map((d) => (
-                    <button
-                      className={
-                        s.selection?.kind === 'device' && s.selection.id === d.id ? 'active' : ''
-                      }
-                      key={d.id}
-                      onClick={() => set({ selection: { kind: 'device', id: d.id } })}
-                    >
-                      <span>U{d.startU}</span>
-                      {d.name}
-                    </button>
-                  ))}
-                </div>
-              </div>
+              {designView === '2d' && <RackElevations />}
             </div>
-            <Inspector />
+            {inspectorOpen ? (
+              <div className="side-panel right">
+                <ResizeHandle
+                  label="Resize properties panel"
+                  side="right"
+                  width={inspectorWidth ?? 288}
+                  min={260}
+                  max={520}
+                  onChange={setInspectorWidth}
+                />
+                <Inspector onCollapse={() => setInspectorOpen(false)} />
+              </div>
+            ) : (
+              <button
+                className="side-rail right"
+                aria-label="Expand properties panel"
+                data-tooltip="Expand properties panel"
+                onClick={() => setInspectorOpen(true)}
+              >
+                <Icon name="panel-left" size={18} />
+                <span>
+                  Properties
+                  {s.selection
+                    ? ` · ${s.selection.kind === 'device' ? 'equipment' : s.selection.kind}`
+                    : ''}
+                </span>
+              </button>
+            )}
           </>
         ) : workspace === 'model' ? (
           <Suspense fallback={<p>Loading model designer…</p>}>
@@ -456,6 +566,14 @@ export default function App() {
                 <span className="eyebrow">PROJECT</span>
                 <h1>Project settings</h1>
                 <p>Physical specifications, provenance and portable project data.</p>
+                <div className="header-project">
+                  <span className="project-dot" />
+                  <strong>{project.name}</strong>
+                  <Badge>LOCAL PROJECT</Badge>
+                  <Badge tone={verified ? 'good' : 'warn'}>
+                    {verified ? 'Rack verified · verify cables' : 'Illustrative model'}
+                  </Badge>
+                </div>
               </div>
               <Button icon="refresh" onClick={() => void newProject('stepped')}>
                 Load stepped example
@@ -581,17 +699,25 @@ export default function App() {
         <div className="error-toast" role="alert">
           <Icon name="alert" />
           <span>{s.error}</span>
-          <button
-            className="icon-button"
-            aria-label="Dismiss error"
-            onClick={() => set({ error: '' })}
-          >
-            <Icon name="x" />
-          </button>
+          <IconButton icon="x" label="Dismiss error" onClick={() => set({ error: '' })} />
         </div>
       )}
       <footer className="statusbar">
         <div>
+          <button
+            className={`accuracy-badge ${verified ? 'verified' : ''}`}
+            aria-expanded={!bannerHidden}
+            aria-label={`${verified ? 'Model verification' : 'Illustrative engineering model'}: ${bannerHidden ? 'show' : 'hide'} accuracy notice`}
+            data-tooltip={
+              verified
+                ? 'Rack marked verified; cable specifications and routes must also be verified'
+                : 'Dimensions and port positions need confirmation · click to show the notice'
+            }
+            onClick={() => hideBanner(!bannerHidden)}
+          >
+            <Icon name="alert" size={12} />
+            {verified ? 'Verify cables' : 'Illustrative model'}
+          </button>
           <span className="saved-dot" />
           <span>{s.notice}</span>
         </div>
@@ -634,8 +760,13 @@ export default function App() {
                       if (!(await save(project))) return;
                       const loaded = await repository.load(p.id);
                       if (loaded) {
-                        s.replace(loaded);
-                        set({ workspace: 'designer', saveStatus: 'Opened from local storage' });
+                        const retired = withoutRetired(loaded);
+                        s.replace(retired.project);
+                        set({
+                          workspace: 'designer',
+                          saveStatus: 'Opened from local storage',
+                          ...(retired.notice ? { notice: retired.notice, dirty: true } : {}),
+                        });
                         setDialog(null);
                       }
                     } catch (error) {
@@ -657,7 +788,7 @@ export default function App() {
       )}
       {dialog === 'connection' && <ConnectionDialog onClose={() => setDialog(null)} />}{' '}
       {dialog === 'destination' && <DestinationDialog onClose={() => setDialog(null)} />}{' '}
-      {dialog === 'exit' && <ExitDialog onClose={() => setDialog(null)} />}{' '}
+      {dialog === 'exit' && <ExitDialog onClose={() => setDialog(null)} />} <TooltipLayer />
       {dialog === 'help' && (
         <Modal title="Rack Studio · quick guide" onClose={() => setDialog(null)}>
           <Guide />
@@ -670,11 +801,15 @@ function Guide() {
   const items: [string, ReactNode][] = [
     [
       'Configure the rack',
-      'Use the properties panel to set dimensions, depth sections and the mounting hole type. Unconfirmed mounting details block new installations. Tutorial rack opens a worked example as a separate project.',
+      'Use the properties panel to set dimensions, depth sections and the mounting hole type. Unconfirmed mounting details block new installations. File → Tutorial rack opens a worked example as a separate project.',
     ],
     [
       'Install equipment',
-      'Drag a library item into the rack, or use its precise placement button. Rotate with left drag, pan with right drag and zoom with the wheel. Select installed equipment to edit its U position.',
+      'Drag a library item onto a U position in the rack, or use + on its card to place it by U number. Choose Mount: Front or Mount: Rear in the viewport toolbar before dropping. Orbit with left drag, pan with right drag and zoom with the wheel. Select installed equipment to edit its U position.',
+    ],
+    [
+      'Wiring and tools',
+      'Wiring connects ports (click the source port, then the destination), places surface waypoints (Shift-click two points for a line guide) and links cables to guides. Tools move, rotate and measure. The pill in the viewport says what the next click does; Esc cancels a pending click, and Esc again or Exit leaves the mode.',
     ],
     [
       'Connect and document',

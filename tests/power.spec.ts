@@ -2,6 +2,7 @@ import { test as base, expect } from '@playwright/test';
 import type { Locator, Page } from '@playwright/test';
 import { readFile } from 'node:fs/promises';
 import { resolve } from 'node:path';
+import { fileAction, fileItem, openExample, openView, selectInstalled } from './navigation';
 
 const test = base.extend<{ uncaughtErrors: string[] }>({
   uncaughtErrors: [
@@ -26,9 +27,9 @@ async function open(page: Page) {
   // this flow showed one such compile blocking the main thread for about 20 s.
   page.setDefaultTimeout(45_000);
   await page.goto('/');
-  await page.getByRole('button', { name: 'Tutorial rack', exact: true }).click();
   await expect(page.locator('canvas')).toBeVisible();
   await expect(page.locator('.rack-u-label').first()).toBeVisible();
+  await openExample(page);
   await expect(page.locator('.installed-pills > button')).toHaveCount(6);
 }
 
@@ -64,7 +65,7 @@ interface ExportedProject {
 }
 async function exportProject(page: Page): Promise<ExportedProject> {
   return JSON.parse(
-    await downloadText(page, page.getByRole('button', { name: 'Export project', exact: true })),
+    await downloadText(page, await fileItem(page, 'Export project')),
   ) as ExportedProject;
 }
 const definitionNamed = (project: ExportedProject, name: string) => {
@@ -79,7 +80,7 @@ async function select(page: Page, name: string) {
     .locator('.workspace-tabs')
     .getByRole('button', { name: '3D Rack Designer', exact: true })
     .click();
-  await page.locator('.installed-pills > button').filter({ hasText: name }).click();
+  await selectInstalled(page, name);
 }
 const inspector = (page: Page) => page.locator('.inspector');
 const bankCard = (page: Page, name: string) =>
@@ -98,10 +99,7 @@ async function bankMaximum(bank: Locator) {
 }
 
 async function openDefinitionEditor(page: Page, name: string) {
-  await page
-    .locator('.workspace-tabs')
-    .getByRole('button', { name: 'Device Library', exact: true })
-    .click();
+  await openView(page, 'Device Library');
   await page.getByRole('button', { name: `Edit ${name}`, exact: true }).click();
   const dialog = page.getByRole('dialog', { name: `Device definition · ${name}` });
   await dialog.getByRole('button', { name: 'Power & weight', exact: true }).click();
@@ -109,10 +107,7 @@ async function openDefinitionEditor(page: Page, name: string) {
 }
 
 async function connect(page: Page, sourceLabel: string, destinationLabel: string) {
-  await page
-    .locator('.workspace-tabs')
-    .getByRole('button', { name: 'Connections', exact: true })
-    .click();
+  await openView(page, 'Connections');
   await page.getByRole('button', { name: 'New connection', exact: true }).click();
   const dialog = page.getByRole('dialog', { name: 'New cable connection' });
   await dialog
@@ -365,7 +360,7 @@ test('power banks, draw, mass, bank warnings and the status bar survive undo, re
   ]);
 
   // Save and reload from IndexedDB.
-  await page.getByRole('button', { name: 'Save', exact: true }).click();
+  await fileAction(page, 'Save');
   await expect(page.locator('.toolbar-save')).toContainText(/Saved locally/);
   await page.reload();
   await expect(page.locator('canvas')).toBeVisible();
@@ -386,7 +381,7 @@ test('power banks, draw, mass, bank warnings and the status bar survive undo, re
   expect(await exportProject(page)).toEqual(exported);
 
   // JSON import of the exported project restores the same values after a new project.
-  await page.getByRole('button', { name: 'New', exact: true }).click();
+  await fileAction(page, 'New');
   await expect(page.locator('.installed-pills > button')).toHaveCount(0);
   await expect(powerIssues(page)).toHaveCount(0);
   await page.getByLabel('Import project JSON', { exact: true }).setInputFiles({
@@ -458,10 +453,7 @@ test('mass edits undo and redo, and removing powered equipment still needs its c
   await expect(page.getByRole('alert')).toContainText('Remove the 1 connected cable(s)');
   await page.getByRole('button', { name: 'Dismiss error', exact: true }).click();
   await expect(page.locator('.installed-pills > button')).toHaveCount(6);
-  await page
-    .locator('.workspace-tabs')
-    .getByRole('button', { name: /Cable Schedule/ })
-    .click();
+  await openView(page, 'Cable Schedule');
   await page
     .locator('.schedule-table')
     .getByRole('button', { name: cableNumber, exact: true })
@@ -477,10 +469,7 @@ test('the imported APC AP7922B evaluates its B1/B2 banks for a connected IEC-C14
   page,
 }) => {
   await open(page);
-  await page
-    .locator('.workspace-tabs')
-    .getByRole('button', { name: 'Device Library', exact: true })
-    .click();
+  await openView(page, 'Device Library');
   await page
     .locator('label.button', { hasText: 'Import library' })
     .locator('input[type=file]')

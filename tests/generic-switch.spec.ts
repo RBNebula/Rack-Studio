@@ -1,12 +1,13 @@
 import { test, expect, type Page } from '@playwright/test';
 import { readFile } from 'node:fs/promises';
 import type { Project } from '../src/model';
+import { fileAction, setView } from './navigation';
 
 test.use({ baseURL: process.env.RACK_TEST_URL ?? 'http://127.0.0.1:5173' });
 test.setTimeout(120000);
 async function exported(page: Page): Promise<Project> {
   const event = page.waitForEvent('download');
-  await page.getByRole('button', { name: 'Export project', exact: true }).click();
+  await fileAction(page, 'Export project');
   return JSON.parse(await readFile((await (await event).path())!, 'utf8'));
 }
 async function place(page: Page, name: string, u: number) {
@@ -31,9 +32,7 @@ async function connect(page: Page, source: object, destination: object, label: s
 }
 
 async function capture(page: Page, face: 'front' | 'rear') {
-  await page
-    .getByRole('button', { name: face === 'front' ? 'Front view' : 'Rear view', exact: true })
-    .click();
+  await setView(page, face === 'front' ? 'Front' : 'Rear');
   const ortho = page.getByRole('button', { name: 'Orthographic camera', exact: true });
   if ((await ortho.getAttribute('aria-pressed')) !== 'true') await ortho.click();
   await page.getByRole('button', { name: 'Reset camera', exact: true }).click();
@@ -115,6 +114,11 @@ test('generic single-row switch adds to an existing library, connects RJ45/SFP/A
   await expect(page.locator('.rack-u-label').first()).toBeVisible();
   const old: Project = JSON.parse(await readFile('examples/wiring-guides.rack.json', 'utf8'));
   old.definitions = old.definitions.filter((d) => d.id !== 'def-generic-switch-24');
+  // The shipped library no longer has a generic PDU; take the test-only one from the fixture.
+  const fixture: Project = JSON.parse(
+    await readFile('tests/fixtures/example-project.rack.json', 'utf8'),
+  );
+  old.definitions.push(fixture.definitions.find((d) => d.id === 'qa-pdu')!);
   await page.getByLabel('Import project JSON', { exact: true }).setInputFiles({
     name: 'existing-project.rack.json',
     mimeType: 'application/json',
@@ -128,14 +132,14 @@ test('generic single-row switch adds to an existing library, connects RJ45/SFP/A
   expect(d.ports).toHaveLength(27);
   await place(page, d.name, 16);
   await place(page, d.name, 18);
-  const pdu = p.definitions.find((d) => d.id === 'def-pdu')!;
+  const pdu = p.definitions.find((d) => d.id === 'qa-pdu')!;
   await place(page, pdu.name, 3);
   p = await exported(page);
   const switches = p.devices.filter((v) => v.definitionId === d.id),
     power = p.devices.find((v) => v.definitionId === pdu.id)!;
   const endpoint = (deviceId: string, portId: string) => ({ kind: 'device', deviceId, portId });
   await page.getByRole('button', { name: 'Orthographic camera', exact: true }).click();
-  await page.getByRole('button', { name: 'Front view', exact: true }).click();
+  await setView(page, 'Front');
   await page.getByRole('button', { name: 'Wiring mode', exact: true }).click();
   for (const v of switches) {
     const pin = page.locator(`[data-port="${v.id}:sfp1"]`);
@@ -178,7 +182,7 @@ test('generic single-row switch adds to an existing library, connects RJ45/SFP/A
   await dialog.getByRole('button', { name: 'Ports (27)', exact: true }).click();
   await dialog.locator('.port-edit-row').first().getByLabel('Name', { exact: true }).fill('LAN 1');
   await dialog.getByRole('button', { name: 'Save definition', exact: true }).click();
-  await page.getByRole('button', { name: 'Save', exact: true }).click();
+  await fileAction(page, 'Save');
   await expect(page.locator('.toolbar-save')).toContainText('Saved locally');
   await page.reload();
   const restored = await exported(page);

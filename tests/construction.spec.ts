@@ -2,6 +2,7 @@ import { test as base, expect } from '@playwright/test';
 import type { Locator, Page } from '@playwright/test';
 import { readFile } from 'node:fs/promises';
 import type { Project } from '../src/model';
+import { fileAction, openExample, openView, selectInstalled, setView } from './navigation';
 
 const test = base.extend<{ uncaughtErrors: string[] }>({
   uncaughtErrors: [
@@ -28,7 +29,9 @@ async function openBlank(page: Page) {
   await page.goto('/');
   await expect(page.locator('canvas')).toBeVisible();
   await expect(page.locator('.rack-u-label').first()).toBeVisible();
-  await page.getByRole('button', { name: 'New', exact: true }).click();
+  await openExample(page);
+  await expect(page.locator('.installed-pills > button')).toHaveCount(6);
+  await fileAction(page, 'New');
   await expect(page.locator('.installed-pills > button')).toHaveCount(0);
 }
 
@@ -39,7 +42,7 @@ async function number(field: Locator, value: number) {
 
 async function exported(page: Page): Promise<Project> {
   const pending = page.waitForEvent('download');
-  await page.getByRole('button', { name: 'Export project', exact: true }).click();
+  await fileAction(page, 'Export project');
   const download = await pending;
   const path = await download.path();
   if (!path) throw new Error('The UI must produce a downloadable project.');
@@ -47,7 +50,7 @@ async function exported(page: Page): Promise<Project> {
 }
 
 async function saveReload(page: Page, deviceCount: number) {
-  await page.getByRole('button', { name: 'Save', exact: true }).click();
+  await fileAction(page, 'Save');
   await expect(page.locator('.toolbar-save')).toContainText('Saved locally');
   await page.reload();
   await expect(page.locator('canvas')).toBeVisible();
@@ -192,13 +195,10 @@ test('generic shelf depth, usable depth and entered supports survive front and r
   page,
 }) => {
   await openBlank(page);
-  await page
-    .locator('.workspace-tabs')
-    .getByRole('button', { name: 'Device Library', exact: true })
-    .click();
-  await page.getByRole('button', { name: 'Edit 1U vented shelf', exact: true }).click();
+  await openView(page, 'Device Library');
+  await page.getByRole('button', { name: 'Edit 1U shelf', exact: true }).click();
   const editor = page.getByRole('dialog');
-  await expect(editor).toHaveAccessibleName('Device definition · 1U vented shelf');
+  await expect(editor).toHaveAccessibleName('Device definition · 1U shelf');
   await editor.getByLabel('Device name', { exact: true }).fill('Configurable reference shelf');
   await editor
     .getByRole('textbox', { name: 'Specification source / verification notes', exact: true })
@@ -287,14 +287,11 @@ test('generic shelf depth, usable depth and entered supports survive front and r
   const after = await exported(page);
   expect(after.devices).toEqual(before.devices);
   expect(after.definitions.find((definition) => definition.id === shelf?.id)).toEqual(shelf);
-  await page
-    .locator('.installed-pills > button')
-    .filter({ hasText: 'Configurable reference shelf 2' })
-    .click();
+  await selectInstalled(page, 'Configurable reference shelf 2');
   await expect(
     page.locator('.inspector').getByRole('combobox', { name: 'Mounting face', exact: true }),
   ).toHaveValue('rear');
-  await page.getByRole('button', { name: 'Rear view', exact: true }).click();
+  await setView(page, 'Rear');
   await page.screenshot({ path: 'docs/screenshots/construction-shelf-placements.png' });
   await expect(page.getByRole('alert')).toHaveCount(0);
 });
@@ -303,7 +300,7 @@ test('pending shelf supports block saving and inactive supports stay absent when
   page,
 }) => {
   await openBlank(page);
-  await page.getByRole('button', { name: 'Edit 1U vented shelf', exact: true }).click();
+  await page.getByRole('button', { name: 'Edit 1U shelf', exact: true }).click();
   const editor = page.getByRole('dialog');
   await editor
     .getByRole('combobox', { name: 'Shelf mounting arrangement', exact: true })
@@ -337,7 +334,7 @@ test('pending shelf supports block saving and inactive supports stay absent when
   await editor.getByRole('button', { name: 'Save definition', exact: true }).click();
   await expect(editor).toHaveCount(0);
   const project = await exported(page);
-  const shelf = project.definitions.find((definition) => definition.name === '1U vented shelf');
+  const shelf = project.definitions.find((definition) => definition.name === '1U shelf');
   expect(shelf?.shelf).toBeNull();
   expect(shelf?.bodyMode).toBe('parts');
   expect(shelf?.parts.map((part) => part.name)).toContain('Parametric shelf floor');

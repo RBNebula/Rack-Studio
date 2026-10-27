@@ -4,6 +4,7 @@ import { readFile } from 'node:fs/promises';
 import { resolve } from 'node:path';
 import type { Cable, DeviceDefinition, Project } from '../src/model';
 import { routeCable } from '../src/engineering/routing';
+import { fileAction, openExample, openView, selectInstalled, setView } from './navigation';
 
 /**
  * Regression workflows for the connector-lead bend-radius fix and gendered IEC 60320 couplers:
@@ -35,9 +36,9 @@ async function open(page: Page) {
   // Software WebGL compiles shader programs on first use; allow for that stall.
   page.setDefaultTimeout(45_000);
   await page.goto('/');
-  await page.getByRole('button', { name: 'Tutorial rack', exact: true }).click();
   await expect(page.locator('canvas')).toBeVisible();
   await expect(page.locator('.rack-u-label').first()).toBeVisible();
+  await openExample(page);
   await expect(page.locator('.installed-pills > button')).toHaveCount(6);
 }
 async function blurNumber(field: Locator, value: number | string) {
@@ -46,7 +47,7 @@ async function blurNumber(field: Locator, value: number | string) {
 }
 async function exported(page: Page): Promise<Project> {
   const pending = page.waitForEvent('download');
-  await page.getByRole('button', { name: 'Export project', exact: true }).click();
+  await fileAction(page, 'Export project');
   const path = await (await pending).path();
   if (!path) throw new Error('The browser did not produce a local download.');
   return JSON.parse(await readFile(path, 'utf8')) as Project;
@@ -55,7 +56,7 @@ const tab = (page: Page, name: string | RegExp) =>
   page.locator('.workspace-tabs').getByRole('button', { name, exact: typeof name === 'string' });
 const inspector = (page: Page) => page.locator('.inspector');
 async function importLibrary(page: Page, file: string) {
-  await tab(page, 'Device Library').click();
+  await openView(page, 'Device Library');
   await page
     .locator('label.button', { hasText: 'Import library' })
     .locator('input[type=file]')
@@ -72,7 +73,7 @@ async function place(page: Page, name: string, startU: number, face: 'front' | '
   await expect(dialog).toHaveCount(0);
 }
 async function connect(page: Page, source: string, destination: string) {
-  await tab(page, 'Connections').click();
+  await openView(page, 'Connections');
   await page.getByRole('button', { name: 'New connection', exact: true }).click();
   const dialog = page.getByRole('dialog', { name: 'New cable connection' });
   await dialog.getByRole('combobox', { name: 'Source port', exact: true }).selectOption({
@@ -141,7 +142,7 @@ for (const variant of VARIANTS) {
         'The 400.0 mm bend radius does not fit between adjacent routing constraints.',
       );
       await expect(lengthValue(page, 'Required length')).toHaveText('Unknown');
-      await tab(page, /Cable Schedule/).click();
+      await openView(page, 'Cable Schedule');
       const table = page.locator('.schedule-table table');
       const headers = await table.locator('thead th').allInnerTexts();
       const requiredColumn = headers.findIndex((h) => h.startsWith('Required (mm)'));
@@ -159,7 +160,7 @@ test('wiring mode refuses outlet -> outlet with the gender message and accepts o
   await open(page);
   const before = await exported(page);
   await page.getByRole('button', { name: 'Orthographic camera', exact: true }).click();
-  await page.getByRole('button', { name: 'Rear view', exact: true }).click();
+  await setView(page, 'Rear');
   await page.getByRole('button', { name: 'Wiring mode', exact: true }).click();
   const click = async (deviceId: string, portId: string) => {
     const pin = page.locator(`[data-port="${deviceId}:${portId}"]`);
@@ -182,7 +183,7 @@ test('wiring mode refuses outlet -> outlet with the gender message and accepts o
   expect(created.source).toEqual({ kind: 'device', deviceId: 'pdu-1', portId: 'iec1' });
   expect(created.destination).toEqual({ kind: 'device', deviceId: 'server-1', portId: 'power' });
   // The connection dialog also refuses two sockets.
-  await tab(page, 'Connections').click();
+  await openView(page, 'Connections');
   await page.getByRole('button', { name: 'New connection', exact: true }).click();
   const dialog = page.getByRole('dialog', { name: 'New cable connection' });
   await dialog
@@ -245,7 +246,7 @@ test('an imported C13-C13 cable loads, is flagged outlet-to-outlet, survives mov
     cable('legacy-c13-c13', 'L1', outlet(1), outlet(2)),
     cable('feed-1', 'F1', outlet(3), { kind: 'device', deviceId: 'server-1', portId: 'power' }),
   );
-  await page.getByRole('button', { name: 'New', exact: true }).click();
+  await fileAction(page, 'New');
   await expect(page.locator('.installed-pills > button')).toHaveCount(0);
   await page.getByLabel('Import project JSON', { exact: true }).setInputFiles({
     name: 'legacy-outlet-to-outlet.rack.json',
@@ -265,7 +266,7 @@ test('an imported C13-C13 cable loads, is flagged outlet-to-outlet, survives mov
   );
 
   // An unrelated move is accepted, then undone.
-  await page.locator('.installed-pills > button').filter({ hasText: 'Server 1' }).click();
+  await selectInstalled(page, 'Server 1');
   await blurNumber(inspector(page).getByLabel('Start U', { exact: true }), 6);
   await inspector(page).getByRole('button', { name: 'Apply position', exact: true }).click();
   await expect(page.locator('.statusbar')).toContainText('Equipment repositioned');
@@ -276,7 +277,7 @@ test('an imported C13-C13 cable loads, is flagged outlet-to-outlet, survives mov
   expect(undone.cables).toEqual(imported.cables);
 
   // Save and reload: the stored cable is still present and still flagged.
-  await page.getByRole('button', { name: 'Save', exact: true }).click();
+  await fileAction(page, 'Save');
   await expect(page.locator('.toolbar-save')).toContainText('Saved locally');
   await page.reload();
   await expect(page.locator('.installed-pills > button')).toHaveCount(7);
@@ -289,7 +290,7 @@ test('an imported C13-C13 cable loads, is flagged outlet-to-outlet, survives mov
 
   // There is no UI to re-point an existing cable end. The closest UI edit that would create a new
   // same-gender pair is retyping the fed C14 inlet as a C13 socket; it must be refused.
-  await tab(page, 'Device Library').click();
+  await openView(page, 'Device Library');
   const serverDefinition = reloaded.definitions.find(
     (d) => d.id === reloaded.devices.find((v) => v.id === 'server-1')!.definitionId,
   )!;

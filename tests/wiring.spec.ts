@@ -2,6 +2,7 @@ import { test, expect } from '@playwright/test';
 import type { Page } from '@playwright/test';
 import { readFile } from 'node:fs/promises';
 import type { Project } from '../src/model';
+import { fileAction, setView } from './navigation';
 
 test.use({ baseURL: process.env.RACK_TEST_URL ?? 'http://127.0.0.1:5173' });
 test.afterEach(async ({ page }, info) => {
@@ -32,7 +33,7 @@ test('surface waypoints, line traversal, port wiring and ordered reusable links 
   page.on('pageerror', (e) => errors.push(e.message));
   await page.goto('/');
   await expect(page.locator('.rack-u-label').first()).toBeVisible();
-  await page.getByRole('button', { name: 'New', exact: true }).click();
+  await fileAction(page, 'New');
   for (const u of [8, 12]) {
     await page.getByRole('button', { name: 'Place User rack PC · 1U', exact: true }).click();
     const modal = page.getByRole('dialog');
@@ -41,7 +42,7 @@ test('surface waypoints, line traversal, port wiring and ordered reusable links 
     await modal.getByRole('button', { name: 'Place equipment', exact: true }).click();
   }
   await page.getByRole('button', { name: 'Orthographic camera', exact: true }).click();
-  await page.getByRole('button', { name: 'Front view', exact: true }).click();
+  await setView(page, 'Front');
   await page.getByRole('button', { name: 'Wiring mode', exact: true }).click();
   const initial = await exported(page),
     [pc1, pc2] = initial.devices;
@@ -126,7 +127,7 @@ test('surface waypoints, line traversal, port wiring and ordered reusable links 
   await page.locator('canvas').screenshot({ path: 'docs/screenshots/wiring-guides.png' });
   // Rear surface normal points outward in +Z, independent of the camera's front-plane logic.
   await page.getByRole('button', { name: 'Connect ports', exact: true }).click();
-  await page.getByRole('button', { name: 'Rear view', exact: true }).click();
+  await setView(page, 'Rear');
   await page.evaluate(
     () =>
       new Promise<void>((resolve) =>
@@ -148,7 +149,7 @@ test('surface waypoints, line traversal, port wiring and ordered reusable links 
   const rearGuide = saved.wiringGuides![2];
   if (rearGuide.kind !== 'point') throw new Error('Expected rear surface point');
   expect(rearGuide.position[2]).toBeCloseTo(810, 4);
-  await page.getByRole('button', { name: 'Save', exact: true }).click();
+  await fileAction(page, 'Save');
   await expect(page.locator('.toolbar-save')).toContainText('Saved locally');
   await page.reload();
   const reloaded = await exported(page);
@@ -167,6 +168,6 @@ test('surface waypoints, line traversal, port wiring and ordered reusable links 
 
 async function exported(page: Page): Promise<Project> {
   const event = page.waitForEvent('download');
-  await page.getByRole('button', { name: 'Export project', exact: true }).click();
+  await fileAction(page, 'Export project');
   return JSON.parse(await readFile((await (await event).path())!, 'utf8')) as Project;
 }

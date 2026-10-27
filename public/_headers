@@ -9,3 +9,9 @@
 # Vite fingerprints everything under /assets/, so those files never change.
 /assets/*
   Cache-Control: public, max-age=31536000, immutable
+
+# The STEP import worker runs the bundled OpenCascade kernel (occt-import-js), whose Emscripten
+# build compiles WebAssembly and evaluates generated code. A dedicated worker takes its policy
+# from its own response, so only this same-origin worker script is exempt.
+/assets/step.worker-*
+  ! Content-Security-Policy

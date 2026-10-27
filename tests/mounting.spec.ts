@@ -1,5 +1,6 @@
 import { test as base, expect } from '@playwright/test';
 import type { Page } from '@playwright/test';
+import { fileAction, openExample, selectInstalled, setView, viewState } from './navigation';
 
 const test = base.extend<{ uncaughtErrors: string[] }>({
   uncaughtErrors: [
@@ -24,9 +25,9 @@ test.beforeAll(({ browser }) => {
 async function open(page: Page) {
   page.setDefaultTimeout(10_000);
   await page.goto('/');
-  await page.getByRole('button', { name: 'Tutorial rack', exact: true }).click();
   await expect(page.locator('canvas')).toBeVisible();
   await expect(page.locator('.rack-u-label').first()).toBeVisible();
+  await openExample(page);
   await expect(page.locator('.installed-pills > button')).toHaveCount(6);
 }
 
@@ -43,19 +44,18 @@ async function placeShelf(page: Page, u: number, face: 'front' | 'rear') {
   await expect(page.locator('.installed-pills > button')).toHaveCount(7);
   const shelf = page.locator('.installed-pills > button').filter({ hasText: '1U vented shelf 1' });
   await expect(shelf).toContainText(`U${u}`);
-  await shelf.click();
+  await selectInstalled(page, '1U vented shelf 1');
   await expect(
     page.locator('.inspector').getByRole('combobox', { name: 'Mounting face', exact: true }),
   ).toHaveValue(face);
 }
 
 async function focusMountingFace(page: Page, u: number, face: 'front' | 'rear') {
-  const camera = page.getByRole('button', {
-    name: face === 'front' ? 'Front view' : 'Rear view',
-    exact: true,
-  });
-  await camera.click();
-  await expect(camera).toHaveAttribute('aria-pressed', 'true');
+  await setView(page, face === 'front' ? 'Front' : 'Rear');
+  await expect(viewState(page, face === 'front' ? 'Front' : 'Rear')).toHaveAttribute(
+    'aria-pressed',
+    'true',
+  );
   const cables = page.getByRole('button', { name: 'Show cables', exact: true });
   if ((await cables.getAttribute('aria-pressed')) === 'true') await cables.click();
   // Pan and orbit with real pointer controls; these do not modify the application model.
@@ -160,9 +160,9 @@ test('front patch panel and switch expose their rack ears against the mounting r
   page,
 }) => {
   await open(page);
-  await page.locator('.installed-pills > button').filter({ hasText: 'Network switch 1' }).click();
+  await selectInstalled(page, 'Network switch 1');
   await expect(page.locator('.inspector').getByLabel('Start U', { exact: true })).toHaveValue('16');
-  await page.locator('.installed-pills > button').filter({ hasText: 'Patch panel 1' }).click();
+  await selectInstalled(page, 'Patch panel 1');
   await expect(page.locator('.inspector').getByLabel('Start U', { exact: true })).toHaveValue('18');
   await page
     .locator('.inspector')
@@ -190,11 +190,11 @@ test('a 1U shelf mounts at the rear and retains its mounting face after local sa
 }) => {
   await open(page);
   await placeShelf(page, 10, 'rear');
-  await page.getByRole('button', { name: 'Save', exact: true }).click();
+  await fileAction(page, 'Save');
   await expect(page.locator('.toolbar-save')).toContainText('Saved locally');
   await page.reload();
   await expect(page.locator('.installed-pills > button')).toHaveCount(7);
-  await page.locator('.installed-pills > button').filter({ hasText: '1U vented shelf 1' }).click();
+  await selectInstalled(page, '1U vented shelf 1');
   await expect(page.locator('.inspector').getByLabel('Start U', { exact: true })).toHaveValue('10');
   await expect(
     page.locator('.inspector').getByRole('combobox', { name: 'Mounting face', exact: true }),

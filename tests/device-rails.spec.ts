@@ -1,6 +1,7 @@
 import { test, expect } from '@playwright/test';
 import { readFile } from 'node:fs/promises';
 import type { Project } from '../src/model';
+import { fileAction, openView, selectInstalled, setView } from './navigation';
 test.use({ baseURL: process.env.RACK_TEST_URL ?? 'http://127.0.0.1:5173' });
 test('sliding rails preserve cable identity, service extension and saved geometry', async ({
   page,
@@ -11,10 +12,10 @@ test('sliding rails preserve cable identity, service extension and saved geometr
   page.on('pageerror', (e) => errors.push(e.message));
   await page.goto('/');
   await expect(page.locator('.rack-u-label').first()).toBeVisible();
-  await page.getByRole('button', { name: 'New', exact: true }).click();
+  await fileAction(page, 'New');
   async function exported(): Promise<Project> {
     const dl = page.waitForEvent('download');
-    await page.getByRole('button', { name: 'Export project', exact: true }).click();
+    await fileAction(page, 'Export project');
     return JSON.parse(await readFile((await (await dl).path())!, 'utf8')) as Project;
   }
   for (const u of [8, 12]) {
@@ -26,20 +27,14 @@ test('sliding rails preserve cable identity, service extension and saved geometr
   }
   const initial = await exported();
   const [pc1, pc2] = initial.devices;
-  await page
-    .locator('.installed-pills > button')
-    .filter({ hasText: 'User rack PC · 1U 1' })
-    .click();
+  await selectInstalled(page, 'User rack PC · 1U 1');
   await page.getByRole('checkbox', { name: 'Fit sliding rack rails', exact: true }).check();
   await expect(
     page.getByRole('checkbox', { name: 'Pull device forward on rails', exact: true }),
   ).not.toBeChecked();
-  await page.getByRole('button', { name: 'Left view', exact: true }).click();
+  await setView(page, 'Left');
   await page.locator('canvas').screenshot({ path: 'docs/screenshots/device-rails-closed.png' });
-  await page
-    .locator('.workspace-tabs')
-    .getByRole('button', { name: 'Connections', exact: true })
-    .click();
+  await openView(page, 'Connections');
   await page.getByRole('button', { name: 'New connection', exact: true }).click();
   const modal = page.getByRole('dialog');
   await modal.getByLabel('Cable ID', { exact: true }).fill('RAIL-USB');
@@ -60,38 +55,29 @@ test('sliding rails preserve cable identity, service extension and saved geometr
     .locator('.workspace-tabs')
     .getByRole('button', { name: '3D Rack Designer', exact: true })
     .click();
-  await page
-    .locator('.installed-pills > button')
-    .filter({ hasText: 'User rack PC · 1U 1' })
-    .click();
+  await selectInstalled(page, 'User rack PC · 1U 1');
   await page.getByRole('checkbox', { name: 'Pull device forward on rails', exact: true }).check();
   await expect(page.locator('.inspector')).toContainText(
     'Chassis protrusion: 600 mm. Rail projection: 500 mm.',
   );
-  await page.getByRole('button', { name: 'Left view', exact: true }).click();
+  await setView(page, 'Left');
   await page.locator('canvas').screenshot({ path: 'docs/screenshots/device-rails-extended.png' });
   const extended = await exported();
   expect(extended.devices.find((v) => v.id === pc1.id)?.rails?.extensionMm).toBe(600);
   expect(extended.cables).toEqual(connected.cables);
   expect(extended.cables[0].suppliedLengthMm).toBe(300);
-  await page.getByRole('button', { name: 'Save', exact: true }).click();
+  await fileAction(page, 'Save');
   await expect(page.locator('.toolbar-save')).toContainText('Saved locally');
   await page.reload();
   await expect(page.locator('.installed-pills > button')).toHaveCount(2);
   expect((await exported()).devices).toEqual(extended.devices);
-  await page
-    .locator('.workspace-tabs')
-    .getByRole('button', { name: 'Connections', exact: true })
-    .click();
+  await openView(page, 'Connections');
   await expect(page.locator('.schedule-table tbody')).toContainText('Insufficient length');
   await page
     .locator('.workspace-tabs')
     .getByRole('button', { name: '3D Rack Designer', exact: true })
     .click();
-  await page
-    .locator('.installed-pills > button')
-    .filter({ hasText: 'User rack PC · 1U 1' })
-    .click();
+  await selectInstalled(page, 'User rack PC · 1U 1');
   await page.getByRole('checkbox', { name: 'Pull device forward on rails', exact: true }).uncheck();
   expect((await exported()).devices.find((v) => v.id === pc1.id)?.rails?.extensionMm).toBe(0);
   await page.getByRole('checkbox', { name: 'Fit sliding rack rails', exact: true }).uncheck();

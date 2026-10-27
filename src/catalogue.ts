@@ -38,38 +38,6 @@ export const catalogueReferences: {
   {
     definition: {
       ...base,
-      id: 'ref-cisco',
-      name: 'Cisco C1300-48P-4G',
-      manufacturer: 'Cisco',
-      model: 'C1300-48P-4G',
-      category: 'Network switches',
-      widthMm: 444.3,
-      heightMm: 43.94,
-      massKg: 5.43,
-      source:
-        'Cisco catalogue unit W444.3 × D350 × H43.94 mm, 1U, 48 RJ45 + 4 Gigabit SFP. Ear-plane-to-rear depth, ear width, mounting-hole offsets and port coordinates are unknown. Enter measured geometry; 0 means unresolved in this draft. Source: https://www.cisco.com/c/en/us/products/collateral/switches/catalyst-1300-series-switches/nb-06-cat1300-ser-data-sheet-cte-en.html',
-    },
-    published: '1U · 444.3 W × 350 D × 43.94 H mm',
-    missing: 'Ear datum, face width, screw offsets and port positions',
-  },
-  {
-    definition: {
-      ...base,
-      id: 'ref-patch',
-      name: 'Connectix CCS 20/20 Cat6A · 24 port',
-      manufacturer: 'Connectix',
-      model: '009-002-001-40',
-      category: 'Patch panels',
-      heightU: 1,
-      source:
-        'CableMonkey catalogue overall W483 × D98 × H44.5 mm (rounded), 1U, 24 shielded RJ45 / right-angle IDC. Chassis/tray width, ear-plane depth, precise height and screw/port coordinates are unknown. Do not treat 44.5 mm rounded catalogue height as exact overheight. Source: https://www.cablemonkey.co.uk/cat6a-patch-panels/9164-24-port-cat6a-ftp-shielded-ccs-2020-right-angled-patch-panel-5056045700394.html',
-    },
-    published: '1U · 483 W × 98 D × 44.5 H mm (catalogue)',
-    missing: 'Chassis width, ear depth, precise height and port geometry',
-  },
-  {
-    definition: {
-      ...base,
       id: 'ref-ups',
       name: 'APC SMT3000RMI2UC',
       manufacturer: 'APC / Schneider Electric',

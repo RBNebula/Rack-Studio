@@ -273,7 +273,8 @@ function CableReports({ workspace }: { workspace: Workspace }) {
                     />
                     <button
                       className="icon-button danger"
-                      title="Remove stock reel"
+                      aria-label="Remove stock reel"
+                      data-tooltip="Remove stock reel"
                       onClick={() =>
                         edit('Stock reel removed.', (p) => {
                           p.stock = p.stock.filter((s) => s.id !== stock.id);
@@ -465,7 +466,8 @@ function CableReports({ workspace }: { workspace: Workspace }) {
                       {label}
                       {columns.includes(id) && (
                         <button
-                          title={`Move ${label} left`}
+                          aria-label={`Move ${label} left`}
+                          data-tooltip={`Move ${label} left`}
                           onClick={(e) => {
                             e.preventDefault();
                             edit('Schedule columns reordered.', (p) => {

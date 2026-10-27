@@ -2,7 +2,7 @@ import { describe, it, expect } from 'vitest';
 import * as THREE from 'three';
 import { portSchema } from '../model';
 import { createUserRackPc } from '../models/user-rack-pc';
-import { baseCable, createWorkspaceProject } from '../examples';
+import { baseCable, createWorkspaceProject } from '../testing/legacy-example';
 import { portFaceAngle, portPanelCorners, portFootprint, portRotationDeg } from './ports';
 import { portAperture } from '../ui/portGeometry';
 import { designerIssues } from './model-designer';

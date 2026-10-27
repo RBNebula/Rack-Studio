@@ -2,6 +2,15 @@ import { test as base, expect } from '@playwright/test';
 import type { Locator, Page } from '@playwright/test';
 import { readFile } from 'node:fs/promises';
 import { resolve } from 'node:path';
+import {
+  fileAction,
+  fileItem,
+  openExample,
+  openView,
+  selectInstalled,
+  setView,
+  viewState,
+} from './navigation';
 
 const test = base.extend<{ uncaughtErrors: string[] }>({
   uncaughtErrors: [
@@ -24,9 +33,9 @@ test.beforeAll(({ browser }) => {
 async function open(page: Page) {
   page.setDefaultTimeout(10_000);
   await page.goto('/');
-  await page.getByRole('button', { name: 'Tutorial rack', exact: true }).click();
   await expect(page.locator('canvas')).toBeVisible();
   await expect(page.locator('.rack-u-label').first()).toBeVisible();
+  await openExample(page);
   await expect(page.locator('.installed-pills > button')).toHaveCount(6);
   await expect(page.locator('.depth-section')).toHaveCount(1);
   await expect(page.getByLabel('Mounting hole type', { exact: true })).toHaveValue('square');
@@ -135,7 +144,7 @@ test('actual library drag, occupied drop, precise placement, undo/redo and camer
   await open(page);
   await page.screenshot({ path: 'docs/screenshots/rack-designer.png' });
   await setSquareExampleHoles(page);
-  await page.getByRole('button', { name: 'Front view', exact: true }).click();
+  await setView(page, 'Front');
   await page.getByRole('button', { name: 'Orthographic camera', exact: true }).click();
   await expect(
     page.getByRole('button', { name: 'Orthographic camera', exact: true }),
@@ -146,7 +155,7 @@ test('actual library drag, occupied drop, precise placement, undo/redo and camer
   ).toContainText('U15');
   await expect(page.locator('.statusbar')).toContainText('Moved');
   await expect(page.locator('.scene-footer')).toContainText('2 cables');
-  await page.locator('.installed-pills > button').filter({ hasText: 'Shelf 1' }).click();
+  await selectInstalled(page, 'Shelf 1');
   await blurNumber(page.getByLabel('Start U', { exact: true }), 4);
   await page.getByRole('button', { name: 'Apply position', exact: true }).click();
   await expect(
@@ -175,11 +184,8 @@ test('actual library drag, occupied drop, precise placement, undo/redo and camer
   await expect(page.locator('.installed-pills > button')).toHaveCount(7);
   await page.getByRole('button', { name: 'Redo', exact: true }).click();
   await expect(page.locator('.installed-pills > button')).toHaveCount(8);
-  await page.getByRole('button', { name: 'Rear view', exact: true }).click();
-  await expect(page.getByRole('button', { name: 'Rear view', exact: true })).toHaveAttribute(
-    'aria-pressed',
-    'true',
-  );
+  await setView(page, 'Rear');
+  await expect(viewState(page, 'Rear')).toHaveAttribute('aria-pressed', 'true');
   await page.getByRole('button', { name: 'Show measurements', exact: true }).click();
   await expect(page.locator('.scene-dimension')).not.toHaveCount(0);
   await page.getByRole('button', { name: 'Orbit 3D view', exact: true }).click();
@@ -191,10 +197,7 @@ test('custom definition, port editing and embedded image survive a real local sa
   page,
 }) => {
   await open(page);
-  await page
-    .locator('.workspace-tabs')
-    .getByRole('button', { name: 'Device Library', exact: true })
-    .click();
+  await openView(page, 'Device Library');
   await page.getByRole('button', { name: 'New device', exact: true }).click();
   const dialog = page.getByRole('dialog');
   await dialog.getByLabel('Device name', { exact: true }).fill('QA compact switch');
@@ -231,14 +234,11 @@ test('custom definition, port editing and embedded image survive a real local sa
     name: 'QA management',
     position: [100, 21.475, 282],
   });
-  await page.getByRole('button', { name: 'Save', exact: true }).click();
+  await fileAction(page, 'Save');
   await expect(page.locator('.toolbar-save')).toContainText(/Saved locally/);
   await page.reload();
   await expect(page.locator('canvas')).toBeVisible();
-  await page
-    .locator('.workspace-tabs')
-    .getByRole('button', { name: 'Device Library', exact: true })
-    .click();
+  await openView(page, 'Device Library');
   await page.getByLabel('Search equipment', { exact: true }).fill('QA compact switch');
   await expect(page.locator('.library-card')).toHaveCount(1);
   library = JSON.parse(
@@ -253,10 +253,7 @@ test('connections, master schedule, external length, reserve, CSV and project re
   page,
 }) => {
   await open(page);
-  await page
-    .locator('.workspace-tabs')
-    .getByRole('button', { name: 'Connections', exact: true })
-    .click();
+  await openView(page, 'Connections');
   await expect(page.locator('.schedule-table tbody > tr')).toHaveCount(2);
   const externalId = (await page.locator('.schedule-table .cable-id').allTextContents())[1].trim();
   await page.getByRole('button', { name: 'New connection', exact: true }).click();
@@ -271,10 +268,7 @@ test('connections, master schedule, external length, reserve, CSV and project re
   await dialog.getByLabel('Purpose', { exact: true }).fill('QA workstation network');
   await dialog.getByRole('button', { name: 'Connect ports', exact: true }).click();
   await expect(page.locator('.schedule-table tbody > tr')).toHaveCount(3);
-  await page
-    .locator('.workspace-tabs')
-    .getByRole('button', { name: /Cable Schedule/ })
-    .click();
+  await openView(page, 'Cable Schedule');
   await expect(
     page.getByRole('button', { name: 'End A allowance (mm)', exact: true }),
   ).toBeVisible();
@@ -317,10 +311,7 @@ test('connections, master schedule, external length, reserve, CSV and project re
     .click();
   await page.screenshot({ path: 'docs/screenshots/cable-schedule.png' });
 
-  await page
-    .locator('.workspace-tabs')
-    .getByRole('button', { name: 'Procurement', exact: true })
-    .click();
+  await openView(page, 'Procurement');
   await blurNumber(page.getByLabel('Fixed project reserve (mm)', { exact: true }), 300000);
   await expect(page.locator('.product-numbers > div').nth(2).locator('strong')).toHaveText('1');
   await expect(page.locator('.product-numbers > div').nth(3).locator('strong')).toHaveText('2');
@@ -330,10 +321,7 @@ test('connections, master schedule, external length, reserve, CSV and project re
   );
   expect(procurement).toContain('Cat6A');
   await page.screenshot({ path: 'docs/screenshots/procurement.png' });
-  await page
-    .locator('.workspace-tabs')
-    .getByRole('button', { name: 'Cut List', exact: true })
-    .click();
+  await openView(page, 'Cut List');
   const cuts = await downloadText(
     page,
     page.getByRole('button', { name: 'Export CSV', exact: true }),
@@ -341,30 +329,28 @@ test('connections, master schedule, external length, reserve, CSV and project re
   expect(cuts).toContain(externalId);
   expect(cuts).toContain('QA-NEW');
 
-  await page.getByRole('button', { name: 'Save', exact: true }).click();
+  await fileAction(page, 'Save');
   await expect(page.locator('.toolbar-save')).toContainText(/Saved locally/);
   await page.reload();
   await expect(page.locator('canvas')).toBeVisible();
-  await page
-    .locator('.workspace-tabs')
-    .getByRole('button', { name: /Cable Schedule/ })
-    .click();
+  await openView(page, 'Cable Schedule');
   await expect(page.locator('.schedule-table tbody > tr')).toHaveCount(3);
   await expect(purposeField(page, 'QA-NEW')).toHaveValue('QA edited purpose');
-  await page.getByRole('button', { name: 'Open', exact: true }).click();
+  await fileAction(page, 'Open');
   const saved = page.getByRole('dialog', { name: 'Open local project' });
-  await expect(saved.locator('.saved-project')).toHaveCount(1);
-  await saved.locator('.saved-project').click();
+  // The empty starting rack is saved too when the example is imported; open the example.
+  const example = saved
+    .locator('.saved-project')
+    .filter({ hasText: 'Vehicle communications · example' });
+  await expect(example).toHaveCount(1);
+  await example.click();
   await expect(page.locator('.toolbar-save')).toContainText('Opened from local storage');
   await expect(page.locator('.installed-pills > button')).toHaveCount(6);
 
-  await page
-    .locator('.workspace-tabs')
-    .getByRole('button', { name: /Cable Schedule/ })
-    .click();
-  const before = JSON.parse(
-    await downloadText(page, page.getByRole('button', { name: 'Export project', exact: true })),
-  ) as { cables: { id: string; label: string; purpose: string }[] };
+  await openView(page, 'Cable Schedule');
+  const before = JSON.parse(await downloadText(page, await fileItem(page, 'Export project'))) as {
+    cables: { id: string; label: string; purpose: string }[];
+  };
   const stableId = before.cables.find((cable) => cable.label === 'QA-NEW')?.id;
   expect(stableId).toBeTruthy();
   expect(stableId).not.toBe('QA-NEW');
@@ -383,7 +369,7 @@ test('connections, master schedule, external length, reserve, CSV and project re
     (await page.locator('.schedule-table .cable-id').allTextContents()).map((text) => text.trim()),
   ).toEqual(['0', '1', '2']);
   const after = JSON.parse(
-    await downloadText(page, page.getByRole('button', { name: 'Export project', exact: true })),
+    await downloadText(page, await fileItem(page, 'Export project')),
   ) as typeof before;
   expect(after.cables.map((cable) => cable.id)).toEqual(before.cables.map((cable) => cable.id));
   expect(after.cables.find((cable) => cable.id === stableId)).toMatchObject({
@@ -396,7 +382,7 @@ test('new rack dimensions and inclusive depth sections persist while invalid ove
   page,
 }) => {
   await open(page);
-  await page.getByRole('button', { name: 'New', exact: true }).click();
+  await fileAction(page, 'New');
   await expect(page.locator('.installed-pills > button')).toHaveCount(0);
   await page.getByLabel('Rack name', { exact: true }).fill('QA rack B');
   await blurNumber(page.getByLabel('Height (U)', { exact: true }), 24);
@@ -408,7 +394,7 @@ test('new rack dimensions and inclusive depth sections persist while invalid ove
   await blurNumber(upper.getByRole('spinbutton', { name: /^Screw-plane depth \(mm\)/ }), 750);
   await page.getByRole('button', { name: 'Apply rack configuration', exact: true }).click();
   await expect(page.locator('.rack-u-label')).toHaveCount(24);
-  await expect(page.locator('.designer-heading')).toContainText('QA rack B');
+  await expect(page.locator('.inspector .rack-summary')).toContainText('QA rack B');
   await page.getByRole('button', { name: 'Show measurements', exact: true }).click();
   await expect(page.locator('.scene-dimension.vertical')).toContainText('1066.8 mm');
   await page.screenshot({ path: 'docs/screenshots/custom-rack.png' });
@@ -419,27 +405,28 @@ test('new rack dimensions and inclusive depth sections persist while invalid ove
   );
   await page.getByRole('button', { name: 'Apply rack configuration', exact: true }).click();
   await expect(page.getByRole('alert')).toContainText('every U exactly once');
-  const json = JSON.parse(
-    await downloadText(page, page.getByRole('button', { name: 'Export project', exact: true })),
-  ) as { rack: { name: string; heightU: number; sections: { startU: number; endU: number }[] } };
+  const json = JSON.parse(await downloadText(page, await fileItem(page, 'Export project'))) as {
+    rack: { name: string; heightU: number; sections: { startU: number; endU: number }[] };
+  };
   expect(json.rack.name).toBe('QA rack B');
   expect(json.rack.heightU).toBe(24);
   expect(json.rack.sections.map((section) => [section.startU, section.endU])).toEqual([
     [1, 12],
     [13, 24],
   ]);
-  await page.getByRole('button', { name: 'Save', exact: true }).click();
+  await fileAction(page, 'Save');
   await expect(page.locator('.toolbar-save')).toContainText(/Saved locally/);
   await page.reload();
-  await expect(page.locator('.designer-heading')).toContainText('QA rack B');
+  await expect(page.locator('.inspector .rack-summary')).toContainText('QA rack B');
   await expect(page.locator('.rack-u-label')).toHaveCount(24);
 });
 
 test('a storage failure preserves the current project when New is requested', async ({ page }) => {
   await open(page);
-  const original = JSON.parse(
-    await downloadText(page, page.getByRole('button', { name: 'Export project', exact: true })),
-  ) as { id: string; devices: unknown[] };
+  const original = JSON.parse(await downloadText(page, await fileItem(page, 'Export project'))) as {
+    id: string;
+    devices: unknown[];
+  };
   // Deliberate failure injection at the storage boundary, with no application
   // state manipulation: exercise the same save failure a full/quota store raises.
   await page.evaluate(() => {
@@ -455,14 +442,14 @@ test('a storage failure preserves the current project when New is requested', as
     .getByRole('button', { name: 'Project Settings', exact: true })
     .click();
   await page.getByLabel('Project name', { exact: true }).fill('Recoverable QA project');
-  await page.getByRole('button', { name: 'New', exact: true }).click();
+  await fileAction(page, 'New');
   await expect(page.getByRole('alert')).toContainText('Simulated storage quota failure');
   await expect(page.getByLabel('Project name', { exact: true })).toHaveValue(
     'Recoverable QA project',
   );
   await expect(page.locator('.toolbar-save')).toContainText('Save failed');
   const recovered = JSON.parse(
-    await downloadText(page, page.getByRole('button', { name: 'Export project', exact: true })),
+    await downloadText(page, await fileItem(page, 'Export project')),
   ) as { id: string; name: string; devices: unknown[] };
   expect(recovered.id).toBe(original.id);
   expect(recovered.name).toBe('Recoverable QA project');
@@ -475,13 +462,11 @@ test('imported power cable follows an existing curved run through UI edits and r
   await open(page);
   await page
     .getByLabel('Import project JSON', { exact: true })
-    .setInputFiles(resolve('examples/route-follow.rack.json'));
+    .setInputFiles(resolve('tests/fixtures/route-follow.rack.json'));
   await expect(page.locator('.installed-pills > button')).toHaveCount(3);
+  await page.getByRole('button', { name: 'Project Settings', exact: true }).click();
   await expect(page.locator('.header-project')).toContainText('Follow existing power cable');
-  await page
-    .locator('.workspace-tabs')
-    .getByRole('button', { name: /Cable Schedule/ })
-    .click();
+  await openView(page, 'Cable Schedule');
   await expect(page.locator('.schedule-table tbody > tr')).toHaveCount(2);
   await page.locator('.schedule-table').getByRole('button', { name: '1', exact: true }).click();
   let reference = page
@@ -498,21 +483,18 @@ test('imported power cable follows an existing curved run through UI edits and r
   await reference.selectOption('cable-power-reference');
   await expect(page.locator('.length-breakdown dd').first()).toHaveText(followingLength);
   await expect(page.locator('.cable-heading')).not.toContainText('Route invalid');
-  const exported = JSON.parse(
-    await downloadText(page, page.getByRole('button', { name: 'Export project', exact: true })),
-  ) as { cables: { id: string; followCableId: string | null }[] };
+  const exported = JSON.parse(await downloadText(page, await fileItem(page, 'Export project'))) as {
+    cables: { id: string; followCableId: string | null }[];
+  };
   expect(exported.cables).toHaveLength(2);
   expect(exported.cables.find((cable) => cable.id === 'cable-power-follower')?.followCableId).toBe(
     'cable-power-reference',
   );
-  await page.getByRole('button', { name: 'Save', exact: true }).click();
+  await fileAction(page, 'Save');
   await expect(page.locator('.toolbar-save')).toContainText(/Saved locally/);
   await page.reload();
   await expect(page.locator('.installed-pills > button')).toHaveCount(3);
-  await page
-    .locator('.workspace-tabs')
-    .getByRole('button', { name: /Cable Schedule/ })
-    .click();
+  await openView(page, 'Cable Schedule');
   await page.locator('.schedule-table').getByRole('button', { name: '1', exact: true }).click();
   reference = page
     .locator('.inspector')
@@ -525,7 +507,7 @@ test('imported power cable follows an existing curved run through UI edits and r
     .getByRole('button', { name: '3D Rack Designer', exact: true })
     .click();
   await expect(page.locator('canvas')).toBeVisible();
-  await page.getByRole('button', { name: 'Rear view', exact: true }).click();
+  await setView(page, 'Rear');
   await expect(page.locator('.rack-u-label').first()).toBeVisible();
   await page.screenshot({ path: 'docs/screenshots/cable-follow.png' });
 });
@@ -534,32 +516,31 @@ test('a first visit starts blank and the tutorial rack opens as a separate, rest
   page,
 }) => {
   page.setDefaultTimeout(10_000);
+  const projectName = page.getByLabel('Project name', { exact: true });
+  const settings = page
+    .locator('.workspace-tabs')
+    .getByRole('button', { name: 'Project Settings', exact: true });
   await page.goto('/');
   await expect(page.locator('canvas')).toBeVisible();
-  await expect(page.locator('.header-project')).toContainText('Untitled rack project');
   await expect(page.locator('.installed-pills > button')).toHaveCount(0);
-  await expect(page.locator('.statusbar')).toContainText('New blank rack');
-
-  await page
-    .locator('.workspace-tabs')
-    .getByRole('button', { name: 'Project Settings', exact: true })
-    .click();
-  await page.getByLabel('Project name', { exact: true }).fill('QA own rack');
+  await settings.click();
+  await expect(projectName).toHaveValue('Untitled rack project');
+  await projectName.fill('QA own rack');
   await expect(page.locator('.toolbar-save')).toContainText('Saved locally');
 
-  await page.getByRole('button', { name: 'Tutorial rack', exact: true }).click();
-  await expect(page.locator('.header-project')).toContainText('Vehicle communications · example');
-  await expect(page.locator('.installed-pills > button')).toHaveCount(6);
+  await fileAction(page, 'Tutorial rack');
   await expect(page.locator('.statusbar')).toContainText('Tutorial rack opened');
+  await expect(page.locator('.installed-pills > button')).toHaveCount(1);
   // The earlier save's "Saved locally" text remains, so wait for this project's autosave to clear dirty.
   await expect(page.locator('.toolbar-save .saved-dot')).toBeVisible();
 
   await page.reload();
-  await expect(page.locator('.header-project')).toContainText('Vehicle communications · example');
-  await expect(page.locator('.installed-pills > button')).toHaveCount(6);
   await expect(page.locator('.statusbar')).toContainText('Reopened your last project.');
+  await expect(page.locator('.installed-pills > button')).toHaveCount(1);
+  await settings.click();
+  await expect(projectName).toHaveValue('Vehicle communications · example');
 
-  await page.getByRole('button', { name: 'Open', exact: true }).click();
+  await fileAction(page, 'Open');
   const saved = page.getByRole('dialog').locator('.saved-project');
   await expect(saved).toHaveCount(2);
   await expect(saved.filter({ hasText: 'QA own rack' })).toHaveCount(1);

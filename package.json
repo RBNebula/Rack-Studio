@@ -18,11 +18,13 @@
     "test": "vitest run",
     "test:watch": "vitest",
     "test:e2e": "playwright test",
+    "test:e2e:quick": "playwright test --reporter=dot",
     "check": "pnpm typecheck && pnpm lint && pnpm test && pnpm build"
   },
   "dependencies": {
     "@react-three/drei": "10.7.9",
     "@react-three/fiber": "9.8.2",
+    "occt-import-js": "0.0.23",
     "react": "19.3.1",
     "react-dom": "19.3.1",
     "three": "0.186.1",

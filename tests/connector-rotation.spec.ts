@@ -1,12 +1,13 @@
 import { test, expect, type Page } from '@playwright/test';
 import { readFile } from 'node:fs/promises';
 import type { Project } from '../src/model';
+import { fileAction, openView, setView } from './navigation';
 
 test.use({ baseURL: process.env.RACK_TEST_URL ?? 'http://127.0.0.1:5173' });
 test.setTimeout(120000);
 async function exported(page: Page): Promise<Project> {
   const event = page.waitForEvent('download');
-  await page.getByRole('button', { name: 'Export project', exact: true }).click();
+  await fileAction(page, 'Export project');
   return JSON.parse(await readFile((await (await event).path())!, 'utf8'));
 }
 async function clickPort(page: Page, device: string, port: string) {
@@ -38,7 +39,7 @@ test('front/rear connector rotation, save-as-new, library edits and rotated nati
     .getByLabel('Import project JSON', { exact: true })
     .setInputFiles('examples/wiring-guides.rack.json');
   const original = initial.definitions.find((d) => d.id === initial.devices[0].definitionId)!;
-  await page.getByRole('button', { name: 'Device Model Designer', exact: true }).click();
+  await openView(page, 'Device Model Designer');
   await page
     .getByRole('combobox', { name: 'Edit library model', exact: true })
     .selectOption(original.id);
@@ -75,7 +76,7 @@ test('front/rear connector rotation, save-as-new, library edits and rotated nati
   expect(copy.ports.find((port) => port.id === 'rear-power')?.rotationDeg).toBe(90);
   expect(p.definitions.find((d) => d.id === original.id)).toEqual(original);
   expect(p.cables).toEqual(initial.cables);
-  await page.getByRole('button', { name: 'Device Library', exact: true }).click();
+  await openView(page, 'Device Library');
   await page.getByRole('button', { name: `Edit ${copy.name}`, exact: true }).click();
   dialog = page.getByRole('dialog');
   await dialog.getByRole('button', { name: `Ports (${copy.ports.length})`, exact: true }).click();
@@ -102,7 +103,7 @@ test('front/rear connector rotation, save-as-new, library edits and rotated nati
   const device = p.devices.find((d) => d.definitionId === copy.id)!;
   await page.getByRole('button', { name: '3D Rack Designer', exact: true }).click();
   await page.getByRole('button', { name: 'Orthographic camera', exact: true }).click();
-  await page.getByRole('button', { name: 'Front view', exact: true }).click();
+  await setView(page, 'Front');
   await page.getByRole('button', { name: 'Wiring mode', exact: true }).click();
   await clickPort(page, initial.devices[0].id, 'front-usb-bottom');
   await expect(page.getByLabel('Wiring tools')).toContainText('Click the destination port');
@@ -116,7 +117,7 @@ test('front/rear connector rotation, save-as-new, library edits and rotated nati
   });
   expect(connected.cables.slice(0, initial.cables.length)).toEqual(initial.cables);
   await page.getByRole('button', { name: 'Wiring mode', exact: true }).click();
-  await page.getByRole('button', { name: 'Save', exact: true }).click();
+  await fileAction(page, 'Save');
   await expect(page.locator('.toolbar-save')).toContainText('Saved locally');
   await page.reload();
   const restored = await exported(page);

@@ -8,7 +8,7 @@ Recorded 23 October 2026 from the eleven photographs and dimensions supplied by 
 
 New projects include **User rack PC · 1U** in the equipment library. Select it and place an instance on the front or rear of the rack.
 
-For an existing project, open **Equipment library → Import library**, choose [user-rack-pc.library.json](../examples/user-rack-pc.library.json), then place the imported PC. To inspect the standalone example, use the toolbar's **Import** with [user-rack-pc.rack.json](../examples/user-rack-pc.rack.json). **Open** lists projects already saved in this browser.
+For an existing project, open **Equipment → Device Library → Import library**, choose [user-rack-pc.library.json](../examples/user-rack-pc.library.json), then place the imported PC. To inspect the standalone example, use the toolbar's **Import** with [user-rack-pc.rack.json](../examples/user-rack-pc.rack.json). **Open** lists projects already saved in this browser.
 
 The exact physical height is still to follow. The current model uses 43 mm for its confirmed 1U allocation. After actual measurements arrive, adjust both the chassis dimensions and the affected editable port coordinates. Changing a dimension does not automatically rescale port centres or fitting positions; the normalised observations below are calibration references. Front USB centres currently use the provisional front-fascia plane at Z = −2 mm, so review their Z coordinates if ear/fascia thickness is calibrated.
 

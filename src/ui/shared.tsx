@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import type { ReactNode } from 'react';
 
 export function Icon({ name, size = 18 }: { name: string; size?: number }) {
@@ -115,6 +115,62 @@ export function Icon({ name, size = 18 }: { name: string; size?: number }) {
       </>
     ),
     bolt: <path d="M13 2 4.5 13.5H12L11 22l8.5-11.5H12z" />,
+    plug: (
+      <>
+        <path d="M9 2v5M15 2v5" />
+        <path d="M6 7h12v4a6 6 0 0 1-12 0z" />
+        <path d="M12 17v5" />
+      </>
+    ),
+    move: (
+      <>
+        <path d="M12 3v18M3 12h18" />
+        <path d="m9 6 3-3 3 3M9 18l3 3 3-3M6 9l-3 3 3 3M18 9l3 3-3 3" />
+      </>
+    ),
+    ortho: (
+      <>
+        <rect x="4" y="4" width="16" height="16" rx="1" />
+        <path d="M4 12h16M12 4v16" />
+      </>
+    ),
+    mount: (
+      <>
+        <path d="M5 3v18M19 3v18" />
+        <rect x="8" y="8" width="8" height="8" rx="1" />
+        <path d="M5 8h3M5 16h3M16 8h3M16 16h3" />
+      </>
+    ),
+    home: (
+      <>
+        <path d="m3 11 9-7 9 7" />
+        <path d="M5 9.5V20h14V9.5M10 20v-6h4v6" />
+      </>
+    ),
+    info: (
+      <>
+        <circle cx="12" cy="12" r="9" />
+        <path d="M12 11v6M12 7.5v.5" />
+      </>
+    ),
+    'panel-left': (
+      <>
+        <rect x="3" y="4" width="18" height="16" rx="2" />
+        <path d="M9 4v16M15 10l-2 2 2 2" />
+      </>
+    ),
+    'panel-right': (
+      <>
+        <rect x="3" y="4" width="18" height="16" rx="2" />
+        <path d="M15 4v16M9 10l2 2-2 2" />
+      </>
+    ),
+    mouse: (
+      <>
+        <rect x="6" y="3" width="12" height="18" rx="6" />
+        <path d="M12 7v3" />
+      </>
+    ),
     printer: (
       <>
         <path d="M7 9V3h10v6" />
@@ -139,6 +195,10 @@ export function Icon({ name, size = 18 }: { name: string; size?: number }) {
     </svg>
   );
 }
+/**
+ * Text button. Variants (via className): default = secondary, `primary`, `ghost`, `danger`,
+ * plus the `sm` size modifier. Icon-only actions use IconButton instead.
+ */
 export function Button({
   icon,
   children,
@@ -149,6 +209,94 @@ export function Button({
     <button className={`button ${className}`} {...props}>
       {icon && <Icon name={icon} />} {children}
     </button>
+  );
+}
+/**
+ * Icon-only button. `label` is the accessible name and, unless `tooltip` overrides it, the
+ * visible tooltip shown on hover and keyboard focus.
+ */
+export function IconButton({
+  icon,
+  label,
+  tooltip,
+  size = 16,
+  className = '',
+  ...props
+}: Omit<React.ButtonHTMLAttributes<HTMLButtonElement>, 'children'> & {
+  icon: string;
+  label: string;
+  tooltip?: string;
+  size?: number;
+}) {
+  return (
+    <button
+      type="button"
+      className={`icon-button ${className}`}
+      aria-label={label}
+      data-tooltip={tooltip ?? label}
+      {...props}
+    >
+      <Icon name={icon} size={size} />
+    </button>
+  );
+}
+/**
+ * One fixed-position tooltip for every element with `data-tooltip`. It is drawn outside
+ * scrolling panels so it is never clipped, shows on hover and on keyboard focus, and renders
+ * its text through CSS so it does not duplicate accessible names or page text.
+ */
+export function TooltipLayer() {
+  const [tip, setTip] = useState<{
+    text: string;
+    x: number;
+    y: number;
+    below: boolean;
+    align: 'start' | 'center' | 'end';
+  } | null>(null);
+  useEffect(() => {
+    let current: HTMLElement | null = null;
+    const show = (target: EventTarget | null) => {
+      const el = target instanceof Element ? target.closest<HTMLElement>('[data-tooltip]') : null;
+      if (el === current) return;
+      current = el;
+      const text = el?.dataset.tooltip;
+      if (!el || !text) return setTip(null);
+      const r = el.getBoundingClientRect();
+      const below = r.top < 44;
+      // Near a viewport edge, align the tooltip with the element's edge so it is not clipped.
+      const align = r.left < 140 ? 'start' : r.right > window.innerWidth - 140 ? 'end' : 'center';
+      const x = align === 'start' ? r.left : align === 'end' ? r.right : r.left + r.width / 2;
+      setTip({ text, x, y: below ? r.bottom + 6 : r.top - 6, below, align });
+    };
+    const over = (e: Event) => show(e.target);
+    const focus = (e: Event) => {
+      if (e.target instanceof HTMLElement && e.target.matches(':focus-visible')) show(e.target);
+    };
+    const hide = () => {
+      current = null;
+      setTip(null);
+    };
+    document.addEventListener('mouseover', over);
+    document.addEventListener('focusin', focus);
+    document.addEventListener('focusout', hide);
+    document.addEventListener('pointerdown', hide);
+    document.addEventListener('scroll', hide, true);
+    return () => {
+      document.removeEventListener('mouseover', over);
+      document.removeEventListener('focusin', focus);
+      document.removeEventListener('focusout', hide);
+      document.removeEventListener('pointerdown', hide);
+      document.removeEventListener('scroll', hide, true);
+    };
+  }, []);
+  if (!tip) return null;
+  return (
+    <div
+      className={`ui-tooltip ${tip.below ? 'below' : ''} ${tip.align}`}
+      aria-hidden="true"
+      data-text={tip.text}
+      style={{ left: tip.x, top: tip.y }}
+    />
   );
 }
 export function Field({
@@ -351,9 +499,7 @@ export function Modal({
       >
         <header>
           <h2>{title}</h2>
-          <button className="icon-button" onClick={onClose} aria-label="Close dialog">
-            <Icon name="x" />
-          </button>
+          <IconButton icon="x" size={18} label="Close dialog" onClick={onClose} />
         </header>
         {children}
       </section>

@@ -15,7 +15,7 @@ Cloud project storage is a separate, planned piece of work that needs its own se
 | File | Purpose |
 | --- | --- |
 | `wrangler.jsonc` | Worker `rack-studio`: serves `dist/` as static assets on the custom domain `rackstudio.app`. The public `workers.dev` and version/preview URLs are disabled, so the protected custom domain is the only address. Unknown paths serve `index.html` |
-| `public/_headers` | Copied into `dist/` by Vite. Cloudflare applies it as response headers and does not serve it as a file: a content security policy limited to this origin (plus `data:`/`blob:` for embedded images and downloads), `nosniff`, no referrer, disabled device permissions, `noindex`, and long-lived caching for fingerprinted `/assets/*` files |
+| `public/_headers` | Copied into `dist/` by Vite. Cloudflare applies it as response headers and does not serve it as a file: a content security policy limited to this origin (plus `data:`/`blob:` for embedded images and downloads), `nosniff`, no referrer, disabled device permissions, `noindex`, and long-lived caching for fingerprinted `/assets/*` files. The STEP import worker (`/assets/step.worker-*`) has no content security policy: its bundled OpenCascade (Emscripten) kernel compiles WebAssembly and evaluates generated code, and a dedicated worker takes its policy from its own response, so the page keeps the strict policy |
 
 Wrangler is not a project dependency. Cloudflare's build runs a pinned `npx wrangler@4.149.0`; change the version there deliberately.
 

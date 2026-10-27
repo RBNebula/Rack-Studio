@@ -4,6 +4,8 @@ Reviewed on 22 October 2026. Dimensions below are published catalogue values, no
 
 The user defines rack depth as **front screw plane to rear screw plane**, and device depth as **mounting-ear screw plane to rear fascia**. The reviewed catalogue depths do not explicitly establish that second datum. Keep the published depth in the source notes; any value copied into the model's ear-to-rear field must remain a visible provisional assumption until a drawing or measurement confirms it.
 
+> **Retired 28 October 2026:** the Cisco C1300-48P-4G and Connectix CCS 20/20 references below are no longer offered in the app; their sections are kept as source history.
+
 ## Cisco Catalyst C1300-48P-4G
 
 Primary sources: [Cisco product data sheet](https://www.cisco.com/c/en/us/products/collateral/switches/catalyst-1300-series-switches/nb-06-cat1300-ser-data-sheet-cte-en.html), [Cisco installation guidance](https://www.cisco.com/c/en/us/td/docs/switches/campus-lan-switches-access/Catalyst-1200-and-1300-Switches/Administration-Guide/catalyst-1300-admin-guide/get-to-know-your-switch.html).

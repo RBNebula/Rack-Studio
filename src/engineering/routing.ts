@@ -540,8 +540,14 @@ function routeCableGeometry(
     advisories: string[] = [];
   const exit = cable.exitId ? project.exits.find((e) => e.id === cable.exitId) : undefined;
   const sourceAtExit =
-    cable.source.kind === 'external' && !positionedEndpoint(project,cable.source) && cable.destination.kind === 'device' && !!exit;
-  const destinationAtExit = cable.destination.kind === 'external' && !positionedEndpoint(project,cable.destination) && !!exit;
+    cable.source.kind === 'external' &&
+    !positionedEndpoint(project, cable.source) &&
+    cable.destination.kind === 'device' &&
+    !!exit;
+  const destinationAtExit =
+    cable.destination.kind === 'external' &&
+    !positionedEndpoint(project, cable.destination) &&
+    !!exit;
   const start = sourceAtExit ? exit!.position : portWorld(project, cable.source);
   const end = destinationAtExit ? exit!.position : portWorld(project, cable.destination);
   if (!start || !end)

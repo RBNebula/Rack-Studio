@@ -2,6 +2,8 @@ import { test as base, expect } from '@playwright/test';
 import type { Locator, Page } from '@playwright/test';
 import { readFile, writeFile } from 'node:fs/promises';
 import { resolve } from 'node:path';
+import { openExample, openView, selectInstalled } from './navigation';
+import type { View } from './navigation';
 
 const test = base.extend<{ uncaughtErrors: string[] }>({
   uncaughtErrors: [
@@ -31,9 +33,9 @@ async function open(page: Page) {
   // Software WebGL compiles shaders slowly on first use; see tests/power.spec.ts.
   page.setDefaultTimeout(45_000);
   await page.goto('/');
-  await page.getByRole('button', { name: 'Tutorial rack', exact: true }).click();
   await expect(page.locator('canvas')).toBeVisible();
   await expect(page.locator('.rack-u-label').first()).toBeVisible();
+  await openExample(page);
   await expect(page.locator('.installed-pills > button')).toHaveCount(6);
 }
 const tab = (page: Page, name: string | RegExp) =>
@@ -46,7 +48,7 @@ async function blurNumber(field: Locator, value: number | '') {
 }
 async function select(page: Page, name: string) {
   await tab(page, '3D Rack Designer').click();
-  await page.locator('.installed-pills > button').filter({ hasText: name }).click();
+  await selectInstalled(page, name);
 }
 const inspector = (page: Page) => page.locator('.inspector');
 const powerSection = (page: Page) =>
@@ -69,7 +71,7 @@ async function setPower(
 }
 /** Adds an IEC-C14 inlet to an equipment model through the definition editor. */
 async function addInlet(page: Page, model: string, portName: string) {
-  await tab(page, 'Device Library').click();
+  await openView(page, 'Device Library');
   await page.getByRole('button', { name: `Edit ${model}`, exact: true }).click();
   const dialog = page.getByRole('dialog', { name: `Device definition · ${model}` });
   await dialog.getByRole('button', { name: /^Ports \(\d+\)$/ }).click();
@@ -98,7 +100,7 @@ async function place(page: Page, name: string, startU: number) {
   await expect(dialog).toHaveCount(0);
 }
 async function connect(page: Page, sourceLabel: string, destinationLabel: string) {
-  await tab(page, 'Connections').click();
+  await openView(page, 'Connections');
   await page.getByRole('button', { name: 'New connection', exact: true }).click();
   const dialog = page.getByRole('dialog', { name: 'New cable connection' });
   await dialog
@@ -121,7 +123,7 @@ async function connect(page: Page, sourceLabel: string, destinationLabel: string
  */
 async function setUp(page: Page) {
   await open(page);
-  await tab(page, 'Device Library').click();
+  await openView(page, 'Device Library');
   await page
     .locator('label.button', { hasText: 'Import library' })
     .locator('input[type=file]')
@@ -148,7 +150,7 @@ async function setUp(page: Page) {
 
 const documentView = (page: Page) => page.getByRole('main', { name: 'Power and weights document' });
 async function openDocument(page: Page) {
-  await tab(page, 'Power & Weights').click();
+  await openView(page, 'Power & Weights');
   await expect(documentView(page)).toBeVisible();
 }
 /** Visible text of each body row of a table. */
@@ -591,8 +593,8 @@ test('the Power & Weights print layout hides the app chrome, adds the project li
   await page.emulateMedia({ media: 'print' });
   for (const selector of [
     '.app-header',
-    '.project-toolbar',
     '.workspace-tabs',
+    '.workspace-subtabs',
     '.accuracy-banner',
     '.statusbar',
   ])
@@ -651,13 +653,13 @@ test('cable reports and their CSV exports still work, and the Power & Weights ta
   page,
 }) => {
   await open(page);
-  const reports: [RegExp, string, RegExp][] = [
-    [/^Cable Schedule/, 'schedule', /^"Cable/],
-    [/^Cut List$/, 'cuts', /^"/],
-    [/^Procurement$/, 'procurement', /^"/],
+  const reports: [View, string, RegExp][] = [
+    ['Cable Schedule', 'schedule', /^"Cable/],
+    ['Cut List', 'cuts', /^"/],
+    ['Procurement', 'procurement', /^"/],
   ];
   for (const [name, workspace, header] of reports) {
-    await tab(page, name).click();
+    await openView(page, name);
     const pending = page.waitForEvent('download');
     await page.getByRole('main').getByRole('button', { name: 'Export CSV', exact: true }).click();
     const download = await pending;
@@ -672,7 +674,7 @@ test('cable reports and their CSV exports still work, and the Power & Weights ta
     }
   }
   // Select a cable in the schedule: its inspector opens beside the report.
-  await tab(page, /^Cable Schedule/).click();
+  await openView(page, 'Cable Schedule');
   await page.locator('.schedule-table').getByRole('button', { name: '1', exact: true }).click();
   await expect(inspector(page).getByLabel(/^Cable number/)).toHaveValue('1');
   // The Power & Weights document is read-only and does not show the cable inspector.
@@ -681,6 +683,6 @@ test('cable reports and their CSV exports still work, and the Power & Weights ta
   await expect(documentView(page)).toBeVisible();
   await expect(equipmentTable(page).locator('tbody > tr')).toHaveCount(6);
   // Returning to the schedule keeps the selection and its inspector.
-  await tab(page, /^Cable Schedule/).click();
+  await openView(page, 'Cable Schedule');
   await expect(inspector(page).getByLabel(/^Cable number/)).toHaveValue('1');
 });

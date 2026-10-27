@@ -9,6 +9,7 @@ import {
   useState,
 } from 'react';
 import type { ComponentRef, CSSProperties, DragEvent, MutableRefObject, ReactNode } from 'react';
+import { createPortal } from 'react-dom';
 import { createRoot } from 'react-dom/client';
 import type { Root } from 'react-dom/client';
 import { Canvas, useFrame, useThree } from '@react-three/fiber';
@@ -22,7 +23,7 @@ import {
 } from '@react-three/drei';
 import * as THREE from 'three';
 import type { Cable, Device, DeviceDefinition, Project, Rack, Vec3 } from '../model';
-import { cableLabel, uid, clone } from '../model';
+import { cableLabel, clone } from '../model';
 import { useStore } from '../state';
 import {
   allObstacles,
@@ -40,7 +41,11 @@ import {
   U_MM,
   uBottom,
 } from '../engineering/geometry';
-import { placementIssues, projectWithPlacement as relocated } from '../engineering/placement';
+import {
+  placementIssues,
+  projectWithPlacement as relocated,
+  supportRoot,
+} from '../engineering/placement';
 import type { Obstacle } from '../engineering/geometry';
 import { routeCable } from '../engineering/routing';
 import type { CableRoute } from '../engineering/routing';
@@ -52,13 +57,16 @@ import { LacingBarGeometry } from './LacingBarGeometry';
 import { PortGlyph } from './PortGlyph';
 import { portFaceAngle } from '../engineering/ports';
 import { FaceFeatures } from './FaceFeatures';
+import { StepModelGeometry } from './StepModelGeometry';
 import { PerforatedTray } from './PerforatedTray';
 import { addAccessory } from './Inspector';
 import { DeviceRails } from './DeviceRails';
-import { WiringPanel } from './WiringPanel';
 import { WiringPicker } from './WiringPicker';
 import { clickWiringGuide, connectWiringPort } from './wiringActions';
-import { ModellingPanel } from './ModellingPanel';
+import { commitPlacement } from './placementActions';
+import { ModeIndicator, SceneDrawer, viewportMode } from './ViewportMode';
+import { ViewCube, ViewCubeSync } from './ViewCube';
+import { ChoiceMenu, useStoredState } from './Panels';
 import { ModellingGizmo } from './ModellingGizmo';
 import {
   add as addPosition,
@@ -90,6 +98,8 @@ interface SceneBridge {
 }
 interface PointerDrag {
   deviceId: string;
+  /** The device clicked; deviceId is its shelf when it stands on one. */
+  selectId: string;
   startX: number;
   startY: number;
   offsetMm: number;
@@ -111,6 +121,21 @@ const centerOf = (box: Obstacle): Vec3 =>
   box.min.map((value, i) => (value + box.max[i]) / 2) as Vec3;
 const sizeOf = (box: Obstacle): Vec3 => box.max.map((value, i) => value - box.min[i]) as Vec3;
 const OverlayHost = createContext<HTMLDivElement | null>(null);
+/** Layout size of each overlay host (same box as the canvas), kept by one ResizeObserver so
+ * labels can compare it with the renderer size without forcing a layout every frame. */
+const hostSizes = new WeakMap<Element, { width: number; height: number }>();
+const hostRedraw = new WeakMap<Element, () => void>();
+/** The canvas renders on demand, so a resize also requests a frame: labels hidden while the
+ * projection lagged the new size are then placed and shown again. */
+function observeHost(host: HTMLDivElement, redraw: () => void) {
+  hostRedraw.set(host, redraw);
+  if (hostSizes.has(host)) return;
+  hostSizes.set(host, { width: host.clientWidth, height: host.clientHeight });
+  new ResizeObserver(([entry]) => {
+    hostSizes.set(host, { width: entry.contentRect.width, height: entry.contentRect.height });
+    hostRedraw.get(host)?.();
+  }).observe(host);
+}
 
 /** Each mount owns a fresh DOM container. Deferred root cleanup therefore cannot
  * delete a later StrictMode mount's children, and Canvas never shares its DOM
@@ -129,14 +154,18 @@ function SceneLabel({
   style?: CSSProperties;
 }) {
   const host = useContext(OverlayHost);
+  const invalidate = useThree((state) => state.invalidate);
   const object = useRef<THREE.Group | null>(null);
   const element = useRef<HTMLDivElement | null>(null);
   const root = useRef<Root | null>(null);
   const scratch = useMemo(() => new THREE.Vector3(), []);
   useLayoutEffect(() => {
     if (!host) return;
+    observeHost(host, invalidate);
     const container = document.createElement('div');
-    container.style.cssText = 'position:absolute;top:0;left:0;will-change:transform;';
+    // Hidden until the first frame places it, so it is never seen (or clicked) at the origin.
+    container.style.cssText =
+      'position:absolute;top:0;left:0;will-change:transform;visibility:hidden;';
     host.appendChild(container);
     const contentRoot = createRoot(container);
     element.current = container;
@@ -151,7 +180,7 @@ function SceneLabel({
       // its children stay owned by this root until its own unmount completes.
       queueMicrotask(() => contentRoot.unmount());
     };
-  }, [host]);
+  }, [host, invalidate]);
   useLayoutEffect(() => {
     if (element.current) {
       element.current.style.pointerEvents = style?.pointerEvents ?? 'auto';
@@ -169,6 +198,12 @@ function SceneLabel({
     object.current.getWorldPosition(scratch);
     scratch.project(camera);
     element.current.style.display = scratch.z < -1 || scratch.z > 1 ? 'none' : 'block';
+    // While the viewport is being resized (e.g. a mode drawer opening), the projection can lag
+    // the real canvas size for a frame; keep labels hidden until both agree.
+    const box = host ? hostSizes.get(host) : undefined;
+    const current =
+      !box || (Math.abs(box.width - size.width) < 1 && Math.abs(box.height - size.height) < 1);
+    element.current.style.visibility = current ? 'visible' : 'hidden';
     element.current.style.transform = `translate3d(${((scratch.x + 1) * size.width) / 2}px,${((1 - scratch.y) * size.height) / 2}px,0)`;
   });
   return <group ref={object} position={position} />;
@@ -190,12 +225,12 @@ export default function Scene() {
     placeFace,
     wiringTool,
     modelPreview,
+    modelTool,
     showModelTools,
     activeRackId,
     hiddenKeys,
     isolateKey,
     set,
-    edit,
   } = useStore();
   const project = useMemo(() => {
     if (!modelPreview) return storedProject;
@@ -224,6 +259,10 @@ export default function Scene() {
   const bridge = useRef<SceneBridge | null>(null);
   const pointerDrag = useRef<PointerDrag | null>(null);
   const [resetKey, setResetKey] = useState(0);
+  const cubeRef = useRef<HTMLDivElement | null>(null);
+  // The viewport toolbar renders into the Design zone bar above the canvas (App owns that bar).
+  const [toolbarHost, setToolbarHost] = useState<HTMLElement | null>(null);
+  useEffect(() => setToolbarHost(document.getElementById('designer-toolbar')), []);
   const [overViewport, setOverViewport] = useState(false);
   const [overlayHost, setOverlayHost] = useState<HTMLDivElement | null>(null);
   const draggedDevice = project.devices.find((device) => device.id === dragDeviceId);
@@ -231,6 +270,11 @@ export default function Scene() {
     (definition) => definition.id === (draggedDevice?.definitionId ?? dragDefinitionId),
   );
   const dragging = Boolean(dragDefinitionId || dragDeviceId);
+  const mode = viewportMode({ wiringTool, showModelTools });
+  const [drawerCollapsed, setDrawerCollapsed] = useStoredState(
+    'rack-studio-viewport-drawer-collapsed',
+    false,
+  );
 
   const candidateAt = useCallback((u: number, definitionId?: string): Device | null => {
     const state = useStore.getState();
@@ -302,39 +346,7 @@ export default function Scene() {
     [candidateAt],
   );
 
-  const commit = useCallback(
-    (candidate: Device | null) => {
-      const state = useStore.getState();
-      if (!candidate) {
-        state.set({
-          error: 'Release over the rack to choose a mounting position.',
-          previewU: null,
-        });
-        return;
-      }
-      const issues = placementIssues(state.project, candidate);
-      if (issues.length) {
-        state.set({
-          error: `Cannot place ${candidate.name} at U${candidate.startU}: ${issues.join(' ')}`,
-        });
-        return;
-      }
-      const moving = state.project.devices.some((device) => device.id === candidate.id);
-      const installed = moving ? candidate : { ...candidate, id: uid('device') };
-      const next = relocated(state.project, installed);
-      if (
-        edit(
-          `${moving ? 'Moved' : 'Placed'} ${installed.name} at U${installed.startU}. Connected cables remain linked; review their route validation. Installation animations are not implemented.`,
-          (draft) => {
-            draft.devices = next.devices;
-          },
-        )
-      ) {
-        set({ selection: { kind: 'device', id: installed.id } });
-      }
-    },
-    [edit, set],
-  );
+  const commit = commitPlacement;
 
   const clearDrag = useCallback(() => {
     pointerDrag.current = null;
@@ -364,6 +376,9 @@ export default function Scene() {
         (useStore.getState().showModelTools && useStore.getState().modelTool !== 'select')
       )
         return;
+      // Equipment standing on a shelf drags its shelf, so the pair moves together.
+      const grabbed = device;
+      device = supportRoot(useStore.getState().project, device);
       const point = bridge.current?.pointAt(
         event.clientX,
         event.clientY,
@@ -372,6 +387,7 @@ export default function Scene() {
       );
       pointerDrag.current = {
         deviceId: device.id,
+        selectId: grabbed.id,
         startX: event.clientX,
         startY: event.clientY,
         offsetMm: point
@@ -384,7 +400,7 @@ export default function Scene() {
       };
       (event.target as CaptureTarget | null)?.setPointerCapture(event.pointerId);
       set({
-        selection: { kind: 'device', id: device.id },
+        selection: { kind: 'device', id: grabbed.id },
         dragDeviceId: device.id,
         dragDefinitionId: null,
         previewU: device.startU,
@@ -414,7 +430,13 @@ export default function Scene() {
       const current = pointerDrag.current;
       if (!current || current.pointerId !== event.pointerId) return;
       event.stopPropagation();
-      if (current.moved) commit(updatePreview(event.clientX, event.clientY, current.offsetMm));
+      if (current.moved)
+        commit(
+          updatePreview(event.clientX, event.clientY, current.offsetMm),
+          [],
+          '',
+          current.selectId,
+        );
       (event.target as CaptureTarget | null)?.releasePointerCapture(event.pointerId);
       clearDrag();
     },
@@ -495,14 +517,6 @@ export default function Scene() {
     () => (preview && dragDeviceId ? relocated(project, preview) : project),
     [project, preview, dragDeviceId],
   );
-  const views: { id: View; label: string }[] = [
-    { id: 'front', label: 'Front' },
-    { id: 'rear', label: 'Rear' },
-    { id: 'left', label: 'Left' },
-    { id: 'right', label: 'Right' },
-    { id: 'top', label: 'Top' },
-    { id: 'orbit', label: '3D' },
-  ];
   const label =
     preview && draggedDefinition
       ? `U${preview.startU}${draggedDefinition.heightU > 1 ? `–${preview.startU + draggedDefinition.heightU - 1}` : ''}`
@@ -510,7 +524,7 @@ export default function Scene() {
 
   return (
     <section
-      className={`scene-container ${dragging ? 'is-dragging' : ''}`}
+      className={`scene-container ${dragging ? 'is-dragging' : ''} ${mode ? `has-mode drawer-${drawerCollapsed ? 'collapsed' : 'open'}` : ''}`}
       aria-label="3D rack viewport"
       onDragOver={(e) => {
         if (e.dataTransfer.types.includes('application/rack-tray')) e.preventDefault();
@@ -522,130 +536,176 @@ export default function Scene() {
           setOverViewport(false);
       }}
     >
-      <div className="scene-toolbar">
-        <div className="view-buttons" role="group" aria-label="Camera views">
-          {views.map((item) => (
-            <button
-              key={item.id}
-              aria-label={`${item.label === '3D' ? 'Orbit 3D' : item.label} view`}
-              aria-pressed={view === item.id}
-              className={view === item.id ? 'active' : ''}
-              disabled={dragging}
-              onClick={() =>
-                set({
-                  view: item.id,
-                  ...(item.id === 'front' || item.id === 'rear' ? { placeFace: item.id } : {}),
-                })
-              }
+      {toolbarHost &&
+        createPortal(
+          <div className="scene-tools" role="group" aria-label="Viewport settings">
+            <label
+              className={`scene-mount ${placeFace === 'rear' ? 'rear' : ''}`}
+              data-tooltip="Mounting face for new equipment drops"
             >
-              {item.id === 'orbit' && <Icon name="cube" size={14} />}
-              {item.label}
+              <Icon name="mount" size={15} />
+              <select
+                aria-label="Drop mounting face"
+                value={placeFace}
+                disabled={dragging}
+                onChange={(e) => set({ placeFace: e.target.value as 'front' | 'rear' })}
+              >
+                <option value="front">Front</option>
+                <option value="rear">Rear</option>
+              </select>
+            </label>
+            <span className="scene-tools-divider" />
+            <div className="split-tool">
+              <button
+                aria-label="Modelling tools"
+                aria-pressed={showModelTools}
+                data-tooltip="Tools: move, rotate, measure and place fixings"
+                className={`icon-toggle ${showModelTools ? 'active' : ''}`}
+                onClick={() =>
+                  set({
+                    showModelTools: !showModelTools,
+                    wiringTool: 'off',
+                    modelTool: 'select',
+                    modelPreview: null,
+                  })
+                }
+              >
+                <Icon name="move" size={16} />
+              </button>
+              <ChoiceMenu
+                label="Choose modelling tool"
+                current={showModelTools ? modelTool : null}
+                choices={[
+                  ['select', 'Select'],
+                  ['translate', 'Move'],
+                  ['rotate', 'Rotate'],
+                  ['measure', 'Measure'],
+                  ['anchor', 'Place clip'],
+                  ['tie', 'Place tie'],
+                ]}
+                onChoose={(tool) =>
+                  set({
+                    showModelTools: true,
+                    modelTool: tool,
+                    wiringTool: 'off',
+                    measureStart: null,
+                    modelPreview: null,
+                  })
+                }
+              />
+            </div>
+            <div className="split-tool">
+              <button
+                aria-label="Wiring mode"
+                aria-pressed={wiringTool !== 'off'}
+                data-tooltip="Wiring: connect ports, place waypoints and link guides"
+                className={`icon-toggle ${wiringTool !== 'off' ? 'active' : ''}`}
+                onClick={() =>
+                  set({
+                    wiringTool: wiringTool === 'off' ? 'connect' : 'off',
+                    showModelTools: false,
+                    modelTool: 'select',
+                    wiringSource: null,
+                    wiringLineStart: null,
+                    dragDeviceId: null,
+                    previewU: null,
+                  })
+                }
+              >
+                <Icon name="plug" size={16} />
+              </button>
+              <ChoiceMenu
+                label="Choose wiring tool"
+                current={wiringTool === 'off' || showModelTools ? null : wiringTool}
+                choices={[
+                  ['select', 'Select'],
+                  ['connect', 'Connect ports'],
+                  ['waypoints', 'Waypoints'],
+                  ['link', 'Link cable'],
+                ]}
+                onChoose={(tool) =>
+                  set({
+                    wiringTool: tool,
+                    showModelTools: false,
+                    modelTool: 'select',
+                    wiringSource: null,
+                    wiringLineStart: null,
+                    dragDeviceId: null,
+                    previewU: null,
+                  })
+                }
+              />
+            </div>
+            <span className="scene-tools-divider" />
+            <button
+              data-tooltip="Orthographic camera (no perspective)"
+              aria-label="Orthographic camera"
+              aria-pressed={orthographic}
+              className={`icon-toggle ${orthographic ? 'active' : ''}`}
+              disabled={dragging}
+              onClick={() => set({ orthographic: !orthographic })}
+            >
+              <Icon name="ortho" size={16} />
             </button>
-          ))}
-        </div>
-        <div className="scene-tools" role="group" aria-label="Viewport settings">
-          <select
-            aria-label="Drop mounting face"
-            title="Mounting face for new equipment drops"
-            value={placeFace}
-            disabled={dragging}
-            onChange={(e) => set({ placeFace: e.target.value as 'front' | 'rear' })}
-          >
-            <option value="front">Mount: Front</option>
-            <option value="rear">Mount: Rear</option>
-          </select>
-          <button
-            aria-label="Modelling tools"
-            aria-pressed={showModelTools}
-            className={showModelTools ? 'active' : ''}
-            onClick={() =>
-              set({
-                showModelTools: !showModelTools,
-                wiringTool: 'off',
-                modelTool: 'select',
-                modelPreview: null,
-              })
-            }
-          >
-            Tools
-          </button>
-          <button
-            aria-label="Wiring mode"
-            aria-pressed={wiringTool !== 'off'}
-            className={wiringTool !== 'off' ? 'active' : ''}
-            onClick={() =>
-              set({
-                wiringTool: wiringTool === 'off' ? 'connect' : 'off',
-                showModelTools: false,
-                modelTool: 'select',
-                wiringSource: null,
-                wiringLineStart: null,
-                dragDeviceId: null,
-                previewU: null,
-              })
-            }
-          >
-            Wiring
-          </button>
-          <button
-            title="Toggle orthographic camera"
-            aria-label="Orthographic camera"
-            aria-pressed={orthographic}
-            className={orthographic ? 'active' : ''}
-            disabled={dragging}
-            onClick={() => set({ orthographic: !orthographic })}
-          >
-            Ortho
-          </button>
-          <button
-            title="Toggle port and U labels"
-            aria-label="Show labels"
-            aria-pressed={showLabels}
-            className={showLabels ? 'active' : ''}
-            onClick={() => set({ showLabels: !showLabels })}
-          >
-            <Icon name="layers" size={16} />
-          </button>
-          <button
-            title="Show dimension guides"
-            aria-label="Show measurements"
-            aria-pressed={showMeasurements}
-            className={showMeasurements ? 'active' : ''}
-            onClick={() => set({ showMeasurements: !showMeasurements })}
-          >
-            <Icon name="ruler" size={16} />
-          </button>
-          <button
-            title="Show cables"
-            aria-label="Show cables"
-            aria-pressed={showCables}
-            className={showCables ? 'active' : ''}
-            onClick={() => set({ showCables: !showCables })}
-          >
-            <Icon name="cable" size={16} />
-          </button>
-          <button
-            title="Reset camera"
-            aria-label="Reset camera"
-            disabled={dragging}
-            onClick={() => setResetKey((key) => key + 1)}
-          >
-            <Icon name="refresh" size={16} />
-          </button>
-        </div>
-      </div>
-      <WiringPanel />
-      <ModellingPanel />
-      <div className="scene-model-info">
-        <span className="scene-model-kicker">RACK WORKSPACE</span>
-        <strong>{activeRack.name}</strong>
-        <span>
-          {project.rack.heightU}U <i /> {project.rack.outerWidthMm} mm wide <i /> Millimetres
-        </span>
-      </div>
+            <button
+              data-tooltip={showLabels ? 'Hide port and U labels' : 'Show port and U labels'}
+              aria-label="Show labels"
+              aria-pressed={showLabels}
+              className={`icon-toggle ${showLabels ? 'active' : ''}`}
+              onClick={() => set({ showLabels: !showLabels })}
+            >
+              <Icon name="layers" size={16} />
+            </button>
+            <button
+              data-tooltip={showMeasurements ? 'Hide dimension guides' : 'Show dimension guides'}
+              aria-label="Show measurements"
+              aria-pressed={showMeasurements}
+              className={`icon-toggle ${showMeasurements ? 'active' : ''}`}
+              onClick={() => set({ showMeasurements: !showMeasurements })}
+            >
+              <Icon name="ruler" size={16} />
+            </button>
+            <button
+              data-tooltip={showCables ? 'Hide cables' : 'Show cables'}
+              aria-label="Show cables"
+              aria-pressed={showCables}
+              className={`icon-toggle ${showCables ? 'active' : ''}`}
+              onClick={() => set({ showCables: !showCables })}
+            >
+              <Icon name="cable" size={16} />
+            </button>
+            <button
+              data-tooltip="Reset camera"
+              aria-label="Reset camera"
+              className="icon-toggle"
+              disabled={dragging}
+              onClick={() => setResetKey((key) => key + 1)}
+            >
+              <Icon name="refresh" size={16} />
+            </button>
+          </div>,
+          toolbarHost,
+        )}
+      <ModeIndicator />
+      <SceneDrawer collapsed={drawerCollapsed} onCollapsedChange={setDrawerCollapsed} />
+      <ViewCube
+        cube={cubeRef}
+        view={view}
+        disabled={dragging}
+        onView={(next) => {
+          if (next === view) setResetKey((key) => key + 1);
+          set({
+            view: next,
+            ...(next === 'front' || next === 'rear' ? { placeFace: next } : {}),
+          });
+        }}
+      />
       <div className="canvas-wrap">
         <OverlayHost.Provider value={overlayHost}>
           <Canvas
+            // Render only when something changes (camera, controls, scene props, resize). An
+            // idle rack then costs no CPU or GPU time, and edits get the frame budget.
+            frameloop="demand"
             shadows
             dpr={[1, 1.75]}
             gl={{ antialias: true, preserveDrawingBuffer: true, alpha: false }}
@@ -698,6 +758,7 @@ export default function Scene() {
               />
             )}
             <CameraRig bridge={bridge} resetKey={resetKey} dragging={dragging} />
+            <ViewCubeSync cube={cubeRef} />
             <WiringPicker />
             {showGround && (
               <SceneGround
@@ -818,16 +879,28 @@ export default function Scene() {
           <span className="scene-status-dot" />
           {project.devices.length} devices <b>·</b> {project.cables.length} cables
         </span>
-        <span>
-          {dragging ? 'ESC to cancel' : 'Drag to orbit · Scroll to zoom · Right-drag to pan'}
-        </span>
+        {dragging ? (
+          <span className="scene-hints">
+            <kbd>Esc</kbd> cancel
+          </span>
+        ) : (
+          <span className="scene-hints" aria-label="Camera controls">
+            <kbd>Left-drag</kbd> orbit <kbd>Right-drag</kbd> pan <kbd>Wheel</kbd> zoom
+          </span>
+        )}
       </div>
-      <div className="scene-axis" aria-hidden="true">
-        <span className="axis-y">Y</span>
-        <span className="axis-z">Z</span>
-        <span className="axis-x">X</span>
-        <i />
-      </div>
+      {!dragging && !mode && project.devices.length === 0 && (
+        <div className="scene-empty-hint" role="note">
+          <Icon name="box" size={20} />
+          <div>
+            <strong>Drag equipment from the library onto a U position</strong>
+            <span>
+              New equipment mounts on the <b>{placeFace}</b> face; change it with Mount before
+              dropping, or use + on a library card to place by U number.
+            </span>
+          </div>
+        </div>
+      )}
     </section>
   );
 }
@@ -998,6 +1071,10 @@ function CameraRig({
       enabled={!dragging}
       enableDamping
       dampingFactor={0.12}
+      // On-demand rendering: three.js stops reporting changes once a damped step moves less than
+      // ~1 mm, which can leave part of a zoomed-in pan unapplied. Keep frames coming briefly after
+      // each change so the easing always finishes.
+      onChange={() => invalidate(45)}
       minDistance={0.25}
       maxDistance={12}
       minZoom={70}
@@ -1287,6 +1364,14 @@ function EquipmentModel({
           definition={definition}
           dimmed={dimmed}
         />
+      ) : definition.mesh ? (
+        <StepModelGeometry
+          project={project}
+          device={device}
+          definition={{ ...definition, mesh: definition.mesh }}
+          selected={selected}
+          dimmed={dimmed}
+        />
       ) : (
         boxes.map((box) => (
           <SolidBox
@@ -1311,6 +1396,7 @@ function EquipmentModel({
         <FaceFeatures definition={definition} />
       </group>
       {!definition.plate &&
+        !definition.mesh &&
         definition.appearance === null &&
         definition.mounting !== 'shelf' &&
         definition.bodyMode !== 'parts' && (
@@ -1341,6 +1427,7 @@ function EquipmentModel({
         )}
       {!definition.plate &&
         !definition.lacing &&
+        !definition.mesh &&
         definition.appearance === null &&
         hasRackEars(definition) && (
           <EarMountingMarks
@@ -1351,6 +1438,7 @@ function EquipmentModel({
           />
         )}
       {!definition.plate &&
+        !definition.mesh &&
         definition.appearance === null &&
         definition.mounting !== 'shelf' &&
         definition.bodyMode !== 'parts' &&

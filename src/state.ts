@@ -62,6 +62,7 @@ interface State {
   set: (patch: Partial<State>) => void;
 }
 export const useStore = create<State>((set, get) => ({
+  // A first visit opens an empty rack; equipment comes from the library.
   project: createWorkspaceProject(false),
   past: [],
   future: [],
@@ -73,7 +74,8 @@ export const useStore = create<State>((set, get) => ({
   showLabels: true,
   showMeasurements: false,
   showGround: true,
-  notice: '',
+  notice:
+    'Empty rack ready. Drag equipment from the library; rack depth is screw-plane spacing and numerical dimensions need confirmation.',
   error: '',
   hydrated: false,
   dirty: false,

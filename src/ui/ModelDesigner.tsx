@@ -6,7 +6,8 @@ import { clone, uid, type DeviceDefinition } from '../model';
 import { createUserRackPc } from '../models/user-rack-pc';
 import { useStore } from '../state';
 import { componentPalette, designerIssues } from '../engineering/model-designer';
-import { Button, NumberField, Field, Modal } from './shared';
+import { Badge, Button, NumberField, Field, Modal } from './shared';
+import { Note } from './Panels';
 import { PortGlyph } from './PortGlyph';
 import { FaceFeatures } from './FaceFeatures';
 import { ConnectorRotation } from './ConnectorRotation';
@@ -185,228 +186,261 @@ export default function ModelDesigner() {
     return true;
   };
   return (
-    <section style={{ padding: 24, overflow: 'auto', width: '100%' }}>
-      <h1>Device model designer</h1>
-      <p>
-        Drag components onto the 3D unit or the selected face below. Drag placed components in the
-        face editor to reposition them. Fans and grilles are visual features; ports become cable
-        endpoints.
-      </p>
-      <div className="button-row">
-        <Button
-          onClick={() => {
-            setD(fresh());
-            setSelected('');
-          }}
-        >
-          New model
-        </Button>
-        <Field label="Edit library model">
-          <select
-            value={project.definitions.some((v) => v.id === d.id) ? d.id : ''}
-            onChange={(e) => {
-              const item = project.definitions.find((v) => v.id === e.target.value);
-              if (item) {
-                setD(clone(item));
-                setSelected('');
-              }
-            }}
-          >
-            <option value="">Choose model…</option>
-            {project.definitions
-              .filter((v) => !v.plate && v.bodyMode === 'box' && v.mounting === 'direct')
-              .map((v) => (
-                <option key={v.id} value={v.id}>
-                  {v.name}
-                </option>
-              ))}
-          </select>
-        </Field>
-      </div>
-      <div className="form-grid">
-        <Field label="Model name">
-          <input value={d.name} onChange={(e) => patch({ name: e.target.value })} />
-        </Field>
-        <NumberField
-          label="Model height (U)"
-          value={d.heightU}
-          min={1}
-          max={60}
-          onChange={(v) => patch({ heightU: v, heightMm: v * 44.45 - 1.5 })}
-        />
-        <NumberField
-          label="Model chassis width (mm)"
-          value={d.widthMm}
-          min={30}
-          max={457.1}
-          onChange={(v) => patch({ widthMm: v })}
-        />
-        <NumberField
-          label="Model depth (mm)"
-          value={d.depthMm}
-          min={1}
-          max={3000}
-          onChange={(v) =>
-            patch({
-              depthMm: v,
-              ports: d.ports.map((p) =>
-                p.surface === 'rear'
-                  ? { ...p, position: [p.position[0], p.position[1], v + 0.1] }
-                  : p,
-              ),
-            })
-          }
-        />
-      </div>
-      <p>
-        Chassis width must stay below 18 inches (457.2 mm). Ear width is 482.6 mm. The rack’s actual
-        clear opening still controls installation fit. Physical height and component dimensions can
-        be calibrated in the library editor.
-      </p>
-      <div className="button-row">
-        {(['front', 'rear'] as const).map((f) => (
-          <Button
-            key={f}
-            onClick={() => {
-              setFace(f);
-              setSelected('');
-            }}
-          >
-            {f === 'front' ? 'Design front' : 'Design rear'}
-          </Button>
-        ))}
-        <strong>Editing {face}</strong>
-      </div>
-      <div className="button-row" style={{ flexWrap: 'wrap' }}>
-        {componentPalette.map(([kind]) => (
-          <button
-            className="button"
-            key={kind}
-            draggable
-            onDragStart={(e) => e.dataTransfer.setData('application/model-component', kind)}
-            onClick={() => place(kind, 0, d.heightMm / 2)}
-          >
-            {kind}
-          </button>
-        ))}
-      </div>
-      <div style={{ height: 320, background: '#e9eef0', marginTop: 12 }}>
-        <Canvas
-          orthographic
-          camera={{ position: [100, 130, -650], zoom: 1.5, near: 0.1, far: 10000 }}
-        >
-          <Preview d={d} face={face} onDrop={place} />
-        </Canvas>
-      </div>
-      <svg
-        aria-label="Device face editor"
-        viewBox={`${-d.widthMm / 2} 0 ${d.widthMm} ${d.heightMm}`}
-        style={{
-          width: '100%',
-          height: Math.max(120, d.heightMm * 2),
-          background: '#202b34',
-          touchAction: 'none',
-          marginTop: 12,
-        }}
-        onDragOver={(e) => e.preventDefault()}
-        onDrop={(e) => {
-          e.preventDefault();
-          const r = e.currentTarget.getBoundingClientRect();
-          const pt = new DOMPoint(e.clientX, e.clientY).matrixTransform(
-            e.currentTarget.getScreenCTM()!.inverse(),
-          );
-          void r;
-          place(
-            e.dataTransfer.getData('application/model-component'),
-            face === 'front' ? -pt.x : pt.x,
-            d.heightMm - pt.y,
-          );
-        }}
-        onPointerMove={(e) => {
-          if (!dragging) return;
-          const pt = new DOMPoint(e.clientX, e.clientY).matrixTransform(
-            e.currentTarget.getScreenCTM()!.inverse(),
-          );
-          move(
-            dragging,
-            Math.round(face === 'front' ? -pt.x : pt.x),
-            Math.round(d.heightMm - pt.y),
-          );
-        }}
-        onPointerUp={() => setDragging('')}
-        onPointerCancel={() => setDragging('')}
-      >
-        {items.map((p) => (
-          <g
-            key={p.id}
-            data-component-id={p.id}
-            transform={`rotate(${p.rotationDeg} ${face === 'front' ? -p.x : p.x} ${d.heightMm - p.y})`}
-            onPointerDown={(e) => {
-              e.stopPropagation();
-              e.currentTarget.ownerSVGElement?.setPointerCapture(e.pointerId);
-              setSelected(p.id);
-              setDragging(p.id);
-            }}
-            style={{ cursor: 'move' }}
-          >
-            <rect
-              x={(face === 'front' ? -p.x : p.x) - p.w / 2}
-              y={d.heightMm - p.y - p.h / 2}
-              width={p.w}
-              height={p.h}
-              fill={selected === p.id ? '#278f86' : '#7596af'}
-              stroke="#c3dee5"
-              strokeWidth={0.5}
-            />
-            <title>{p.name}</title>
-          </g>
-        ))}
-      </svg>
-      {selected && (
-        <div className="button-row">
-          {d.ports.find((p) => p.id === selected) && (
-            <ConnectorRotation
-              port={d.ports.find((p) => p.id === selected)!}
-              onChange={(rotationDeg) =>
-                patch({
-                  ports: d.ports.map((p) => (p.id === selected ? { ...p, rotationDeg } : p)),
-                })
-              }
-            />
-          )}
-          <Field label="Selected component name">
-            <input
-              disabled={!d.ports.some((p) => p.id === selected)}
-              value={items.find((p) => p.id === selected)?.name ?? ''}
-              onChange={(e) =>
-                patch({
-                  ports: d.ports.map((p) =>
-                    p.id === selected ? { ...p, name: e.target.value } : p,
-                  ),
-                })
-              }
-            />
-          </Field>
-          <Button
-            onClick={() => {
-              patch({
-                ports: d.ports.filter((p) => p.id !== selected),
-                faceFeatures: d.faceFeatures?.filter((p) => p.id !== selected),
-              });
-              setSelected('');
-            }}
-          >
-            Remove component
-          </Button>
+    <section className="report-workspace model-designer">
+      <div className="report-heading">
+        <div>
+          <span className="eyebrow">EQUIPMENT MODELLING</span>
+          <h1>Device model designer</h1>
+          <p>
+            Drag components onto the 3D unit or the selected face below. Drag placed components in
+            the face editor to reposition them. Fans and grilles are visual features; ports become
+            cable endpoints.
+          </p>
         </div>
-      )}
+        <div className="button-row designer-source">
+          <Button
+            icon="plus"
+            onClick={() => {
+              setD(fresh());
+              setSelected('');
+            }}
+          >
+            New model
+          </Button>
+          <Field label="Edit library model">
+            <select
+              value={project.definitions.some((v) => v.id === d.id) ? d.id : ''}
+              onChange={(e) => {
+                const item = project.definitions.find((v) => v.id === e.target.value);
+                if (item) {
+                  setD(clone(item));
+                  setSelected('');
+                }
+              }}
+            >
+              <option value="">Choose model…</option>
+              {project.definitions
+                .filter((v) => !v.plate && v.bodyMode === 'box' && v.mounting === 'direct')
+                .map((v) => (
+                  <option key={v.id} value={v.id}>
+                    {v.name}
+                  </option>
+                ))}
+            </select>
+          </Field>
+        </div>
+      </div>
+      <div className="model-designer-grid">
+        <div className="model-designer-column">
+          <section className="surface">
+            <div className="section-title">
+              <h2>Model properties</h2>
+              <Badge tone="warn">{d.evidence}</Badge>
+            </div>
+            <div className="form-grid">
+              <Field label="Model name">
+                <input value={d.name} onChange={(e) => patch({ name: e.target.value })} />
+              </Field>
+              <NumberField
+                label="Model height (U)"
+                value={d.heightU}
+                min={1}
+                max={60}
+                onChange={(v) => patch({ heightU: v, heightMm: v * 44.45 - 1.5 })}
+              />
+              <NumberField
+                label="Model chassis width (mm)"
+                value={d.widthMm}
+                min={30}
+                max={457.1}
+                onChange={(v) => patch({ widthMm: v })}
+              />
+              <NumberField
+                label="Model depth (mm)"
+                value={d.depthMm}
+                min={1}
+                max={3000}
+                onChange={(v) =>
+                  patch({
+                    depthMm: v,
+                    ports: d.ports.map((p) =>
+                      p.surface === 'rear'
+                        ? { ...p, position: [p.position[0], p.position[1], v + 0.1] }
+                        : p,
+                    ),
+                  })
+                }
+              />
+            </div>
+            <Note summary="Chassis width must stay below 457.2 mm (18 in); the rack's clear opening controls fit.">
+              Chassis width must stay below 18 inches (457.2 mm). Ear width is 482.6 mm. The rack’s
+              actual clear opening still controls installation fit. Physical height and component
+              dimensions can be calibrated in the library editor.
+            </Note>
+          </section>
+          <section className="surface">
+            <div className="section-title">
+              <h2>Face editor</h2>
+              <div className="segmented" role="group" aria-label="Face being edited">
+                {(['front', 'rear'] as const).map((f) => (
+                  <button
+                    key={f}
+                    aria-pressed={face === f}
+                    onClick={() => {
+                      setFace(f);
+                      setSelected('');
+                    }}
+                  >
+                    {f === 'front' ? 'Design front' : 'Design rear'}
+                  </button>
+                ))}
+              </div>
+            </div>
+            <p className="field-hint">
+              Editing the <strong>{face}</strong> face. Drag a component onto the face or the 3D
+              preview, or click it to add at the face centre.
+            </p>
+            <div className="component-palette" aria-label="Component palette">
+              {componentPalette.map(([kind]) => (
+                <button
+                  className="button"
+                  key={kind}
+                  draggable
+                  onDragStart={(e) => e.dataTransfer.setData('application/model-component', kind)}
+                  onClick={() => place(kind, 0, d.heightMm / 2)}
+                >
+                  {kind}
+                </button>
+              ))}
+            </div>
+            <svg
+              aria-label="Device face editor"
+              viewBox={`${-d.widthMm / 2} 0 ${d.widthMm} ${d.heightMm}`}
+              style={{
+                width: '100%',
+                height: Math.max(120, d.heightMm * 2),
+                background: '#202b34',
+                touchAction: 'none',
+                borderRadius: 4,
+              }}
+              onDragOver={(e) => e.preventDefault()}
+              onDrop={(e) => {
+                e.preventDefault();
+                const r = e.currentTarget.getBoundingClientRect();
+                const pt = new DOMPoint(e.clientX, e.clientY).matrixTransform(
+                  e.currentTarget.getScreenCTM()!.inverse(),
+                );
+                void r;
+                place(
+                  e.dataTransfer.getData('application/model-component'),
+                  face === 'front' ? -pt.x : pt.x,
+                  d.heightMm - pt.y,
+                );
+              }}
+              onPointerMove={(e) => {
+                if (!dragging) return;
+                const pt = new DOMPoint(e.clientX, e.clientY).matrixTransform(
+                  e.currentTarget.getScreenCTM()!.inverse(),
+                );
+                move(
+                  dragging,
+                  Math.round(face === 'front' ? -pt.x : pt.x),
+                  Math.round(d.heightMm - pt.y),
+                );
+              }}
+              onPointerUp={() => setDragging('')}
+              onPointerCancel={() => setDragging('')}
+            >
+              {items.map((p) => (
+                <g
+                  key={p.id}
+                  data-component-id={p.id}
+                  transform={`rotate(${p.rotationDeg} ${face === 'front' ? -p.x : p.x} ${d.heightMm - p.y})`}
+                  onPointerDown={(e) => {
+                    e.stopPropagation();
+                    e.currentTarget.ownerSVGElement?.setPointerCapture(e.pointerId);
+                    setSelected(p.id);
+                    setDragging(p.id);
+                  }}
+                  style={{ cursor: 'move' }}
+                >
+                  <rect
+                    x={(face === 'front' ? -p.x : p.x) - p.w / 2}
+                    y={d.heightMm - p.y - p.h / 2}
+                    width={p.w}
+                    height={p.h}
+                    fill={selected === p.id ? '#278f86' : '#7596af'}
+                    stroke="#c3dee5"
+                    strokeWidth={0.5}
+                  />
+                  <title>{p.name}</title>
+                </g>
+              ))}
+            </svg>
+            {selected && (
+              <div className="button-row selected-component">
+                {d.ports.find((p) => p.id === selected) && (
+                  <ConnectorRotation
+                    port={d.ports.find((p) => p.id === selected)!}
+                    onChange={(rotationDeg) =>
+                      patch({
+                        ports: d.ports.map((p) => (p.id === selected ? { ...p, rotationDeg } : p)),
+                      })
+                    }
+                  />
+                )}
+                <Field label="Selected component name">
+                  <input
+                    disabled={!d.ports.some((p) => p.id === selected)}
+                    value={items.find((p) => p.id === selected)?.name ?? ''}
+                    onChange={(e) =>
+                      patch({
+                        ports: d.ports.map((p) =>
+                          p.id === selected ? { ...p, name: e.target.value } : p,
+                        ),
+                      })
+                    }
+                  />
+                </Field>
+                <Button
+                  onClick={() => {
+                    patch({
+                      ports: d.ports.filter((p) => p.id !== selected),
+                      faceFeatures: d.faceFeatures?.filter((p) => p.id !== selected),
+                    });
+                    setSelected('');
+                  }}
+                >
+                  Remove component
+                </Button>
+              </div>
+            )}
+          </section>
+        </div>
+        <section className="surface model-preview-card">
+          <div className="section-title">
+            <h2>3D preview</h2>
+            <span>Drop components here too</span>
+          </div>
+          <div className="model-preview">
+            <Canvas
+              orthographic
+              camera={{ position: [100, 130, -650], zoom: 1.5, near: 0.1, far: 10000 }}
+            >
+              <Preview d={d} face={face} onDrop={place} />
+            </Canvas>
+          </div>
+        </section>
+      </div>
       {issues.map((v) => (
-        <p role="alert" key={v}>
+        <p role="alert" className="callout error" key={v}>
           {v}
         </p>
       ))}
-      <div className="button-row">
+      <div className="model-designer-actions">
         <Button
+          className="primary"
+          icon="save"
           onClick={() => {
             if (!validate()) return;
             edit('Designer model saved to library.', (p) => {

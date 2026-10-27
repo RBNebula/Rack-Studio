@@ -17,10 +17,13 @@ try {
   const project = createWorkspaceProject();
   project.id = 'sample-communications-rack';
   project.updatedAt = '2026-10-22T12:00:00.000Z';
-  // Explicit illustrative survey/allowances for demonstrating arithmetic, not an installation rule.
-  project.cables[1].externalLengthMm = 5500;
-  project.settings.notes +=
-    ' Sample external survey5500mm is illustrative only. End allowances are60mm perend per the user-selected default.';
+  // The example cables used equipment retired on 28 October 2026; keep the survey note only when
+  // a second cable exists. Explicit illustrative survey, not an installation rule.
+  if (project.cables[1]) {
+    project.cables[1].externalLengthMm = 5500;
+    project.settings.notes +=
+      ' Sample external survey5500mm is illustrative only. End allowances are60mm perend per the user-selected default.';
+  }
   await writeFile(resolve(dir, 'communications-rack.rack.json'), serializeProject(project));
   await writeFile(resolve(dir, 'master-cable-schedule.csv'), scheduleCsv(project));
   await writeFile(resolve(dir, 'cable-cutting-plan.csv'), cutListCsv(project));

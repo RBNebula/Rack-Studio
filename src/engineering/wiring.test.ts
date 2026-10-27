@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { createWorkspaceProject, baseCable } from '../examples';
+import { createWorkspaceProject, baseCable } from '../testing/legacy-example';
 import { parseProject, serializeProject, validateReferences } from '../data/project';
 import { offsetSurfacePoint, resolveGuideLinks } from './wiring';
 import { routeCable } from './routing';

@@ -242,9 +242,14 @@ export function rackMountingPlane(project: Project, device: Device): number {
 
 /** Moving chassis datum. Rack posts and outer rail brackets retain their fixed datum. */
 export function mountingPlane(project: Project, device: Device): number {
+  const definition = definitionFor(project, device);
+  const setback =
+    definition?.mounting === 'freestanding' && device.supportId
+      ? (definition.shelfSetbackMm ?? 0)
+      : 0;
   return (
     rackMountingPlane(project, device) +
-    (device.face === 'rear' ? 1 : -1) * (device.rails?.extensionMm ?? 0)
+    (device.face === 'rear' ? 1 : -1) * ((device.rails?.extensionMm ?? 0) - setback)
   );
 }
 

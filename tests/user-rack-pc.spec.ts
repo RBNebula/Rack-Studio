@@ -3,6 +3,7 @@ import type { Page } from '@playwright/test';
 import { readFile } from 'node:fs/promises';
 import { resolve } from 'node:path';
 import type { DeviceDefinition, Project } from '../src/model';
+import { fileAction, openView, selectInstalled, setView } from './navigation';
 
 const definitionName = 'User rack PC · 1U';
 const definitionId = 'def-user-rack-pc';
@@ -34,20 +35,20 @@ async function openBlank(page: Page) {
   await page.goto('/');
   await expect(page.locator('canvas')).toBeVisible();
   await expect(page.locator('.rack-u-label').first()).toBeVisible();
-  await page.getByRole('button', { name: 'New', exact: true }).click();
+  await fileAction(page, 'New');
   await expect(page.locator('.installed-pills > button')).toHaveCount(0);
 }
 
 async function exported(page: Page): Promise<Project> {
   const pending = page.waitForEvent('download');
-  await page.getByRole('button', { name: 'Export project', exact: true }).click();
+  await fileAction(page, 'Export project');
   const path = await (await pending).path();
   if (!path) throw new Error('The UI must produce a downloadable project.');
   return JSON.parse(await readFile(path, 'utf8')) as Project;
 }
 
 async function saveReload(page: Page, deviceCount: number) {
-  await page.getByRole('button', { name: 'Save', exact: true }).click();
+  await fileAction(page, 'Save');
   await expect(page.locator('.toolbar-save')).toContainText('Saved locally');
   await page.reload();
   await expect(page.locator('canvas')).toBeVisible();
@@ -78,9 +79,7 @@ async function focusPC(page: Page, u: number, face: 'front' | 'rear', oblique = 
     .locator('.inspector')
     .getByRole('button', { name: 'Select rack', exact: true });
   if (await selectRack.count()) await selectRack.click();
-  await page
-    .getByRole('button', { name: face === 'front' ? 'Front view' : 'Rear view', exact: true })
-    .click();
+  await setView(page, face === 'front' ? 'Front' : 'Rear');
   const ortho = page.getByRole('button', { name: 'Orthographic camera', exact: true });
   if ((await ortho.getAttribute('aria-pressed')) !== 'true') await ortho.click();
   await page.getByRole('button', { name: 'Reset camera', exact: true }).click();
@@ -268,17 +267,14 @@ test('a PC library import adds the photographed model to an existing rack withou
   await expect(page.locator('canvas')).toBeVisible();
   await page
     .getByLabel('Import project JSON', { exact: true })
-    .setInputFiles(resolve('examples/route-follow.rack.json'));
+    .setInputFiles(resolve('tests/fixtures/route-follow.rack.json'));
   await expect(page.locator('.statusbar')).toContainText('Project imported');
   await expect(page.locator('.installed-pills > button')).toHaveCount(3);
   const before = await exported(page);
   expect(before.definitions.some((definition) => definition.appearance === 'user-rack-pc')).toBe(
     false,
   );
-  await page
-    .locator('.workspace-tabs')
-    .getByRole('button', { name: 'Device Library', exact: true })
-    .click();
+  await openView(page, 'Device Library');
   await page
     .locator('.library.expanded input[type="file"]')
     .setInputFiles(resolve('examples/user-rack-pc.library.json'));
@@ -328,7 +324,7 @@ test('a photographed rear network port connects through the UI and retains ident
 }) => {
   await openBlank(page);
   await place(page, definitionName, 8, 'front');
-  await place(page, '24-port network switch', 16, 'front');
+  await place(page, 'Generic 24-port switch · 1U', 16, 'front');
   const initial = await exported(page);
   const pc = initial.devices.find((device) => device.definitionId === definitionId);
   const pcPort = pcDefinition(initial).ports.find(
@@ -343,10 +339,7 @@ test('a photographed rear network port connects through the UI and retains ident
   expect(pcPort.id).toBe('rear-rj45');
   const source = { kind: 'device', deviceId: pc.id, portId: pcPort.id };
   const destination = { kind: 'device', deviceId: networkSwitch.id, portId: switchPort.id };
-  await page
-    .locator('.workspace-tabs')
-    .getByRole('button', { name: 'Connections', exact: true })
-    .click();
+  await openView(page, 'Connections');
   await page.getByRole('button', { name: 'New connection', exact: true }).click();
   const connection = page.getByRole('dialog', { name: 'New cable connection' });
   await connection.getByLabel('Cable ID', { exact: true }).fill('QA-PC-LAN');
@@ -369,10 +362,7 @@ test('a photographed rear network port connects through the UI and retains ident
     .locator('.workspace-tabs')
     .getByRole('button', { name: '3D Rack Designer', exact: true })
     .click();
-  await page
-    .locator('.installed-pills > button')
-    .filter({ hasText: `${definitionName} 1` })
-    .click();
+  await selectInstalled(page, `${definitionName} 1`);
   const startU = page.locator('.inspector').getByLabel('Start U', { exact: true });
   await startU.fill('9');
   await startU.press('Tab');
@@ -383,10 +373,7 @@ test('a photographed rear network port connects through the UI and retains ident
   expect(after.devices.find((device) => device.id === pc.id)?.startU).toBe(9);
   expect(after.cables[0]).toMatchObject({ id: cableId, label: 'QA-PC-LAN', source, destination });
   expect(pcDefinition(after).ports).toEqual(pcDefinition(connected).ports);
-  await page
-    .locator('.workspace-tabs')
-    .getByRole('button', { name: 'Connections', exact: true })
-    .click();
+  await openView(page, 'Connections');
   const row = page.locator('.schedule-table tbody > tr');
   await expect(row).toHaveCount(1);
   await expect(row).toContainText(pcPort.name);

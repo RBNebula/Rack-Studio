@@ -7,6 +7,7 @@ import {
   setDefinitionMass,
   setDefinitionPower,
   setPowerBank,
+  setPowerOutputLimit,
 } from './engineering/power';
 import { baseCable } from './testing/legacy-example';
 
@@ -168,6 +169,105 @@ describe('atomic project edits and recovery history', () => {
     const reloaded = parseProject(serializeProject(after));
     expect(reloaded.definitions).toEqual(after.definitions);
     expect(analysePower(reloaded).distributors[0].banks[0].status).toBe('over');
+  });
+  it('edits a distributor total output limit atomically with undo, redo and reload', () => {
+    const store = useStore.getState;
+    expect(
+      store().edit('Power banks', (p) => {
+        p.definitions.find((d) => d.id === 'def-pdu')!.powerBanks = [
+          {
+            id: 'top',
+            name: 'Top row',
+            portIds: ['iec1', 'iec2'],
+            maxCurrentA: 16,
+            outletMaxCurrentA: null,
+            voltageV: 230,
+            evidence: 'user-entered',
+            source: '',
+          },
+          {
+            id: 'bottom',
+            name: 'Bottom row',
+            portIds: ['iec3', 'iec4'],
+            maxCurrentA: 16,
+            outletMaxCurrentA: null,
+            voltageV: 230,
+            evidence: 'user-entered',
+            source: '',
+          },
+        ];
+        // A second power supply, so the server can be fed from both banks.
+        const server = p.definitions.find((d) => d.id === 'def-server')!;
+        const psu = server.ports.find((port) => port.id === 'power')!;
+        server.ports.push({
+          ...psu,
+          id: 'power-2',
+          name: 'IEC power 2',
+          position: [psu.position[0] + 60, psu.position[1], psu.position[2]],
+        });
+        p.cables.push(
+          {
+            ...baseCable('PWR-001'),
+            label: 'PWR-001',
+            type: 'Power',
+            source: { kind: 'device', deviceId: 'pdu-1', portId: 'iec1' },
+            destination: { kind: 'device', deviceId: 'server-1', portId: 'power' },
+          },
+          {
+            ...baseCable('PWR-002'),
+            label: 'PWR-002',
+            type: 'Power',
+            source: { kind: 'device', deviceId: 'pdu-1', portId: 'iec3' },
+            destination: { kind: 'device', deviceId: 'server-1', portId: 'power-2' },
+          },
+        );
+        setDefinitionPower(p, 'def-server', { nominalW: 1500, maxW: 2500 });
+      }),
+    ).toBe(true);
+    expect(analysePower(store().project).distributors[0].outputLimit).toBeNull();
+    // A limit with no rating is rejected without changing the project.
+    const before = store().project;
+    expect(
+      store().edit('Empty limit', (p) => setPowerOutputLimit(p, 'def-pdu', { voltageV: 230 })),
+    ).toBe(false);
+    expect(store().project).toBe(before);
+    expect(
+      store().edit('Output limit', (p) =>
+        setPowerOutputLimit(p, 'def-pdu', { maxVA: 3000, maxW: 2700 }),
+      ),
+    ).toBe(true);
+    let output = analysePower(store().project).distributors[0].outputLimit!;
+    // The server is fed from both banks and counted once: 2500 W of 2700 W.
+    expect(output.max.knownW).toBe(2500);
+    expect(output.utilisation).toBeCloseTo(2500 / 2700, 9);
+    expect(output.status).toBe('warning');
+    expect(analysePower(store().project).issues.map((i) => i.code)).toContain('output-warning');
+    expect(
+      store().edit('Output current', (p) => setPowerOutputLimit(p, 'def-pdu', { maxCurrentA: 10 })),
+    ).toBe(true);
+    output = analysePower(store().project).distributors[0].outputLimit!;
+    expect(output.governingLimit).toBe('A');
+    expect(output.status).toBe('over');
+    store().undo();
+    expect(analysePower(store().project).distributors[0].outputLimit!.maxCurrentA).toBeNull();
+    store().undo();
+    expect(store().project.definitions.find((d) => d.id === 'def-pdu')).not.toHaveProperty(
+      'powerOutputLimit',
+    );
+    store().redo();
+    store().redo();
+    const after = store().project;
+    expect(after.definitions.find((d) => d.id === 'def-pdu')!.powerOutputLimit).toEqual({
+      maxVA: 3000,
+      maxW: 2700,
+      maxCurrentA: 10,
+      voltageV: 230,
+      evidence: 'user-entered',
+      source: '',
+    });
+    const reloaded = parseProject(serializeProject(after));
+    expect(reloaded.definitions).toEqual(after.definitions);
+    expect(analysePower(reloaded).distributors[0].outputLimit!.status).toBe('over');
   });
 });
 

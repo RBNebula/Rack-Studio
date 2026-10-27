@@ -61,6 +61,14 @@ interface ExportedProject {
       voltageV: number;
       evidence: string;
     }[];
+    powerOutputLimit?: {
+      maxVA: number | null;
+      maxW: number | null;
+      maxCurrentA: number | null;
+      voltageV: number;
+      evidence: string;
+      source: string;
+    };
   }[];
 }
 async function exportProject(page: Page): Promise<ExportedProject> {
@@ -508,4 +516,118 @@ test('the imported APC AP7922B evaluates its B1/B2 banks for a connected IEC-C14
   expect(await bankMaximum(b2)).toEqual({ amps: 0, limit: 16, percent: 0, watts: 0 });
   await expect(b2.locator('.section-title .badge')).toHaveText('OK');
   await expect(b1).toContainText('Rating status: user-entered');
+});
+
+test('a distributor total output limit is edited in the library, flagged across banks, undone, reported and exported', async ({
+  page,
+}) => {
+  await open(page);
+  // Two 16 A banks on the PDU, then a 3000 VA / 2700 W / 13 A total output limit.
+  const dialog = await openDefinitionEditor(page, '1U power distribution');
+  const sections = dialog.locator('.depth-section');
+  for (const [index, name, outlets] of [
+    [0, 'Top row', [1, 2, 3]],
+    [1, 'Bottom row', [4, 5, 6]],
+  ] as const) {
+    await dialog.getByRole('button', { name: 'Add power bank', exact: true }).click();
+    const bank = sections.nth(index);
+    await bank.getByLabel('Bank name', { exact: true }).fill(name);
+    for (const n of outlets)
+      await bank.getByLabel(`Outlet ${n} · IEC-C13`, { exact: true }).check();
+    await blurNumber(bank.getByLabel('Bank limit (A)', { exact: true }), 16);
+  }
+  const limitSection = dialog.getByRole('region', { name: 'Total output limit' });
+  await limitSection.getByRole('button', { name: 'Add total output limit', exact: true }).click();
+  // A limit with nothing rated is refused with a readable error.
+  await dialog.getByRole('button', { name: 'Save definition', exact: true }).click();
+  await expect(page.getByRole('alert')).toContainText(
+    'A total output limit needs at least one of VA, W or A.',
+  );
+  await page.getByRole('button', { name: 'Dismiss error', exact: true }).click();
+  await blurNumber(limitSection.getByLabel('Output limit (VA)', { exact: true }), 3000);
+  await blurNumber(limitSection.getByLabel('Output limit (W)', { exact: true }), 2700);
+  await blurNumber(limitSection.getByLabel('Output limit (A)', { exact: true }), 13);
+  await expect(limitSection.getByLabel('Output voltage (V)', { exact: true })).toHaveValue('230');
+  await limitSection.getByLabel('Output rating source', { exact: true }).fill('SMT3000 datasheet');
+  await dialog.getByRole('button', { name: 'Save definition', exact: true }).click();
+  await expect(dialog).toHaveCount(0);
+  await expect(page.locator('.statusbar')).toContainText('Device definition saved.');
+  await expect(powerIssues(page)).toHaveCount(0);
+
+  // 2800 W on one 16 A bank is 76.1 % of the bank but 103.7 % of the 2700 W total output.
+  await connect(page, 'Rear PDU 1 · Outlet 1', 'Server 1 · IEC power');
+  await select(page, 'Server 1');
+  const section = inspector(page).getByRole('region', { name: 'Power and weight' });
+  await blurNumber(section.getByLabel('Maximum draw (W)', { exact: true }), 2800);
+  await blurNumber(section.getByLabel('Nominal draw (W)', { exact: true }), 1200);
+  await expect(powerIssues(page)).toHaveText('1 power to review');
+  await expect(powerIssues(page)).toHaveClass('error-text');
+  await expect(powerIssues(page)).toHaveAttribute(
+    'title',
+    /Rear PDU 1 · total output: 2800 VA of 3000 VA \(93\.3 %\), 2800 W of 2700 W \(103\.7 %\), 12\.17 A of 13\.00 A \(93\.6 %\) at maximum draw exceeds/,
+  );
+  await select(page, 'Rear PDU 1');
+  const output = inspector(page).locator('.power-output-limit');
+  await expect(output.locator('.section-title .badge')).toHaveText('Over limit');
+  await expect(output.getByRole('meter', { name: 'Total output utilisation' })).toHaveAttribute(
+    'aria-valuenow',
+    '104',
+  );
+  await expect(output).toContainText('Maximum: 2800 W · 12.17 A at 230 V (103.7 % of the W limit)');
+  await expect(output).toContainText('3000 VA (93.3 %) · 2700 W (103.7 %) · 13 A (93.6 %)');
+  await expect(bankCard(page, 'Top row').locator('.section-title .badge')).toHaveText('OK');
+  // The total output card sits above the bank cards.
+  expect(
+    await inspector(page)
+      .locator('.power-output-limit, .power-bank')
+      .evaluateAll((cards) => cards.map((c) => c.classList.contains('power-output-limit'))),
+  ).toEqual([true, false, false]);
+
+  // Undo the draw edits: the total becomes incomplete; redo restores the overload.
+  await page.getByRole('button', { name: 'Undo', exact: true }).click();
+  await page.getByRole('button', { name: 'Undo', exact: true }).click();
+  await select(page, 'Rear PDU 1');
+  await expect(output.locator('.section-title .badge')).toHaveText('Incomplete');
+  await expect(output).toContainText('known part only');
+  await expect(powerIssues(page)).toHaveText('2 power to review');
+  await expect(powerIssues(page)).toHaveAttribute('title', /total output: load is incomplete/);
+  await page.getByRole('button', { name: 'Redo', exact: true }).click();
+  await page.getByRole('button', { name: 'Redo', exact: true }).click();
+  await select(page, 'Rear PDU 1');
+  await expect(output.locator('.section-title .badge')).toHaveText('Over limit');
+
+  // The power and weights document lists the total output above the banks.
+  await openView(page, 'Power & Weights');
+  const table = page
+    .getByRole('main', { name: 'Power and weights document' })
+    .getByRole('table', { name: 'Rear PDU 1 total output' });
+  await expect(table.locator('tbody tr')).toHaveCount(1);
+  const cells = await table
+    .locator('tbody td')
+    .evaluateAll((tds) => tds.map((td) => (td as HTMLElement).innerText.trim()));
+  expect(cells).toEqual([
+    '3,000',
+    '2,700',
+    '13',
+    '230',
+    '1,200',
+    '2,800',
+    '12.17',
+    '103.7',
+    'VA 93.3 %; W 103.7 %; A 93.6 %',
+    'Over limit',
+    'None',
+    'user-entered (SMT3000 datasheet)',
+  ]);
+
+  // Export keeps the limit.
+  const exported = await exportProject(page);
+  expect(definitionNamed(exported, '1U power distribution').powerOutputLimit).toEqual({
+    maxVA: 3000,
+    maxW: 2700,
+    maxCurrentA: 13,
+    voltageV: 230,
+    evidence: 'user-entered',
+    source: 'SMT3000 datasheet',
+  });
 });

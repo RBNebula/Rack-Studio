@@ -80,6 +80,20 @@ export const powerBankSchema = z.object({
   source: z.string(),
 });
 export type PowerBank = z.infer<typeof powerBankSchema>;
+/**
+ * Total output rating of a power distributor (UPS or PDU) across all of its banks, for example a
+ * UPS rated 3000 VA / 2700 W. Each limit is null when not rated; at least one must be set.
+ * `voltageV` converts the total load to amps for `maxCurrentA`.
+ */
+export const powerOutputLimitSchema = z.object({
+  maxVA: positive.nullable().default(null),
+  maxW: positive.nullable().default(null),
+  maxCurrentA: positive.nullable().default(null),
+  voltageV: positive,
+  evidence: evidenceSchema,
+  source: z.string(),
+});
+export type PowerOutputLimit = z.infer<typeof powerOutputLimitSchema>;
 const base64 = z.string().regex(/^[A-Za-z0-9+/]*={0,2}$/, 'Expected base64 data.');
 /**
  * Display mesh tessellated from an imported STEP model, in device-local millimetres: x across
@@ -136,6 +150,7 @@ export const definitionSchema = z
     massKg: nonnegative.nullable(),
     power: powerDrawSchema.optional(),
     powerBanks: z.array(powerBankSchema).optional(),
+    powerOutputLimit: powerOutputLimitSchema.optional(),
     railMinMm: nonnegative.nullable(),
     railMaxMm: positive.nullable(),
     screwOffsetsMm: z.array(nonnegative),
@@ -216,6 +231,25 @@ export const definitionSchema = z
         bankedPorts.add(id);
       }
     });
+    const outputLimit = definition.powerOutputLimit;
+    if (outputLimit) {
+      if (
+        outputLimit.maxVA === null &&
+        outputLimit.maxW === null &&
+        outputLimit.maxCurrentA === null
+      )
+        context.addIssue({
+          code: 'custom',
+          path: ['powerOutputLimit'],
+          message: 'A total output limit needs at least one of maxVA, maxW or maxCurrentA.',
+        });
+      if (!definition.powerBanks?.length)
+        context.addIssue({
+          code: 'custom',
+          path: ['powerOutputLimit'],
+          message: 'A total output limit requires power banks.',
+        });
+    }
     if (definition.power?.nominalW != null && definition.power.maxW != null)
       if (definition.power.nominalW > definition.power.maxW)
         context.addIssue({

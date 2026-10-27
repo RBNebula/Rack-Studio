@@ -7,6 +7,7 @@ import type {
   PowerBankResult,
   PowerIssue,
   PowerLoad,
+  PowerOutputLimitResult,
   PowerStatus,
 } from './power';
 import { deviceRack, racks } from './space';
@@ -55,6 +56,24 @@ export const BANK_COLUMNS = [
   'Unknown draw',
   'Rating evidence',
 ] as const;
+/** Columns of a distributor's total output row (`DeviceDefinition.powerOutputLimit`). */
+export const OUTPUT_LIMIT_COLUMNS = [
+  'Distributor',
+  'Limit (VA)',
+  'Limit (W)',
+  'Limit (A)',
+  'Voltage (V)',
+  'Nominal (W)',
+  'Max (W)',
+  'Max (A)',
+  'Utilisation (%)',
+  'Utilisation by limit',
+  'Status',
+  'Unknown draw',
+  'Rating evidence',
+] as const;
+/** A total output limit that is not rated, e.g. a UPS rated in VA and W but not in amps. */
+export const NOT_RATED = 'Not rated';
 
 export interface PowerReportEquipmentRow {
   deviceId: string;
@@ -77,6 +96,12 @@ export interface PowerReportDistributor {
   inputNominal: string;
   inputMax: string;
   banks: PowerReportBankRow[];
+  /** Total output across every bank against the rated limit; null when the model has none. */
+  outputLimit: PowerReportOutputLimitRow | null;
+}
+export interface PowerReportOutputLimitRow {
+  status: PowerStatus;
+  cells: ReportCell[];
 }
 export interface PowerReportTotal {
   label: string;
@@ -96,6 +121,7 @@ export interface PowerReport {
   summary: { devices: string; mass: string; maxDraw: string; issues: string };
   equipment: { columns: string[]; rows: PowerReportEquipmentRow[] };
   bankColumns: string[];
+  outputLimitColumns: string[];
   distributors: PowerReportDistributor[];
   totals: PowerReportTotal[];
   issues: PowerReportIssue[];
@@ -241,6 +267,53 @@ export function buildPowerReport(
     };
   });
 
+  const unknownDraw = (
+    unknownConsumers: PowerBankResult['unknownConsumers'],
+    externalOutlets: PowerBankResult['externalOutlets'],
+    outletBank: (portId: string) => PowerBankResult | undefined,
+  ) =>
+    [
+      ...unknownConsumers.map((u) => `${u.name}: ${u.reason}`),
+      ...externalOutlets.map(
+        (e) =>
+          `${outletName(outletBank(e.portId), e.portId)} feeds external ${project.destinations.find((x) => x.id === e.destinationId)?.name ?? e.destinationId}: draw unknown`,
+      ),
+    ].join('; ') || 'None';
+  const outputLimitRow = (
+    name: string,
+    limit: PowerOutputLimitResult,
+    banks: PowerBankResult[],
+  ): PowerReportOutputLimitRow => {
+    const { max, nominal, utilisationByLimit } = limit;
+    const byLimit = (['VA', 'W', 'A'] as const)
+      .filter((k) => utilisationByLimit[k] !== null)
+      .map((k) => {
+        const cell = loadCell(utilisationByLimit[k]! * 100, max.complete, 1);
+        return `${k} ${cell === null ? 'Unknown' : `${reportCellText(cell)} %`}`;
+      })
+      .join('; ');
+    return {
+      status: limit.status,
+      cells: [
+        name,
+        limit.maxVA ?? NOT_RATED,
+        limit.maxW ?? NOT_RATED,
+        limit.maxCurrentA ?? NOT_RATED,
+        limit.voltageV,
+        loadCell(nominal.knownW, nominal.complete, 1),
+        loadCell(max.knownW, max.complete, 1),
+        loadCell(max.knownA, max.complete, 2),
+        loadCell(limit.utilisation * 100, max.complete, 1),
+        byLimit,
+        POWER_STATUS_TEXT[limit.status],
+        unknownDraw(limit.unknownConsumers, limit.externalOutlets, (portId) =>
+          banks.find((b) => b.outlets.some((o) => o.portId === portId)),
+        ),
+        limit.source ? `${limit.evidence} (${limit.source})` : limit.evidence,
+      ],
+    };
+  };
+
   // Distributors, upstream first so that a UPS precedes the PDUs it feeds.
   const level = (id: string, seen = new Set<string>()): number => {
     if (seen.has(id)) return 0;
@@ -272,13 +345,6 @@ export function buildPowerReport(
             const max = wattsText(c.input.max, null, true);
             return `${c.name} (${outlets}; ${max}${c.redundantFeed ? '; redundant feed' : ''})`;
           });
-          const unknown = [
-            ...bank.unknownConsumers.map((u) => `${u.name}: ${u.reason}`),
-            ...bank.externalOutlets.map(
-              (e) =>
-                `${outletName(bank, e.portId)} feeds external ${project.destinations.find((x) => x.id === e.destinationId)?.name ?? e.destinationId}: draw unknown`,
-            ),
-          ];
           return {
             bankId: bank.bankId,
             status: bank.status,
@@ -295,11 +361,12 @@ export function buildPowerReport(
               loadCell(bank.utilisation * 100, bank.max.complete, 1),
               POWER_STATUS_TEXT[bank.status],
               consumers.join('; ') || 'None',
-              unknown.join('; ') || 'None',
+              unknownDraw(bank.unknownConsumers, bank.externalOutlets, () => bank),
               bank.source ? `${bank.evidence} (${bank.source})` : bank.evidence,
             ],
           };
         }),
+        outputLimit: d.outputLimit ? outputLimitRow(d.name, d.outputLimit, d.banks) : null,
       };
     });
 
@@ -414,9 +481,14 @@ export function buildPowerReport(
   ).length;
   const allBanks = analysis.distributors.flatMap((d) => d.banks);
   const provisionalBanks = allBanks.filter((b) => b.evidence !== 'verified').length;
+  const limits = analysis.distributors.flatMap((d) => (d.outputLimit ? [d.outputLimit] : []));
+  const provisionalLimits = limits.filter((l) => l.evidence !== 'verified').length;
+  const limitsText = limits.length
+    ? `, ${provisionalLimits} of ${plural(limits.length, 'total output limit')}`
+    : '';
   const provisionalNote =
-    provisionalDevices || provisionalBanks
-      ? `${provisionalDevices} of ${plural(equipmentRows.length, 'device')} and ${provisionalBanks} of ${plural(allBanks.length, 'bank')} use example, user-entered or unknown evidence, or have no power record. Check the evidence columns before relying on these figures.`
+    provisionalDevices || provisionalBanks || provisionalLimits
+      ? `${provisionalDevices} of ${plural(equipmentRows.length, 'device')}${limitsText} and ${provisionalBanks} of ${plural(allBanks.length, 'bank')} use example, user-entered or unknown evidence, or have no power record. Check the evidence columns before relying on these figures.`
       : null;
 
   return {
@@ -434,6 +506,7 @@ export function buildPowerReport(
     },
     equipment: { columns: [...EQUIPMENT_COLUMNS], rows: equipmentRows },
     bankColumns: [...BANK_COLUMNS],
+    outputLimitColumns: [...OUTPUT_LIMIT_COLUMNS],
     distributors,
     totals: totalRows,
     issues,
@@ -443,18 +516,22 @@ export function buildPowerReport(
       `Current = watts ÷ bank voltage, treating watts as volt-amperes (power factor 1). A bank or outlet is a Warning from ${analysis.warningUtilisation * 100} % of its rating and Over limit above 100 %; utilisation uses maximum draw.`,
       'Max inlet current is the device’s whole input at its feeding bank’s voltage; for a PDU or UPS it includes the equipment it supplies.',
       'A device fed from two outlets counts its full draw against each feeding bank and outlet, because one supply may carry the whole load. It counts once in the totals.',
+      `A distributor’s total output counts every device it supplies once across all of its banks, including equipment behind a chained PDU. Watts are compared with the VA limit as volt-amperes (power factor 1). The worst rated limit (VA, W or A) sets the utilisation and status, with the same ${analysis.warningUtilisation * 100} % warning threshold.`,
       'Planning figures only, not an electrical design certificate: inrush, power factor, phase balance, breaker and cable ratings, UPS runtime, derating and rack, shelf or rail load ratings are not checked.',
     ],
   };
 }
 
 /**
- * The document as one sectioned CSV: a header block, then Equipment, Power banks, Totals, Issues
- * and Notes, each introduced by a one-cell title row and separated by a blank line. It uses the
+ * The document as one sectioned CSV: a header block, then Equipment, Power banks, Total output,
+ * Totals, Issues and Notes, each introduced by a one-cell title row and separated by a blank line. It uses the
  * shared `csv` helper, so formula prefixes are neutralised and unknown values read "Unknown".
  */
 export function powerReportCsv(project: Project, report = buildPowerReport(project)): string {
   const bankRows = report.distributors.flatMap((d) => d.banks.map((b) => b.cells));
+  const limitRows = report.distributors.flatMap((d) =>
+    d.outputLimit ? [d.outputLimit.cells] : [],
+  );
   return csv([
     ['Power and weights', report.projectName],
     ['Project revision', report.revision],
@@ -468,6 +545,10 @@ export function powerReportCsv(project: Project, report = buildPowerReport(proje
     ['Power banks'],
     report.bankColumns,
     ...(bankRows.length ? bankRows : [['No power distributor is placed.']]),
+    [],
+    ['Total output'],
+    report.outputLimitColumns,
+    ...(limitRows.length ? limitRows : [['No placed distributor has a total output limit.']]),
     [],
     ['Totals'],
     ['Item', 'Value', 'Detail'],

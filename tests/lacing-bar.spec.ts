@@ -2,13 +2,14 @@ import { test, expect, type Page } from '@playwright/test';
 import { readFile } from 'node:fs/promises';
 import { createExampleProject } from '../src/examples';
 import type { Project } from '../src/model';
+import { fileAction, setView } from './navigation';
 
 test.use({ baseURL: process.env.RACK_TEST_URL ?? 'http://127.0.0.1:5173' });
 test.setTimeout(120000);
 
 async function exported(page: Page): Promise<Project> {
   const event = page.waitForEvent('download');
-  await page.getByRole('button', { name: 'Export project', exact: true }).click();
+  await fileAction(page, 'Export project');
   return JSON.parse(await readFile((await (await event).path())!, 'utf8'));
 }
 async function imported(page: Page, p: Project) {
@@ -94,7 +95,7 @@ test('native rear and front library drops follow the selected mounting face in a
     'rear',
   );
   await dialog.getByRole('button', { name: 'Cancel', exact: true }).click();
-  await page.getByRole('button', { name: 'Top view', exact: true }).click();
+  await setView(page, 'Top');
   await expect(page.getByRole('combobox', { name: 'Drop mounting face', exact: true })).toHaveValue(
     'rear',
   );

@@ -32,3 +32,39 @@ export async function openView(page: Page, view: View) {
     .getByRole('button', { name: view, exact: true })
     .click();
 }
+
+export type FileItem = 'New' | 'Open' | 'Save' | 'Export project';
+
+/** Opens the header File menu (if closed) and returns one of its items. */
+export async function fileItem(page: Page, item: FileItem) {
+  const button = page.getByRole('button', { name: 'File', exact: true });
+  if ((await button.getAttribute('aria-expanded')) !== 'true') await button.click();
+  return page.getByRole('menu', { name: 'File', exact: true }).getByRole('menuitem', {
+    name: item,
+    exact: true,
+  });
+}
+
+/** Runs a File menu command with real clicks. */
+export async function fileAction(page: Page, item: FileItem) {
+  await (await fileItem(page, item)).click();
+}
+
+export type CameraView = 'Front' | 'Rear' | 'Left' | 'Right' | 'Top';
+
+/** Chooses a named camera view from the view cube's menu. */
+export async function setView(page: Page, view: CameraView) {
+  const toggle = page.getByRole('button', { name: 'Camera views', exact: true });
+  if ((await toggle.getAttribute('aria-expanded')) !== 'true') await toggle.click();
+  await page
+    .getByRole('group', { name: 'Camera views', exact: true })
+    .getByRole('button', { name: `${view} view`, exact: true })
+    .click();
+}
+
+/** Selects installed equipment from the sidebar's Installed tab, then returns to the Library tab. */
+export async function selectInstalled(page: Page, name: string) {
+  await page.getByRole('tab', { name: /^Installed/ }).click();
+  await page.locator('.installed-pills > button').filter({ hasText: name }).click();
+  await page.getByRole('tab', { name: 'Library', exact: true }).click();
+}

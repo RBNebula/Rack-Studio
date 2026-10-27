@@ -1,6 +1,6 @@
 import { test, expect } from '@playwright/test';
 import { readFile } from 'node:fs/promises';
-import { openView } from './navigation';
+import { fileAction, openView, setView } from './navigation';
 test.use({ baseURL: process.env.RACK_TEST_URL ?? 'http://127.0.0.1:5173' });
 test('isolated device designer, face drag/drop, library persistence and tray stretching', async ({
   page,
@@ -10,7 +10,7 @@ test('isolated device designer, face drag/drop, library persistence and tray str
   page.on('pageerror', (e) => errors.push(e.message));
   await page.goto('/');
   await expect(page.locator('canvas')).toBeVisible();
-  await page.getByRole('button', { name: 'New', exact: true }).click();
+  await fileAction(page, 'New');
   await openView(page, 'Device Model Designer');
   await page.getByLabel('Model name', { exact: true }).fill('QA designed device');
   const face = page.getByLabel('Device face editor', { exact: true });
@@ -62,7 +62,7 @@ test('isolated device designer, face drag/drop, library persistence and tray str
     clientY: cb.y + cb.height / 2,
   });
   await expect(page.getByLabel('Accessory name', { exact: true })).toHaveValue('tray 1');
-  await page.getByRole('button', { name: 'Top view', exact: true }).click();
+  await setView(page, 'Top');
   const handle = page.locator('.tray-stretch-label');
   await expect(handle).toBeVisible();
   await handle.evaluate(async (el) => {
@@ -82,7 +82,7 @@ test('isolated device designer, face drag/drop, library persistence and tray str
   await page.mouse.move(hb.x + hb.width / 2, hb.y + hb.height / 2 + 70, { steps: 16 });
   await page.mouse.up();
   const download = page.waitForEvent('download');
-  await page.getByRole('button', { name: 'Export project', exact: true }).click();
+  await fileAction(page, 'Export project');
   const path = await (await download).path();
   const p = JSON.parse(await readFile(path!, 'utf8'));
   const d = p.definitions.find((v: { name: string }) => v.name === 'QA designed device');
@@ -92,11 +92,11 @@ test('isolated device designer, face drag/drop, library persistence and tray str
   expect(p.accessories[0].perforated).toBe(true);
   expect(p.accessories[0].size[2]).not.toBe(400);
   await canvas.screenshot({ path: 'docs/screenshots/perforated-tray.png' });
-  await page.getByRole('button', { name: 'Save', exact: true }).click();
+  await fileAction(page, 'Save');
   await expect(page.locator('.toolbar-save')).toContainText('Saved locally');
   await page.reload();
   const dl = page.waitForEvent('download');
-  await page.getByRole('button', { name: 'Export project', exact: true }).click();
+  await fileAction(page, 'Export project');
   const restored = JSON.parse(await readFile((await (await dl).path())!, 'utf8'));
   expect(restored.accessories).toEqual(p.accessories);
   expect(restored.definitions.find((v: { id: string }) => v.id === d.id)).toEqual(d);

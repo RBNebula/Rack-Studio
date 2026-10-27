@@ -3,7 +3,7 @@ import type { Page } from '@playwright/test';
 import { readFile } from 'node:fs/promises';
 import { resolve } from 'node:path';
 import type { DeviceDefinition, Project } from '../src/model';
-import { openView } from './navigation';
+import { fileAction, openView } from './navigation';
 
 const definitionName = 'User rack PC · 1U';
 const definitionId = 'def-user-rack-pc';
@@ -35,20 +35,20 @@ async function openBlank(page: Page) {
   await page.goto('/');
   await expect(page.locator('canvas')).toBeVisible();
   await expect(page.locator('.rack-u-label').first()).toBeVisible();
-  await page.getByRole('button', { name: 'New', exact: true }).click();
+  await fileAction(page, 'New');
   await expect(page.locator('.installed-pills > button')).toHaveCount(0);
 }
 
 async function exported(page: Page): Promise<Project> {
   const pending = page.waitForEvent('download');
-  await page.getByRole('button', { name: 'Export project', exact: true }).click();
+  await fileAction(page, 'Export project');
   const path = await (await pending).path();
   if (!path) throw new Error('The UI must produce a downloadable project.');
   return JSON.parse(await readFile(path, 'utf8')) as Project;
 }
 
 async function saveReload(page: Page, deviceCount: number) {
-  await page.getByRole('button', { name: 'Save', exact: true }).click();
+  await fileAction(page, 'Save');
   await expect(page.locator('.toolbar-save')).toContainText('Saved locally');
   await page.reload();
   await expect(page.locator('canvas')).toBeVisible();

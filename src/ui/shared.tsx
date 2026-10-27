@@ -115,6 +115,12 @@ export function Icon({ name, size = 18 }: { name: string; size?: number }) {
       </>
     ),
     bolt: <path d="M13 2 4.5 13.5H12L11 22l8.5-11.5H12z" />,
+    home: (
+      <>
+        <path d="m3 11 9-7 9 7" />
+        <path d="M5 9.5V20h14V9.5M10 20v-6h4v6" />
+      </>
+    ),
     info: (
       <>
         <circle cx="12" cy="12" r="9" />

@@ -58,6 +58,7 @@ import { DeviceRails } from './DeviceRails';
 import { WiringPicker } from './WiringPicker';
 import { clickWiringGuide, connectWiringPort } from './wiringActions';
 import { ModeIndicator, SceneDrawer, viewportMode } from './ViewportMode';
+import { ViewCube, ViewCubeSync } from './ViewCube';
 import { useStoredState } from './Panels';
 import { ModellingGizmo } from './ModellingGizmo';
 import {
@@ -243,6 +244,7 @@ export default function Scene() {
   const bridge = useRef<SceneBridge | null>(null);
   const pointerDrag = useRef<PointerDrag | null>(null);
   const [resetKey, setResetKey] = useState(0);
+  const cubeRef = useRef<HTMLDivElement | null>(null);
   const [overViewport, setOverViewport] = useState(false);
   const [overlayHost, setOverlayHost] = useState<HTMLDivElement | null>(null);
   const draggedDevice = project.devices.find((device) => device.id === dragDeviceId);
@@ -519,14 +521,6 @@ export default function Scene() {
     () => (preview && dragDeviceId ? relocated(project, preview) : project),
     [project, preview, dragDeviceId],
   );
-  const views: { id: View; label: string }[] = [
-    { id: 'front', label: 'Front' },
-    { id: 'rear', label: 'Rear' },
-    { id: 'left', label: 'Left' },
-    { id: 'right', label: 'Right' },
-    { id: 'top', label: 'Top' },
-    { id: 'orbit', label: '3D' },
-  ];
   const label =
     preview && draggedDefinition
       ? `U${preview.startU}${draggedDefinition.heightU > 1 ? `–${preview.startU + draggedDefinition.heightU - 1}` : ''}`
@@ -547,26 +541,6 @@ export default function Scene() {
       }}
     >
       <div className="scene-toolbar">
-        <div className="view-buttons" role="group" aria-label="Camera views">
-          {views.map((item) => (
-            <button
-              key={item.id}
-              aria-label={`${item.label === '3D' ? 'Orbit 3D' : item.label} view`}
-              aria-pressed={view === item.id}
-              className={view === item.id ? 'active' : ''}
-              disabled={dragging}
-              onClick={() =>
-                set({
-                  view: item.id,
-                  ...(item.id === 'front' || item.id === 'rear' ? { placeFace: item.id } : {}),
-                })
-              }
-            >
-              {item.id === 'orbit' && <Icon name="cube" size={14} />}
-              {item.label}
-            </button>
-          ))}
-        </div>
         <div className="scene-tools" role="group" aria-label="Viewport settings">
           <label
             className={`scene-mount ${placeFace === 'rear' ? 'rear' : ''}`}
@@ -672,13 +646,18 @@ export default function Scene() {
         <ModeIndicator />
       </div>
       <SceneDrawer collapsed={drawerCollapsed} onCollapsedChange={setDrawerCollapsed} />
-      <div className="scene-model-info">
-        <span className="scene-model-kicker">RACK WORKSPACE</span>
-        <strong>{activeRack.name}</strong>
-        <span>
-          {project.rack.heightU}U <i /> {project.rack.outerWidthMm} mm wide <i /> Millimetres
-        </span>
-      </div>
+      <ViewCube
+        cube={cubeRef}
+        view={view}
+        disabled={dragging}
+        onView={(next) => {
+          if (next === view) setResetKey((key) => key + 1);
+          set({
+            view: next,
+            ...(next === 'front' || next === 'rear' ? { placeFace: next } : {}),
+          });
+        }}
+      />
       <div className="canvas-wrap">
         <OverlayHost.Provider value={overlayHost}>
           <Canvas
@@ -734,6 +713,7 @@ export default function Scene() {
               />
             )}
             <CameraRig bridge={bridge} resetKey={resetKey} dragging={dragging} />
+            <ViewCubeSync cube={cubeRef} />
             <WiringPicker />
             {showGround && (
               <SceneGround
@@ -876,12 +856,6 @@ export default function Scene() {
           </div>
         </div>
       )}
-      <div className="scene-axis" aria-hidden="true">
-        <span className="axis-y">Y</span>
-        <span className="axis-z">Z</span>
-        <span className="axis-x">X</span>
-        <i />
-      </div>
     </section>
   );
 }

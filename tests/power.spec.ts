@@ -2,7 +2,7 @@ import { test as base, expect } from '@playwright/test';
 import type { Locator, Page } from '@playwright/test';
 import { readFile } from 'node:fs/promises';
 import { resolve } from 'node:path';
-import { openView } from './navigation';
+import { fileAction, fileItem, openView, selectInstalled } from './navigation';
 
 const test = base.extend<{ uncaughtErrors: string[] }>({
   uncaughtErrors: [
@@ -64,7 +64,7 @@ interface ExportedProject {
 }
 async function exportProject(page: Page): Promise<ExportedProject> {
   return JSON.parse(
-    await downloadText(page, page.getByRole('button', { name: 'Export project', exact: true })),
+    await downloadText(page, await fileItem(page, 'Export project')),
   ) as ExportedProject;
 }
 const definitionNamed = (project: ExportedProject, name: string) => {
@@ -79,7 +79,7 @@ async function select(page: Page, name: string) {
     .locator('.workspace-tabs')
     .getByRole('button', { name: '3D Rack Designer', exact: true })
     .click();
-  await page.locator('.installed-pills > button').filter({ hasText: name }).click();
+  await selectInstalled(page, name);
 }
 const inspector = (page: Page) => page.locator('.inspector');
 const bankCard = (page: Page, name: string) =>
@@ -359,7 +359,7 @@ test('power banks, draw, mass, bank warnings and the status bar survive undo, re
   ]);
 
   // Save and reload from IndexedDB.
-  await page.getByRole('button', { name: 'Save', exact: true }).click();
+  await fileAction(page, 'Save');
   await expect(page.locator('.toolbar-save')).toContainText(/Saved locally/);
   await page.reload();
   await expect(page.locator('canvas')).toBeVisible();
@@ -380,7 +380,7 @@ test('power banks, draw, mass, bank warnings and the status bar survive undo, re
   expect(await exportProject(page)).toEqual(exported);
 
   // JSON import of the exported project restores the same values after a new project.
-  await page.getByRole('button', { name: 'New', exact: true }).click();
+  await fileAction(page, 'New');
   await expect(page.locator('.installed-pills > button')).toHaveCount(0);
   await expect(powerIssues(page)).toHaveCount(0);
   await page.getByLabel('Import project JSON', { exact: true }).setInputFiles({

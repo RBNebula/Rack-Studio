@@ -14,6 +14,7 @@ import { ConnectionDialog, DestinationDialog, ExitDialog } from './Forms';
 import { Button, Icon, IconButton, Badge, Field, Modal, TooltipLayer, download } from './shared';
 import { analyseProject, csv } from '../engineering/analysis';
 import { ResizeHandle, useStoredState } from './Panels';
+import { FileMenu } from './FileMenu';
 import { exitViewportMode } from './ViewportMode';
 
 /** Workspace views, grouped under five top-level tabs. View ids are unchanged state values. */
@@ -258,87 +259,46 @@ export default function App() {
       <header className="app-header">
         <div className="brand">
           <span className="brand-symbol">
-            <Icon name="cube" size={25} />
+            <Icon name="cube" size={23} />
           </span>
           <strong>
             rack<span>studio</span>
           </strong>
-          <span className="brand-divider" />
-          <span className="header-description">Engineering workspace</span>
         </div>
-        <div className="header-project">
-          <span className="project-dot" />
-          <span>{project.name}</span>
-          <Badge>LOCAL PROJECT</Badge>
-          <button
-            className={`accuracy-badge ${verified ? 'verified' : ''}`}
-            aria-expanded={!bannerHidden}
-            aria-label={`${verified ? 'Model verification' : 'Illustrative engineering model'}: ${bannerHidden ? 'show' : 'hide'} accuracy notice`}
-            data-tooltip={
-              verified
-                ? 'Rack marked verified; cable specifications and routes must also be verified'
-                : 'Dimensions and port positions need confirmation · click to show the notice'
-            }
-            onClick={() => hideBanner(!bannerHidden)}
-          >
-            <Icon name="alert" size={13} />
-            {verified ? 'Verify cables' : 'Illustrative model'}
-          </button>
-        </div>
-        <button
-          className="avatar"
-          data-tooltip="Local project settings"
-          aria-label="Project settings"
-          onClick={() => set({ workspace: 'settings', selection: null })}
-        >
-          RS
-        </button>
-      </header>
-      <div className="project-toolbar">
-        <div className="button-row">
-          <Button className="ghost" icon="plus" onClick={() => void newProject()}>
-            New
-          </Button>
-          <Button className="ghost" icon="folder" onClick={() => void openProjects()}>
-            Open
-          </Button>
-          <Button
-            className="ghost"
-            icon="save"
-            data-tooltip="Save locally (Ctrl+S)"
-            onClick={() => void save(project, true)}
-          >
-            Save
-          </Button>
-          <span className="toolbar-divider" />
-          <label className="button ghost">
-            <Icon name="upload" />
-            Import
-            <input
-              aria-label="Import project JSON"
-              type="file"
-              hidden
-              accept="application/json,.json"
-              onChange={(e) => {
-                void importProject(e.target.files?.[0]);
-                e.target.value = '';
-              }}
-            />
-          </label>
-          <Button
-            className="ghost"
-            icon="download"
-            onClick={() =>
-              download(
-                `${project.name.replaceAll(/[^a-z0-9]/gi, '-')}.rack.json`,
-                serializeProject(project),
-                'application/json',
-              )
-            }
-          >
-            Export project
-          </Button>
-          <span className="toolbar-divider" />
+        <FileMenu
+          onNew={() => void newProject()}
+          onOpen={() => void openProjects()}
+          onSave={() => void save(project, true)}
+          onImport={(file) => void importProject(file)}
+          onExport={() =>
+            download(
+              `${project.name.replaceAll(/[^a-z0-9]/gi, '-')}.rack.json`,
+              serializeProject(project),
+              'application/json',
+            )
+          }
+        />
+        <nav className="workspace-tabs" aria-label="Workspace">
+          {groups.map((g) => (
+            <button
+              key={g.id}
+              aria-current={activeGroup.id === g.id ? 'page' : undefined}
+              onClick={() =>
+                openView(
+                  g.views.includes(lastViews[g.id] as Workspace)
+                    ? (lastViews[g.id] as Workspace)
+                    : g.views[0],
+                )
+              }
+              className={activeGroup.id === g.id ? 'active' : ''}
+            >
+              <Icon name={g.icon} size={16} />
+              {g.label}
+              {g.id === 'cabling' && <span>{project.cables.length}</span>}
+            </button>
+          ))}
+        </nav>
+        <div className="header-actions">
           <IconButton
             icon="undo"
             size={18}
@@ -355,10 +315,11 @@ export default function App() {
             disabled={s.future.length === 0}
             onClick={s.redo}
           />
-        </div>
-        <div className="toolbar-save">
-          <span className={s.dirty ? 'unsaved-dot' : 'saved-dot'} />
-          {s.saveStatus}
+          <span className="toolbar-divider" />
+          <div className="toolbar-save" role="status">
+            <span className={s.dirty ? 'unsaved-dot' : 'saved-dot'} />
+            {s.saveStatus}
+          </div>
           <button
             className="help-button"
             onClick={() => setDialog('help')}
@@ -367,28 +328,16 @@ export default function App() {
           >
             ?
           </button>
-        </div>
-      </div>
-      <nav className="workspace-tabs" aria-label="Workspace">
-        {groups.map((g) => (
           <button
-            key={g.id}
-            aria-current={activeGroup.id === g.id ? 'page' : undefined}
-            onClick={() =>
-              openView(
-                g.views.includes(lastViews[g.id] as Workspace)
-                  ? (lastViews[g.id] as Workspace)
-                  : g.views[0],
-              )
-            }
-            className={activeGroup.id === g.id ? 'active' : ''}
+            className="avatar"
+            data-tooltip="Project settings"
+            aria-label="Project settings"
+            onClick={() => openView('settings')}
           >
-            <Icon name={g.icon} size={17} />
-            {g.label}
-            {g.id === 'cabling' && <span>{project.cables.length}</span>}
+            RS
           </button>
-        ))}
-      </nav>
+        </div>
+      </header>
       {activeGroup.views.length > 1 && (
         <nav className="workspace-subtabs" aria-label={`${activeGroup.label} views`}>
           {activeGroup.views.map((id) => (
@@ -420,7 +369,7 @@ export default function App() {
             icon="x"
             size={14}
             label="Hide accuracy notice for this session"
-            tooltip="Hide for this session · the header badge keeps it available"
+            tooltip="Hide for this session · the status-bar badge keeps it available"
             onClick={() => hideBanner(true)}
           />
         </div>
@@ -456,13 +405,7 @@ export default function App() {
             )}
             <div className="designer-centre">
               <div className="designer-heading">
-                <div>
-                  <span className="eyebrow">RACK DESIGN</span>
-                  <h1>
-                    {project.rack.name}
-                    <Badge>{project.rack.heightU}U</Badge>
-                  </h1>
-                </div>
+                <span className="eyebrow">DESIGN ZONE</span>
                 <div className="button-row">
                   <Button icon="cable" onClick={() => setDialog('connection')}>
                     Connect
@@ -521,27 +464,6 @@ export default function App() {
               <Suspense fallback={<div className="scene-fallback">Loading 3D workspace…</div>}>
                 <Scene />
               </Suspense>
-              <div className="installed-strip">
-                <div>
-                  <Icon name="layers" size={16} />
-                  <strong>Installed equipment</strong>
-                  <span>{project.devices.length}</span>
-                </div>
-                <div className="installed-pills">
-                  {project.devices.map((d) => (
-                    <button
-                      className={
-                        s.selection?.kind === 'device' && s.selection.id === d.id ? 'active' : ''
-                      }
-                      key={d.id}
-                      onClick={() => set({ selection: { kind: 'device', id: d.id } })}
-                    >
-                      <span>U{d.startU}</span>
-                      {d.name}
-                    </button>
-                  ))}
-                </div>
-              </div>
             </div>
             {inspectorOpen ? (
               <div className="side-panel right">
@@ -585,6 +507,14 @@ export default function App() {
                 <span className="eyebrow">PROJECT</span>
                 <h1>Project settings</h1>
                 <p>Physical specifications, provenance and portable project data.</p>
+                <div className="header-project">
+                  <span className="project-dot" />
+                  <strong>{project.name}</strong>
+                  <Badge>LOCAL PROJECT</Badge>
+                  <Badge tone={verified ? 'good' : 'warn'}>
+                    {verified ? 'Rack verified · verify cables' : 'Illustrative model'}
+                  </Badge>
+                </div>
               </div>
               <Button icon="refresh" onClick={() => void newProject(true)}>
                 Load stepped example
@@ -715,6 +645,20 @@ export default function App() {
       )}
       <footer className="statusbar">
         <div>
+          <button
+            className={`accuracy-badge ${verified ? 'verified' : ''}`}
+            aria-expanded={!bannerHidden}
+            aria-label={`${verified ? 'Model verification' : 'Illustrative engineering model'}: ${bannerHidden ? 'show' : 'hide'} accuracy notice`}
+            data-tooltip={
+              verified
+                ? 'Rack marked verified; cable specifications and routes must also be verified'
+                : 'Dimensions and port positions need confirmation · click to show the notice'
+            }
+            onClick={() => hideBanner(!bannerHidden)}
+          >
+            <Icon name="alert" size={12} />
+            {verified ? 'Verify cables' : 'Illustrative model'}
+          </button>
           <span className="saved-dot" />
           <span>{s.notice}</span>
         </div>

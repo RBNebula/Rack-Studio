@@ -206,7 +206,10 @@ export default function Library({
   /** Designer sidebar only: collapse the panel to widen the 3D viewport. */
   onCollapse?: () => void;
 }) {
-  const { project, set, edit } = useStore();
+  const { project, set, edit, selection } = useStore();
+  // Designer sidebar: the equipment library or the list of installed equipment.
+  const [panel, setPanel] = useState<'library' | 'installed'>('library');
+  const showInstalled = !expanded && panel === 'installed';
   const [search, setSearch] = useState('');
   const [category, setCategory] = useState('All equipment');
   const [editing, setEditing] = useState<DeviceDefinition | null>(null);
@@ -229,7 +232,9 @@ export default function Library({
     });
   }
   return (
-    <section className={`library ${expanded ? 'expanded' : ''}`}>
+    <section
+      className={`library ${expanded ? 'expanded' : ''} ${showInstalled ? 'show-installed' : ''}`}
+    >
       <div className="panel-heading">
         <div>
           <span className="eyebrow">EQUIPMENT</span>
@@ -270,6 +275,61 @@ export default function Library({
           )}
         </div>
       </div>
+      {!expanded && (
+        <>
+          <div className="sidebar-tabs" role="tablist" aria-label="Sidebar">
+            <button
+              role="tab"
+              id="sidebar-tab-library"
+              aria-selected={!showInstalled}
+              aria-controls="sidebar-library"
+              onClick={() => setPanel('library')}
+            >
+              Library
+            </button>
+            <button
+              role="tab"
+              id="sidebar-tab-installed"
+              aria-selected={showInstalled}
+              aria-controls="sidebar-installed"
+              onClick={() => setPanel('installed')}
+            >
+              Installed <span>{project.devices.length}</span>
+            </button>
+          </div>
+          <div
+            className="installed-list"
+            id="sidebar-installed"
+            role="tabpanel"
+            aria-labelledby="sidebar-tab-installed"
+            hidden={!showInstalled}
+          >
+            {project.devices.length === 0 ? (
+              <p className="empty-note">
+                Nothing installed yet. Drag equipment from the Library tab into the rack.
+              </p>
+            ) : (
+              <div className="installed-pills">
+                {[...project.devices]
+                  .sort((a, b) => b.startU - a.startU)
+                  .map((d) => (
+                    <button
+                      className={
+                        selection?.kind === 'device' && selection.id === d.id ? 'active' : ''
+                      }
+                      key={d.id}
+                      onClick={() => set({ selection: { kind: 'device', id: d.id } })}
+                    >
+                      <span>U{d.startU}</span>
+                      {d.name}
+                      <small>{d.face}</small>
+                    </button>
+                  ))}
+              </div>
+            )}
+          </div>
+        </>
+      )}
       <div className="search-field">
         <Icon name="search" />
         <input

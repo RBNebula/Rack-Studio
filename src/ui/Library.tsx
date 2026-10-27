@@ -1,8 +1,24 @@
 import { useId, useState } from 'react';
 import { useStore } from '../state';
-import { clone, uid, definitionSchema } from '../model';
-import type { DeviceDefinition, PhysicalBox, Port, ShelfConfiguration } from '../model';
-import { Button, Icon, IconButton, Badge, Field, NumberField, Modal, download } from './shared';
+import { clone, uid, definitionSchema, supportRailsDefinitionIssues } from '../model';
+import type {
+  DeviceDefinition,
+  PhysicalBox,
+  Port,
+  ShelfConfiguration,
+  SupportRails,
+} from '../model';
+import {
+  Button,
+  Icon,
+  IconButton,
+  Badge,
+  Field,
+  NumberField,
+  OptionalNumberField,
+  Modal,
+  download,
+} from './shared';
 import { PlacementDialog } from './Forms';
 import { catalogueReferences } from '../catalogue';
 import {
@@ -533,11 +549,13 @@ export default function Library({
             )}
             <div className="card-bottom">
               <span>
-                {d.mounting === 'rails'
-                  ? 'Rail mounted'
-                  : d.mounting === 'freestanding'
-                    ? 'Shelf required'
-                    : d.category}
+                {d.supportRails
+                  ? 'Fixed support rails'
+                  : d.mounting === 'rails'
+                    ? 'Rail mounted'
+                    : d.mounting === 'freestanding'
+                      ? 'Shelf required'
+                      : d.category}
               </span>
               <div className="card-actions">
                 <button
@@ -1084,7 +1102,7 @@ function DeviceEditor({ initial, onClose }: { initial: DeviceDefinition; onClose
                 )}
               </section>
             )}
-            {d.mounting === 'rails' && (
+            {d.mounting === 'rails' && !d.supportRails && (
               <div className="form-grid">
                 <NumberField
                   label="Minimum rail spacing (mm)"
@@ -1097,6 +1115,9 @@ function DeviceEditor({ initial, onClose }: { initial: DeviceDefinition; onClose
                   onChange={(v) => update({ railMaxMm: v })}
                 />
               </div>
+            )}
+            {(d.mounting === 'rails' || d.supportRails) && (
+              <SupportRailFields definition={d} update={update} />
             )}
             <Field label="Screw hole heights from allocated U bottom (mm)">
               <input
@@ -1403,6 +1424,11 @@ function DeviceEditor({ initial, onClose }: { initial: DeviceDefinition; onClose
                 set({ error: plateIssues.join(' ') });
                 return;
               }
+              const railIssues = supportRailsDefinitionIssues(d);
+              if (railIssues.length) {
+                set({ error: railIssues.map((issue) => issue.message).join(' ') });
+                return;
+              }
               if (
                 edit('Device definition saved.', (p) => {
                   const index = p.definitions.findIndex((x) => x.id === d.id);
@@ -1418,6 +1444,138 @@ function DeviceEditor({ initial, onClose }: { initial: DeviceDefinition; onClose
         </div>
       </footer>
     </Modal>
+  );
+}
+
+/**
+ * Fixed L-section support rails supplied with a rails-mounted unit. Edits change the draft
+ * definition only; Save validates and commits the whole definition as one undoable edit.
+ */
+function SupportRailFields({
+  definition: d,
+  update,
+}: {
+  definition: DeviceDefinition;
+  update: (patch: Partial<DeviceDefinition>) => void;
+}) {
+  const rail = d.supportRails;
+  // Changing a dimension without choosing a status marks the rail data user-entered.
+  const patch = (next: Partial<SupportRails>) =>
+    rail &&
+    update({
+      supportRails: {
+        ...rail,
+        ...(!('evidence' in next) && !('source' in next) && rail.evidence === 'example'
+          ? { evidence: 'user-entered' as const }
+          : {}),
+        ...next,
+      },
+    });
+  return (
+    <section className="shape-row">
+      <h3>Fixed support rails</h3>
+      <label className="check-field">
+        <input
+          type="checkbox"
+          aria-label="Fixed L-section support rails"
+          checked={Boolean(rail)}
+          disabled={!rail && (d.bodyMode !== 'box' || Boolean(d.plate || d.shelf || d.lacing))}
+          onChange={(e) =>
+            update(
+              e.target.checked
+                ? {
+                    supportRails: {
+                      kind: 'fixed-l',
+                      spanMinMm: d.railMinMm || null,
+                      spanMaxMm: d.railMaxMm || null,
+                      legHeightMm: Math.min(25, d.heightMm),
+                      flangeWidthMm: 20,
+                      thicknessMm: 1.2,
+                      loadRatingKg: null,
+                      evidence: 'example',
+                      source:
+                        'Example profile starting values, not measurements. Replace with the supplied rails’ measured dimensions.',
+                    },
+                    railMinMm: null,
+                    railMaxMm: null,
+                  }
+                : {
+                    supportRails: undefined,
+                    railMinMm: rail?.spanMinMm ?? null,
+                    railMaxMm: rail?.spanMaxMm ?? null,
+                  },
+            )
+          }
+        />
+        Fixed L-section support rails supplied with the unit (non-sliding)
+      </label>
+      {rail && (
+        <>
+          <p className="muted">
+            One rail per side, screwed to the front and rear posts just behind the screw holes. The
+            chassis rests on the horizontal flange; the vertical leg runs alongside the chassis. The
+            ears keep the chassis height, so the flange occupies the space under the chassis. Leave
+            the spacing range or load rating empty when unknown: fit and load then stay unverified
+            rather than being rejected.
+          </p>
+          <div className="form-grid">
+            <OptionalNumberField
+              label="Minimum front-to-rear post spacing (mm)"
+              value={rail.spanMinMm}
+              positive
+              onChange={(v) => patch({ spanMinMm: v })}
+            />
+            <OptionalNumberField
+              label="Maximum front-to-rear post spacing (mm)"
+              value={rail.spanMaxMm}
+              positive
+              onChange={(v) => patch({ spanMaxMm: v })}
+            />
+            <NumberField
+              label="Vertical leg height (mm)"
+              value={rail.legHeightMm}
+              min={0.1}
+              step={0.1}
+              onChange={(v) => patch({ legHeightMm: v })}
+            />
+            <NumberField
+              label="Flange width (mm)"
+              value={rail.flangeWidthMm}
+              min={0.1}
+              step={0.1}
+              onChange={(v) => patch({ flangeWidthMm: v })}
+            />
+            <NumberField
+              label="Rail thickness (mm)"
+              value={rail.thicknessMm}
+              min={0.1}
+              step={0.1}
+              onChange={(v) => patch({ thicknessMm: v })}
+            />
+            <OptionalNumberField
+              label="Rail pair load rating (kg)"
+              value={rail.loadRatingKg}
+              positive
+              step={0.1}
+              onChange={(v) => patch({ loadRatingKg: v })}
+            />
+            <Field label="Support rail data status">
+              <select
+                value={rail.evidence}
+                onChange={(e) => patch({ evidence: e.target.value as SupportRails['evidence'] })}
+              >
+                {['example', 'user-entered', 'verified', 'unknown'].map((x) => (
+                  <option key={x}>{x}</option>
+                ))}
+              </select>
+            </Field>
+          </div>
+          <Field label="Support rail source / verification notes">
+            <textarea value={rail.source} onChange={(e) => patch({ source: e.target.value })} />
+          </Field>
+        </>
+      )}
+    </section>
   );
 }
 

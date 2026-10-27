@@ -3,6 +3,7 @@ import { useStore } from '../state';
 import type { Accessory, Cable, Device, Project, Rack } from '../model';
 import { clone, uid, cableLabel } from '../model';
 import { validateRack } from '../engineering/geometry';
+import { supportRailAssessment } from '../engineering/support-rails';
 import { placementIssues, projectWithPlacement } from '../engineering/placement';
 import { analyseProject } from '../engineering/analysis';
 import { Button, Field, NumberField, Icon, IconButton, Badge, metres } from './shared';
@@ -484,6 +485,36 @@ function OptionalRailDimension({
     </Field>
   );
 }
+/** Read-only summary of the definition's fixed support rails at this placement. */
+function FixedSupportRails({ project, device }: { project: Project; device: Device }) {
+  const rail = project.definitions.find((x) => x.id === device.definitionId)?.supportRails;
+  const assessment = supportRailAssessment(project, device);
+  if (!rail || !assessment) return null;
+  const range = (value: number | null) => (value === null ? 'unknown' : `${value} mm`);
+  return (
+    <div className="support-rails" data-testid="fixed-support-rails">
+      <p className="inspector-readout">
+        Fixed L-section support rails (non-sliding), one per side, screwed to the front and rear
+        posts. Leg {rail.legHeightMm} mm, flange {rail.flangeWidthMm} mm, thickness{' '}
+        {rail.thicknessMm} mm. Span range {range(rail.spanMinMm)} to {range(rail.spanMaxMm)}; rack
+        spacing{' '}
+        {assessment.spacingMm === null
+          ? 'unknown'
+          : `${Math.round(assessment.spacingMm * 10) / 10} mm`}{' '}
+        ({assessment.span}). Load rating{' '}
+        {rail.loadRatingKg === null ? 'unknown' : `${rail.loadRatingKg} kg`} ({assessment.load}
+        {assessment.loadFraction === null
+          ? ''
+          : `, ${Math.round(assessment.loadFraction * 1000) / 10} %`}
+        ). Chassis bears on the flange at Y {Math.round(assessment.bearingTopMm * 100) / 100} mm.
+      </p>
+      {assessment.advisories.map((advisory) => (
+        <Note key={advisory} tone="warn" summary={advisory} />
+      ))}
+    </div>
+  );
+}
+
 function DeviceInspector({ device: d }: { device: Device }) {
   const { project, edit, set } = useStore();
   const [startU, setU] = useState(d.startU);
@@ -623,7 +654,12 @@ function DeviceInspector({ device: d }: { device: Device }) {
           Apply position
         </Button>
       </Section>
-      <Section id="device.rails" title="Rails" badge={d.rails ? 'Fitted' : 'None'}>
+      <Section
+        id="device.rails"
+        title="Rails"
+        badge={def.supportRails ? 'Fixed support' : d.rails ? 'Fitted' : 'None'}
+      >
+        {def.supportRails && <FixedSupportRails project={project} device={d} />}
         <label className="check-field">
           <input
             type="checkbox"
@@ -632,6 +668,7 @@ function DeviceInspector({ device: d }: { device: Device }) {
             disabled={Boolean(
               def.plate ||
               def.shelf ||
+              def.supportRails ||
               def.bodyMode !== 'box' ||
               !['direct', 'rails', 'bracket'].includes(def.mounting),
             )}

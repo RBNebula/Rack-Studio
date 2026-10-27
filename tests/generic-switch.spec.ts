@@ -1,12 +1,13 @@
 import { test, expect, type Page } from '@playwright/test';
 import { readFile } from 'node:fs/promises';
 import type { Project } from '../src/model';
+import { fileAction, setView } from './navigation';
 
 test.use({ baseURL: process.env.RACK_TEST_URL ?? 'http://127.0.0.1:5173' });
 test.setTimeout(120000);
 async function exported(page: Page): Promise<Project> {
   const event = page.waitForEvent('download');
-  await page.getByRole('button', { name: 'Export project', exact: true }).click();
+  await fileAction(page, 'Export project');
   return JSON.parse(await readFile((await (await event).path())!, 'utf8'));
 }
 async function place(page: Page, name: string, u: number) {
@@ -31,9 +32,7 @@ async function connect(page: Page, source: object, destination: object, label: s
 }
 
 async function capture(page: Page, face: 'front' | 'rear') {
-  await page
-    .getByRole('button', { name: face === 'front' ? 'Front view' : 'Rear view', exact: true })
-    .click();
+  await setView(page, face === 'front' ? 'Front' : 'Rear');
   const ortho = page.getByRole('button', { name: 'Orthographic camera', exact: true });
   if ((await ortho.getAttribute('aria-pressed')) !== 'true') await ortho.click();
   await page.getByRole('button', { name: 'Reset camera', exact: true }).click();
@@ -135,7 +134,7 @@ test('generic single-row switch adds to an existing library, connects RJ45/SFP/A
     power = p.devices.find((v) => v.definitionId === pdu.id)!;
   const endpoint = (deviceId: string, portId: string) => ({ kind: 'device', deviceId, portId });
   await page.getByRole('button', { name: 'Orthographic camera', exact: true }).click();
-  await page.getByRole('button', { name: 'Front view', exact: true }).click();
+  await setView(page, 'Front');
   await page.getByRole('button', { name: 'Wiring mode', exact: true }).click();
   for (const v of switches) {
     const pin = page.locator(`[data-port="${v.id}:sfp1"]`);
@@ -178,7 +177,7 @@ test('generic single-row switch adds to an existing library, connects RJ45/SFP/A
   await dialog.getByRole('button', { name: 'Ports (27)', exact: true }).click();
   await dialog.locator('.port-edit-row').first().getByLabel('Name', { exact: true }).fill('LAN 1');
   await dialog.getByRole('button', { name: 'Save definition', exact: true }).click();
-  await page.getByRole('button', { name: 'Save', exact: true }).click();
+  await fileAction(page, 'Save');
   await expect(page.locator('.toolbar-save')).toContainText('Saved locally');
   await page.reload();
   const restored = await exported(page);

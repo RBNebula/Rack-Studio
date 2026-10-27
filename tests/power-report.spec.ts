@@ -2,7 +2,7 @@ import { test as base, expect } from '@playwright/test';
 import type { Locator, Page } from '@playwright/test';
 import { readFile, writeFile } from 'node:fs/promises';
 import { resolve } from 'node:path';
-import { openView } from './navigation';
+import { openView, selectInstalled } from './navigation';
 import type { View } from './navigation';
 
 const test = base.extend<{ uncaughtErrors: string[] }>({
@@ -47,7 +47,7 @@ async function blurNumber(field: Locator, value: number | '') {
 }
 async function select(page: Page, name: string) {
   await tab(page, '3D Rack Designer').click();
-  await page.locator('.installed-pills > button').filter({ hasText: name }).click();
+  await selectInstalled(page, name);
 }
 const inspector = (page: Page) => page.locator('.inspector');
 const powerSection = (page: Page) =>
@@ -592,7 +592,6 @@ test('the Power & Weights print layout hides the app chrome, adds the project li
   await page.emulateMedia({ media: 'print' });
   for (const selector of [
     '.app-header',
-    '.project-toolbar',
     '.workspace-tabs',
     '.workspace-subtabs',
     '.accuracy-banner',

@@ -2,7 +2,7 @@ import { test as base, expect } from '@playwright/test';
 import type { Locator, Page } from '@playwright/test';
 import { readFile } from 'node:fs/promises';
 import type { Project } from '../src/model';
-import { openView } from './navigation';
+import { fileAction, openView, selectInstalled, setView } from './navigation';
 
 const test = base.extend<{ uncaughtErrors: string[] }>({
   uncaughtErrors: [
@@ -30,7 +30,7 @@ async function openBlank(page: Page) {
   await expect(page.locator('canvas')).toBeVisible();
   await expect(page.locator('.rack-u-label').first()).toBeVisible();
   await expect(page.locator('.installed-pills > button')).toHaveCount(6);
-  await page.getByRole('button', { name: 'New', exact: true }).click();
+  await fileAction(page, 'New');
   await expect(page.locator('.installed-pills > button')).toHaveCount(0);
 }
 
@@ -41,7 +41,7 @@ async function number(field: Locator, value: number) {
 
 async function exported(page: Page): Promise<Project> {
   const pending = page.waitForEvent('download');
-  await page.getByRole('button', { name: 'Export project', exact: true }).click();
+  await fileAction(page, 'Export project');
   const download = await pending;
   const path = await download.path();
   if (!path) throw new Error('The UI must produce a downloadable project.');
@@ -49,7 +49,7 @@ async function exported(page: Page): Promise<Project> {
 }
 
 async function saveReload(page: Page, deviceCount: number) {
-  await page.getByRole('button', { name: 'Save', exact: true }).click();
+  await fileAction(page, 'Save');
   await expect(page.locator('.toolbar-save')).toContainText('Saved locally');
   await page.reload();
   await expect(page.locator('canvas')).toBeVisible();
@@ -286,14 +286,11 @@ test('generic shelf depth, usable depth and entered supports survive front and r
   const after = await exported(page);
   expect(after.devices).toEqual(before.devices);
   expect(after.definitions.find((definition) => definition.id === shelf?.id)).toEqual(shelf);
-  await page
-    .locator('.installed-pills > button')
-    .filter({ hasText: 'Configurable reference shelf 2' })
-    .click();
+  await selectInstalled(page, 'Configurable reference shelf 2');
   await expect(
     page.locator('.inspector').getByRole('combobox', { name: 'Mounting face', exact: true }),
   ).toHaveValue('rear');
-  await page.getByRole('button', { name: 'Rear view', exact: true }).click();
+  await setView(page, 'Rear');
   await page.screenshot({ path: 'docs/screenshots/construction-shelf-placements.png' });
   await expect(page.getByRole('alert')).toHaveCount(0);
 });

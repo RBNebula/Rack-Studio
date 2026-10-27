@@ -4,7 +4,7 @@ import { readFile } from 'node:fs/promises';
 import { resolve } from 'node:path';
 import type { Cable, DeviceDefinition, Project } from '../src/model';
 import { routeCable } from '../src/engineering/routing';
-import { openView } from './navigation';
+import { fileAction, openView, selectInstalled, setView } from './navigation';
 
 /**
  * Regression workflows for the connector-lead bend-radius fix and gendered IEC 60320 couplers:
@@ -46,7 +46,7 @@ async function blurNumber(field: Locator, value: number | string) {
 }
 async function exported(page: Page): Promise<Project> {
   const pending = page.waitForEvent('download');
-  await page.getByRole('button', { name: 'Export project', exact: true }).click();
+  await fileAction(page, 'Export project');
   const path = await (await pending).path();
   if (!path) throw new Error('The browser did not produce a local download.');
   return JSON.parse(await readFile(path, 'utf8')) as Project;
@@ -159,7 +159,7 @@ test('wiring mode refuses outlet -> outlet with the gender message and accepts o
   await open(page);
   const before = await exported(page);
   await page.getByRole('button', { name: 'Orthographic camera', exact: true }).click();
-  await page.getByRole('button', { name: 'Rear view', exact: true }).click();
+  await setView(page, 'Rear');
   await page.getByRole('button', { name: 'Wiring mode', exact: true }).click();
   const click = async (deviceId: string, portId: string) => {
     const pin = page.locator(`[data-port="${deviceId}:${portId}"]`);
@@ -245,7 +245,7 @@ test('an imported C13-C13 cable loads, is flagged outlet-to-outlet, survives mov
     cable('legacy-c13-c13', 'L1', outlet(1), outlet(2)),
     cable('feed-1', 'F1', outlet(3), { kind: 'device', deviceId: 'server-1', portId: 'power' }),
   );
-  await page.getByRole('button', { name: 'New', exact: true }).click();
+  await fileAction(page, 'New');
   await expect(page.locator('.installed-pills > button')).toHaveCount(0);
   await page.getByLabel('Import project JSON', { exact: true }).setInputFiles({
     name: 'legacy-outlet-to-outlet.rack.json',
@@ -265,7 +265,7 @@ test('an imported C13-C13 cable loads, is flagged outlet-to-outlet, survives mov
   );
 
   // An unrelated move is accepted, then undone.
-  await page.locator('.installed-pills > button').filter({ hasText: 'Server 1' }).click();
+  await selectInstalled(page, 'Server 1');
   await blurNumber(inspector(page).getByLabel('Start U', { exact: true }), 6);
   await inspector(page).getByRole('button', { name: 'Apply position', exact: true }).click();
   await expect(page.locator('.statusbar')).toContainText('Equipment repositioned');
@@ -276,7 +276,7 @@ test('an imported C13-C13 cable loads, is flagged outlet-to-outlet, survives mov
   expect(undone.cables).toEqual(imported.cables);
 
   // Save and reload: the stored cable is still present and still flagged.
-  await page.getByRole('button', { name: 'Save', exact: true }).click();
+  await fileAction(page, 'Save');
   await expect(page.locator('.toolbar-save')).toContainText('Saved locally');
   await page.reload();
   await expect(page.locator('.installed-pills > button')).toHaveCount(7);

@@ -1,13 +1,13 @@
 import { test, expect, type Page } from '@playwright/test';
 import { readFile } from 'node:fs/promises';
 import type { Project } from '../src/model';
-import { openView } from './navigation';
+import { fileAction, openView } from './navigation';
 
 test.use({ baseURL: process.env.RACK_TEST_URL ?? 'http://127.0.0.1:5173' });
 test.setTimeout(120000);
 async function exported(page: Page): Promise<Project> {
   const event = page.waitForEvent('download');
-  await page.getByRole('button', { name: 'Export project', exact: true }).click();
+  await fileAction(page, 'Export project');
   return JSON.parse(await readFile((await (await event).path())!, 'utf8'));
 }
 test('save as new preserves the source and its cables, edits only the copy and survives undo and reload', async ({
@@ -88,7 +88,7 @@ test('save as new preserves the source and its cables, edits only the copy and s
   expect((await exported(page)).definitions).toEqual(p.definitions);
   await page.getByRole('button', { name: 'Redo', exact: true }).click();
   expect((await exported(page)).definitions).toEqual(duplicated.definitions);
-  await page.getByRole('button', { name: 'Save', exact: true }).click();
+  await fileAction(page, 'Save');
   await expect(page.locator('.toolbar-save')).toContainText('Saved locally');
   await page.reload();
   const restored = await exported(page);

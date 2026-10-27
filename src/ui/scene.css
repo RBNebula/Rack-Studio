@@ -39,7 +39,6 @@
   gap: var(--space-2);
   pointer-events: none;
 }
-.view-buttons,
 .scene-tools {
   display: flex;
   gap: 2px;
@@ -137,44 +136,7 @@
   background: transparent;
   border: 0;
 }
-.scene-model-info {
-  position: absolute;
-  left: 23px;
-  top: 82px;
-  z-index: 5;
-  display: flex;
-  flex-direction: column;
-  gap: 7px;
-  pointer-events: none;
-}
-.scene-model-kicker {
-  font-size: var(--fs-2xs);
-  font-weight: 700;
-  letter-spacing: 0.16em;
-  color: var(--muted);
-}
-.scene-model-info strong {
-  font-size: var(--fs-md);
-  font-weight: 600;
-  color: var(--text-2);
-  max-width: 320px;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-.scene-model-info > span:last-child {
-  font-size: var(--fs-xs);
-  color: var(--muted);
-  display: flex;
-  align-items: center;
-  gap: var(--space-2);
-}
-.scene-model-info i {
-  width: 2px;
-  height: 2px;
-  background: var(--icon);
-  border-radius: 100%;
-}
+
 .scene-footer {
   position: absolute;
   left: 21px;
@@ -372,77 +334,7 @@
   font-size: var(--fs-2xs);
   color: var(--muted);
 }
-.scene-axis {
-  position: absolute;
-  right: 29px;
-  bottom: 35px;
-  width: 44px;
-  height: 49px;
-  pointer-events: none;
-  font:
-    600 10px ui-monospace,
-    monospace;
-  z-index: 5;
-}
-.scene-axis i {
-  position: absolute;
-  left: 20px;
-  top: 24px;
-  width: 4px;
-  height: 4px;
-  border-radius: 50%;
-  background: #80999e;
-}
-.scene-axis span {
-  position: absolute;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 14px;
-  height: 14px;
-  font-size: var(--fs-2xs);
-}
-.scene-axis span:after {
-  content: '';
-  position: absolute;
-  width: 1px;
-  height: 15px;
-  transform-origin: bottom;
-  bottom: -9px;
-  left: 6px;
-}
-.scene-axis .axis-y {
-  color: #6d9e89;
-  top: 0;
-  left: 15px;
-}
-.scene-axis .axis-y:after {
-  background: #8cb49e;
-}
-.scene-axis .axis-x {
-  color: #b8817c;
-  right: 0;
-  bottom: 7px;
-}
-.scene-axis .axis-x:after {
-  background: #cba39b;
-  transform: rotate(-55deg);
-  height: 18px;
-  bottom: 4px;
-  left: -2px;
-}
-.scene-axis .axis-z {
-  color: #7c9eb6;
-  left: 0;
-  bottom: 6px;
-}
-.scene-axis .axis-z:after {
-  background: #9cb2c2;
-  transform: rotate(55deg);
-  height: 18px;
-  bottom: 4px;
-  left: 13px;
-}
+
 .scene-fallback {
   display: flex;
   align-items: center;
@@ -466,9 +358,7 @@
     min-width: 27px;
     font-size: var(--fs-xs);
   }
-  .scene-model-info {
-    left: 17px;
-  }
+
   .scene-footer > span:last-child {
     display: none;
   }
@@ -478,9 +368,7 @@
     flex-wrap: wrap;
     justify-content: flex-start;
   }
-  .scene-model-info {
-    top: 103px;
-  }
+
   .scene-tools {
     gap: 0;
   }
@@ -678,9 +566,7 @@
 .scene-container.has-mode .scene-footer {
   left: calc(var(--drawer-w) + 18px);
 }
-.scene-container.has-mode .scene-model-info {
-  display: none;
-}
+
 .scene-drawer {
   position: absolute;
   left: 0;
@@ -844,8 +730,8 @@
 }
 .scene-empty-hint {
   position: absolute;
-  left: 21px;
-  top: 150px;
+  left: calc(var(--drawer-w, 0px) + 21px);
+  top: 136px;
   z-index: 6;
   display: flex;
   gap: var(--space-3);
@@ -872,4 +758,134 @@
   font-size: var(--fs-xs);
   line-height: 1.5;
   color: var(--muted);
+}
+/* Toolbar now holds only the viewport tools, at the right. */
+.scene-toolbar {
+  justify-content: flex-end;
+}
+/* Navigation cube (ViewCube.tsx): turns with the camera; click a face to view from that side. */
+.view-cube {
+  --cube-size: 62px;
+  --cube-half: 31px;
+  position: absolute;
+  top: 12px;
+  left: calc(var(--drawer-w, 0px) + 14px);
+  z-index: 12;
+  width: 112px;
+  height: 112px;
+}
+.view-cube-stage {
+  position: absolute;
+  left: 25px;
+  top: 25px;
+  width: var(--cube-size);
+  height: var(--cube-size);
+  perspective: 600px;
+}
+.view-cube-body {
+  position: absolute;
+  inset: 0;
+  transform-style: preserve-3d;
+}
+.view-cube-face {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  backface-visibility: hidden;
+  background: #eef2f4f2;
+  border: 1px solid #9aabb4;
+  color: #3d4f60;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.4px;
+  text-transform: uppercase;
+  cursor: pointer;
+  user-select: none;
+  transition: background 0.12s;
+}
+.view-cube-face:hover {
+  background: #cdeee8;
+  color: var(--teal-text);
+}
+.view-cube-face.current {
+  background: #d8efe9;
+  color: var(--teal-text);
+}
+.view-cube-face.inert {
+  cursor: default;
+  background: #e1e7ea;
+}
+.view-cube.disabled .view-cube-face {
+  cursor: default;
+  opacity: 0.6;
+}
+.view-cube-home,
+.view-cube-menu-button {
+  position: absolute;
+  width: 24px;
+  height: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-sm);
+  background: #ffffffe6;
+  color: var(--muted);
+}
+.view-cube-home {
+  left: 0;
+  top: 0;
+}
+.view-cube-menu-button {
+  right: 0;
+  bottom: 0;
+}
+.view-cube-menu-button > svg {
+  transform: rotate(90deg);
+}
+.view-cube-home:hover:not(:disabled),
+.view-cube-menu-button:hover {
+  color: var(--teal-text);
+  border-color: var(--teal-line);
+}
+.view-cube-home[aria-pressed='true'] {
+  color: var(--teal-text);
+  background: var(--teal-soft);
+  border-color: var(--teal-line);
+}
+.view-cube-menu {
+  position: absolute;
+  top: calc(100% + 4px);
+  left: 0;
+  display: flex;
+  flex-direction: column;
+  min-width: 120px;
+  padding: 4px;
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-md);
+}
+.view-cube-menu[hidden] {
+  display: none;
+}
+.view-cube-menu > button {
+  border: 0;
+  background: none;
+  text-align: left;
+  padding: 7px 10px;
+  border-radius: var(--radius-sm);
+  font-size: var(--fs-sm);
+  color: var(--text-2);
+}
+.view-cube-menu > button:hover:not(:disabled) {
+  background: var(--teal-soft);
+  color: var(--teal-text);
+}
+.view-cube-menu > button[aria-pressed='true'] {
+  color: var(--teal-text);
+  font-weight: 650;
 }

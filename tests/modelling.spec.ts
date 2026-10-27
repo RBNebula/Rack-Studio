@@ -2,6 +2,7 @@ import { test, expect } from '@playwright/test';
 import type { Page } from '@playwright/test';
 import { readFile } from 'node:fs/promises';
 import type { Project } from '../src/model';
+import { fileAction, setView } from './navigation';
 test.use({ baseURL: process.env.RACK_TEST_URL ?? 'http://127.0.0.1:5173' });
 test.setTimeout(120000);
 test.afterEach(async ({ page }, info) => {
@@ -10,7 +11,7 @@ test.afterEach(async ({ page }, info) => {
 });
 async function exported(page: Page): Promise<Project> {
   const event = page.waitForEvent('download');
-  await page.getByRole('button', { name: 'Export project', exact: true }).click();
+  await fileAction(page, 'Export project');
   return JSON.parse(await readFile((await (await event).path())!, 'utf8')) as Project;
 }
 async function open(page: Page, emptyWires = false) {
@@ -31,7 +32,7 @@ async function open(page: Page, emptyWires = false) {
   });
   await expect(page.locator('.installed-pills > button')).toHaveCount(2);
   await page.getByRole('button', { name: 'Orthographic camera', exact: true }).click();
-  await page.getByRole('button', { name: 'Front view', exact: true }).click();
+  await setView(page, 'Front');
   return { p, errors };
 }
 async function settle(page: Page) {
@@ -124,7 +125,7 @@ test('direct guide dragging, tray rotation/free placement, duplication, alignmen
   expect(
     Math.hypot(...data.measurements![0].end.map((v, i) => v - data.measurements![0].start[i])),
   ).toBeCloseTo(100, 1);
-  await page.getByRole('button', { name: 'Save', exact: true }).click();
+  await fileAction(page, 'Save');
   await expect(page.locator('.toolbar-save')).toContainText('Saved locally');
   await page.reload();
   expect((await exported(page)).measurements).toEqual(data.measurements);
@@ -170,7 +171,7 @@ test('adjacent racks retain independent layouts and portable assemblies remap al
   await page
     .locator('canvas')
     .screenshot({ path: 'docs/screenshots/adjacent-rack-assemblies.png' });
-  await page.getByRole('button', { name: 'Save', exact: true }).click();
+  await fileAction(page, 'Save');
   await expect(page.locator('.toolbar-save')).toContainText('Saved locally');
   await page.reload();
   const restored = await exported(page);
@@ -283,7 +284,7 @@ test('attached clips, shared bundle paths and a movable 3D vehicle endpoint reta
   await page
     .locator('canvas')
     .screenshot({ path: 'docs/screenshots/positioned-vehicle-endpoint.png' });
-  await page.getByRole('button', { name: 'Save', exact: true }).click();
+  await fileAction(page, 'Save');
   await expect(page.locator('.toolbar-save')).toContainText('Saved locally');
   await page.reload();
   const restored = await exported(page);

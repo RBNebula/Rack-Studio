@@ -3,6 +3,7 @@ import type { Locator, Page } from '@playwright/test';
 import { readFile } from 'node:fs/promises';
 import { resolve } from 'node:path';
 import type { Project } from '../src/model';
+import { fileAction, setView } from './navigation';
 
 const test = base.extend<{ uncaughtErrors: string[] }>({
   uncaughtErrors: [
@@ -47,7 +48,7 @@ async function number(field: Locator, value: number) {
 
 async function exported(page: Page): Promise<Project> {
   const pending = page.waitForEvent('download');
-  await page.getByRole('button', { name: 'Export project', exact: true }).click();
+  await fileAction(page, 'Export project');
   const download = await pending;
   const path = await download.path();
   if (!path) throw new Error('The UI must produce a downloadable project.');
@@ -55,7 +56,7 @@ async function exported(page: Page): Promise<Project> {
 }
 
 async function saveReload(page: Page, deviceCount: number) {
-  await page.getByRole('button', { name: 'Save', exact: true }).click();
+  await fileAction(page, 'Save');
   await expect(page.locator('.toolbar-save')).toContainText('Saved locally');
   await page.reload();
   await expect(page.locator('canvas')).toBeVisible();
@@ -76,9 +77,7 @@ async function focusPlates(page: Page, face: 'front' | 'rear', oblique: boolean)
   const inspector = page.locator('.inspector');
   const selectRack = inspector.getByRole('button', { name: 'Select rack', exact: true });
   if (await selectRack.count()) await selectRack.click();
-  await page
-    .getByRole('button', { name: face === 'front' ? 'Front view' : 'Rear view', exact: true })
-    .click();
+  await setView(page, face === 'front' ? 'Front' : 'Rear');
   const canvas = await page.locator('canvas').boundingBox();
   if (!canvas) throw new Error('The rendered canvas must be visible.');
   const x = canvas.x + canvas.width / 2;

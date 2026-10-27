@@ -1,4 +1,4 @@
-import { useId, useState } from 'react';
+import { useEffect, useId, useRef, useState } from 'react';
 import type { KeyboardEvent, PointerEvent, ReactNode } from 'react';
 import { Icon } from './shared';
 
@@ -188,5 +188,74 @@ export function ResizeHandle({
       onPointerDown={start}
       onKeyDown={key}
     />
+  );
+}
+
+/**
+ * Caret button that opens a small list of choices, for toolbar controls with sub-options. Items
+ * use the menuitemradio role, so they never share an accessible role and name with the full
+ * panel's buttons.
+ */
+export function ChoiceMenu<T extends string>({
+  label,
+  choices,
+  current,
+  onChoose,
+  disabled = false,
+}: {
+  label: string;
+  choices: [T, string][];
+  current: T | null;
+  onChoose: (choice: T) => void;
+  disabled?: boolean;
+}) {
+  const [open, setOpen] = useState(false);
+  const root = useRef<HTMLDivElement>(null);
+  useEffect(() => {
+    if (!open) return;
+    const outside = (e: globalThis.PointerEvent) => {
+      if (!root.current?.contains(e.target as Node)) setOpen(false);
+    };
+    const key = (e: globalThis.KeyboardEvent) => {
+      if (e.key === 'Escape') setOpen(false);
+    };
+    document.addEventListener('pointerdown', outside);
+    document.addEventListener('keydown', key);
+    return () => {
+      document.removeEventListener('pointerdown', outside);
+      document.removeEventListener('keydown', key);
+    };
+  }, [open]);
+  return (
+    <div className="choice-menu" ref={root}>
+      <button
+        type="button"
+        className="choice-menu-button"
+        aria-label={label}
+        aria-haspopup="menu"
+        aria-expanded={open}
+        data-tooltip={label}
+        disabled={disabled}
+        onClick={() => setOpen(!open)}
+      >
+        <Icon name="chevron" size={11} />
+      </button>
+      <div className="choice-menu-items" role="menu" aria-label={label} hidden={!open}>
+        {choices.map(([id, text]) => (
+          <button
+            key={id}
+            type="button"
+            role="menuitemradio"
+            aria-checked={current === id}
+            onClick={() => {
+              setOpen(false);
+              onChoose(id);
+            }}
+          >
+            {text}
+          </button>
+        ))}
+      </div>
+    </div>
   );
 }

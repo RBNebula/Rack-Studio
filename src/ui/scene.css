@@ -26,19 +26,6 @@
   overflow: hidden;
   z-index: 4;
 }
-.scene-toolbar {
-  position: absolute;
-  left: 18px;
-  right: 18px;
-  top: 16px;
-  z-index: 12;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  flex-wrap: wrap;
-  gap: var(--space-2);
-  pointer-events: none;
-}
 .scene-tools {
   display: flex;
   gap: 2px;
@@ -50,42 +37,6 @@
   box-shadow: var(--shadow-sm);
   pointer-events: auto;
   backdrop-filter: blur(10px);
-}
-.scene-toolbar button {
-  border: 0;
-  background: transparent;
-  color: var(--muted);
-  border-radius: var(--radius-md);
-  min-width: 34px;
-  height: 29px;
-  padding: 0 9px;
-  display: inline-flex;
-  gap: 5px;
-  align-items: center;
-  justify-content: center;
-  font-family: inherit;
-  font-size: var(--fs-sm);
-  font-weight: 500;
-  line-height: 1;
-  white-space: nowrap;
-  cursor: pointer;
-  transition:
-    background 0.12s,
-    color 0.12s;
-}
-.scene-toolbar button:hover {
-  background: var(--line-soft);
-  color: var(--teal-text);
-}
-.scene-toolbar button.active {
-  background: var(--teal-soft);
-  color: var(--teal-text);
-  font-weight: 600;
-  box-shadow: inset 0 -2px 0 var(--teal);
-}
-.scene-toolbar button.icon-toggle {
-  min-width: 31px;
-  padding: 0 7px;
 }
 .scene-tools-divider {
   width: 1px;
@@ -114,14 +65,6 @@
 }
 .scene-mount.rear select {
   color: var(--warn);
-}
-.scene-toolbar button:focus-visible {
-  outline: 2px solid var(--focus);
-  outline-offset: 2px;
-}
-.scene-toolbar button:disabled {
-  opacity: 0.45;
-  cursor: default;
 }
 .scene-tools select {
   width: auto;
@@ -560,9 +503,6 @@
 .scene-container .canvas-wrap {
   left: var(--drawer-w);
 }
-.scene-container.has-mode .scene-toolbar .scene-mode-pill {
-  margin-left: var(--drawer-w);
-}
 .scene-container.has-mode .scene-footer {
   left: calc(var(--drawer-w) + 18px);
 }
@@ -570,10 +510,7 @@
 .scene-drawer {
   position: absolute;
   left: 0;
-  /* Below the viewport toolbar, which keeps the full width so it stays on one row. */
-  top: 62px;
-  border-top: 1px solid var(--line);
-  border-top-right-radius: var(--radius-md);
+  top: 0;
   bottom: 0;
   width: var(--drawer-w);
   z-index: 13;
@@ -645,13 +582,17 @@
 }
 /* Active-mode indicator: what the next click does, and how to leave. */
 .scene-mode-pill {
-  flex-basis: 100%;
+  position: absolute;
+  top: 12px;
+  right: 14px;
+  z-index: 12;
   /* Clicks pass through to the canvas (ports may sit under it); only Exit is interactive. */
   pointer-events: none;
   display: flex;
   align-items: center;
   gap: var(--space-2);
-  max-width: max-content;
+  /* Leaves the view cube (top left) uncovered. */
+  max-width: calc(100% - var(--drawer-w, 0px) - 160px);
   padding: 6px 6px 6px 12px;
   background: var(--navy);
   color: var(--navy-text);
@@ -681,7 +622,7 @@
   color: var(--on-accent);
   font-weight: 650;
 }
-.scene-toolbar .scene-mode-exit {
+.scene-mode-exit {
   min-width: 0;
   pointer-events: auto;
   display: inline-flex;
@@ -697,7 +638,7 @@
   font-size: var(--fs-xs);
   font-weight: 600;
 }
-.scene-toolbar .scene-mode-exit:hover {
+.scene-mode-exit:hover {
   background: var(--navy-line);
 }
 .scene-mode-exit kbd {
@@ -760,9 +701,6 @@
   color: var(--muted);
 }
 /* Toolbar now holds only the viewport tools, at the right. */
-.scene-toolbar {
-  justify-content: flex-end;
-}
 /* Navigation cube (ViewCube.tsx): turns with the camera; click a face to view from that side. */
 .view-cube {
   --cube-size: 62px;
@@ -888,4 +826,111 @@
 .view-cube-menu > button[aria-pressed='true'] {
   color: var(--teal-text);
   font-weight: 650;
+}
+/* Viewport tools, rendered into the Design zone bar above the canvas. */
+.designer-toolbar {
+  margin-left: auto;
+  display: flex;
+  align-items: center;
+}
+.scene-tools {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  padding: 3px;
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-md);
+}
+.scene-tools button {
+  border: 0;
+  background: transparent;
+  color: var(--muted);
+  border-radius: var(--radius-sm);
+  min-width: 30px;
+  height: 28px;
+  padding: 0 7px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 5px;
+  font-size: var(--fs-sm);
+  font-weight: 500;
+  white-space: nowrap;
+  transition:
+    background 0.12s,
+    color 0.12s;
+}
+.scene-tools button:hover:not(:disabled) {
+  background: var(--surface-3);
+  color: var(--teal-text);
+}
+.scene-tools button.active {
+  background: var(--teal-soft);
+  color: var(--teal-text);
+  box-shadow: inset 0 -2px 0 var(--teal);
+}
+.scene-tools button:disabled {
+  opacity: 0.45;
+  cursor: default;
+}
+.scene-tools .split-tool {
+  display: inline-flex;
+  align-items: center;
+}
+.scene-tools .split-tool > button {
+  border-radius: var(--radius-sm) 0 0 var(--radius-sm);
+}
+.choice-menu {
+  position: relative;
+}
+.scene-tools .choice-menu-button {
+  min-width: 16px;
+  width: 16px;
+  padding: 0;
+  border-radius: 0 var(--radius-sm) var(--radius-sm) 0;
+}
+.choice-menu-button > svg {
+  transform: rotate(90deg);
+}
+.choice-menu-items {
+  position: absolute;
+  top: calc(100% + 6px);
+  right: 0;
+  z-index: 30;
+  display: flex;
+  flex-direction: column;
+  min-width: 150px;
+  padding: 4px;
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-md);
+}
+.choice-menu-items[hidden] {
+  display: none;
+}
+.scene-tools .choice-menu-items > button {
+  justify-content: flex-start;
+  height: 30px;
+  padding: 0 10px;
+  color: var(--text-2);
+}
+.scene-tools .choice-menu-items > button[aria-checked='true'] {
+  color: var(--teal-text);
+  font-weight: 650;
+  background: var(--teal-soft);
+}
+.scene-mount select {
+  width: auto;
+  min-width: 0;
+  min-height: 0;
+  height: 28px;
+  margin: 0;
+  padding: 0 2px;
+  border: 0;
+  background: transparent;
+  color: var(--teal-text);
+  font-size: var(--fs-sm);
+  font-weight: 600;
 }

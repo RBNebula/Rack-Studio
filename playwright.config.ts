@@ -23,6 +23,9 @@ export default defineConfig({
     command: 'node node_modules/vite/bin/vite.js --host 127.0.0.1',
     url: 'http://127.0.0.1:5173',
     reuseExistingServer: !process.env.CI,
+    // The dev server echoes every browser console warning (thousands of identical Three.js
+    // deprecation lines). Keep test output to results and errors; server errors still show.
+    stdout: 'ignore',
   },
   snapshotPathTemplate: '{testDir}/screenshots/{arg}{ext}',
 });

@@ -136,7 +136,9 @@ function SceneLabel({
   useLayoutEffect(() => {
     if (!host) return;
     const container = document.createElement('div');
-    container.style.cssText = 'position:absolute;top:0;left:0;will-change:transform;';
+    // Hidden until the first frame places it, so it is never seen (or clicked) at the origin.
+    container.style.cssText =
+      'position:absolute;top:0;left:0;will-change:transform;visibility:hidden;';
     host.appendChild(container);
     const contentRoot = createRoot(container);
     element.current = container;
@@ -163,12 +165,19 @@ function SceneLabel({
       </div>,
     );
   }, [host, children, style, center, zIndexRange]);
-  useFrame(({ camera, size }) => {
+  useFrame(({ camera, size, gl }) => {
     if (!object.current || !element.current) return;
     object.current.updateWorldMatrix(true, false);
     object.current.getWorldPosition(scratch);
     scratch.project(camera);
     element.current.style.display = scratch.z < -1 || scratch.z > 1 ? 'none' : 'block';
+    // While the viewport is being resized (e.g. a mode drawer opening), the projection can lag
+    // the real canvas size for a frame; keep labels hidden until both agree.
+    const box = gl.domElement.parentElement;
+    const current =
+      !box ||
+      (Math.abs(box.clientWidth - size.width) < 1 && Math.abs(box.clientHeight - size.height) < 1);
+    element.current.style.visibility = current ? 'visible' : 'hidden';
     element.current.style.transform = `translate3d(${((scratch.x + 1) * size.width) / 2}px,${((1 - scratch.y) * size.height) / 2}px,0)`;
   });
   return <group ref={object} position={position} />;

@@ -35,7 +35,8 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 10px;
+  flex-wrap: wrap;
+  gap: var(--space-2);
   pointer-events: none;
 }
 .view-buttons,
@@ -78,8 +79,42 @@
   color: var(--teal-text);
 }
 .scene-toolbar button.active {
-  background: var(--good-bg);
+  background: var(--teal-soft);
   color: var(--teal-text);
+  font-weight: 600;
+  box-shadow: inset 0 -2px 0 var(--teal);
+}
+.scene-toolbar button.icon-toggle {
+  min-width: 31px;
+  padding: 0 7px;
+}
+.scene-tools-divider {
+  width: 1px;
+  height: 18px;
+  background: var(--line);
+  margin: 0 3px;
+}
+.scene-mount {
+  display: inline-flex;
+  align-items: center;
+  height: 29px;
+  border-radius: var(--radius-sm);
+  background: var(--surface-3);
+  padding-left: 8px;
+}
+.scene-mount > span {
+  font-size: var(--fs-2xs);
+  font-weight: 650;
+  letter-spacing: 0.8px;
+  text-transform: uppercase;
+  color: var(--subtle);
+}
+.scene-mount.rear {
+  background: var(--warn-bg);
+  box-shadow: inset 0 0 0 1px var(--warn-line);
+}
+.scene-mount.rear select {
+  color: var(--warn);
 }
 .scene-toolbar button:focus-visible {
   outline: 2px solid var(--focus);
@@ -91,13 +126,15 @@
 }
 .scene-tools select {
   width: auto;
-  min-width: 105px;
+  min-width: 0;
   height: 29px;
-  margin: 0 var(--space-1) 0 0;
-  padding: 0 5px;
+  min-height: 0;
+  margin: 0;
+  padding: 0 4px;
   font-size: var(--fs-sm);
+  font-weight: 600;
   color: var(--teal-text);
-  background: var(--good-bg);
+  background: transparent;
   border: 0;
 }
 .scene-model-info {
@@ -455,19 +492,8 @@
   }
 }
 .wiring-panel {
-  position: absolute;
-  left: 18px;
-  bottom: 62px;
-  z-index: 11;
-  width: 310px;
-  max-height: 48%;
-  overflow: auto;
-  padding: var(--space-3);
-  border: 1px solid var(--line-strong);
-  border-radius: var(--radius-lg);
-  background: var(--surface);
-  box-shadow: var(--shadow-md);
   font-size: var(--fs-sm);
+  line-height: 1.45;
 }
 .wiring-tools {
   display: flex;
@@ -565,19 +591,8 @@
   background: #168b7e;
 }
 .model-tools-panel {
-  position: absolute;
-  left: 18px;
-  top: 73px;
-  bottom: 62px;
-  z-index: 11;
-  width: 310px;
-  overflow: auto;
-  padding: var(--space-3);
-  border: 1px solid var(--line-strong);
-  border-radius: var(--radius-lg);
-  background: var(--surface);
-  box-shadow: var(--shadow-md);
   font-size: var(--fs-sm);
+  line-height: 1.45;
 }
 .model-tools-panel label {
   display: grid;
@@ -642,4 +657,215 @@
   border: 1px solid #99711d;
   background: #f5b629;
   border-radius: 50%;
+}
+
+/* Docked mode drawer: holds the Wiring or Tools panel beside the canvas, never over the rack. */
+.scene-container {
+  --drawer-w: 0px;
+}
+.scene-container.drawer-open {
+  --drawer-w: 300px;
+}
+.scene-container.drawer-collapsed {
+  --drawer-w: 40px;
+}
+.scene-container .canvas-wrap {
+  left: var(--drawer-w);
+}
+.scene-container.has-mode .scene-toolbar {
+  justify-content: flex-start;
+}
+.scene-container.has-mode .scene-toolbar,
+.scene-container.has-mode .scene-footer {
+  left: calc(var(--drawer-w) + 18px);
+}
+.scene-container.has-mode .scene-model-info {
+  display: none;
+}
+.scene-drawer {
+  position: absolute;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  width: var(--drawer-w);
+  z-index: 13;
+  display: flex;
+  flex-direction: column;
+  background: var(--surface);
+  border-right: 1px solid var(--line);
+  box-shadow: 2px 0 10px #172d330d;
+}
+.scene-drawer-heading {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  padding: 10px 8px 10px 14px;
+  border-bottom: 1px solid var(--line-soft);
+  color: var(--teal-text);
+}
+.scene-drawer-heading strong {
+  flex: 1;
+  font-size: var(--fs-sm);
+  color: var(--ink);
+}
+.scene-drawer-body {
+  flex: 1;
+  min-height: 0;
+  overflow: auto;
+  padding: var(--space-3) 14px var(--space-4);
+  scrollbar-width: thin;
+}
+.scene-drawer.collapsed {
+  background: var(--surface-2);
+}
+.scene-drawer-tab {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  padding: 14px 0;
+  border: 0;
+  background: none;
+  color: var(--teal-text);
+  font-size: var(--fs-xs);
+  font-weight: 650;
+}
+.scene-drawer-tab > span {
+  writing-mode: vertical-rl;
+  transform: rotate(180deg);
+}
+.scene-drawer-tab:hover {
+  background: var(--teal-soft);
+}
+.scene-drawer .wiring-panel button,
+.scene-drawer .model-tools-panel button {
+  min-height: 28px;
+}
+.scene-drawer .wiring-tools {
+  gap: var(--space-1);
+}
+.scene-drawer details > summary {
+  font-weight: 600;
+  color: var(--text-2);
+  padding: 4px 0;
+}
+.scene-drawer label {
+  color: var(--muted);
+  font-size: var(--fs-xs);
+  font-weight: 550;
+}
+/* Active-mode indicator: what the next click does, and how to leave. */
+.scene-mode-pill {
+  flex-basis: 100%;
+  pointer-events: auto;
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  max-width: max-content;
+  padding: 6px 6px 6px 12px;
+  background: var(--navy);
+  color: var(--navy-text);
+  border-radius: 999px;
+  box-shadow: var(--shadow-md);
+  font-size: var(--fs-sm);
+}
+.scene-mode-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: #5cd3bc;
+  box-shadow: 0 0 0 3px #5cd3bc33;
+  flex-shrink: 0;
+}
+.scene-mode-pill.tools .scene-mode-dot {
+  background: #f5b629;
+  box-shadow: 0 0 0 3px #f5b62933;
+}
+.scene-mode-text {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.scene-mode-text strong {
+  color: var(--on-accent);
+  font-weight: 650;
+}
+.scene-toolbar .scene-mode-exit {
+  min-width: 0;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  flex-shrink: 0;
+  height: 26px;
+  padding: 0 6px 0 10px;
+  border: 1px solid var(--navy-line);
+  border-radius: 999px;
+  background: var(--navy-2);
+  color: var(--on-accent);
+  font-size: var(--fs-xs);
+  font-weight: 600;
+}
+.scene-toolbar .scene-mode-exit:hover {
+  background: var(--navy-line);
+}
+.scene-mode-exit kbd {
+  font: inherit;
+  font-size: var(--fs-2xs);
+  padding: 1px 5px;
+  border-radius: var(--radius-xs);
+  background: var(--navy);
+  color: var(--navy-muted);
+}
+.scene-hints {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  color: var(--muted);
+}
+.scene-hints kbd {
+  font: inherit;
+  font-size: var(--fs-2xs);
+  font-weight: 600;
+  padding: 2px 5px;
+  border: 1px solid var(--line);
+  border-bottom-width: 2px;
+  border-radius: var(--radius-xs);
+  background: var(--surface);
+  color: var(--text-2);
+}
+.scene-hints kbd:not(:first-child) {
+  margin-left: 6px;
+}
+.scene-empty-hint {
+  position: absolute;
+  left: 21px;
+  top: 150px;
+  z-index: 6;
+  display: flex;
+  gap: var(--space-3);
+  align-items: flex-start;
+  max-width: min(250px, calc(100% - 40px));
+  padding: var(--space-3) var(--space-4);
+  background: var(--surface);
+  border: 1px dashed var(--teal-line);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-sm);
+  color: var(--teal-text);
+  pointer-events: none;
+}
+.scene-empty-hint div {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+.scene-empty-hint strong {
+  font-size: var(--fs-sm);
+  color: var(--ink);
+}
+.scene-empty-hint span {
+  font-size: var(--fs-xs);
+  line-height: 1.5;
+  color: var(--muted);
 }

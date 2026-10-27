@@ -14,6 +14,7 @@ import { ConnectionDialog, DestinationDialog, ExitDialog } from './Forms';
 import { Button, Icon, IconButton, Badge, Field, Modal, TooltipLayer, download } from './shared';
 import { analyseProject, csv } from '../engineering/analysis';
 import { ResizeHandle, useStoredState } from './Panels';
+import { exitViewportMode } from './ViewportMode';
 
 const tabs: [Workspace, string, string][] = [
   ['designer', '3D Rack Designer', 'cube'],
@@ -127,21 +128,33 @@ export default function App() {
         if (e.shiftKey) useStore.getState().redo();
         else useStore.getState().undo();
       }
-      if (e.key === 'Escape' && useStore.getState().wiringTool !== 'off') {
-        useStore.getState().set({
-          wiringSource: null,
-          wiringLineStart: null,
-          notice: 'Pending wiring action cancelled.',
-        });
+      // Esc first cancels a pending click sequence; with nothing pending it leaves the mode.
+      const state = useStore.getState();
+      if (e.key === 'Escape' && state.wiringTool !== 'off' && !state.showModelTools) {
+        if (state.wiringSource || state.wiringLineStart || typing)
+          state.set({
+            wiringSource: null,
+            wiringLineStart: null,
+            notice: 'Pending wiring action cancelled.',
+          });
+        else {
+          exitViewportMode();
+          state.set({ notice: 'Wiring mode closed.' });
+        }
         return;
       }
-      if (e.key === 'Escape' && useStore.getState().showModelTools) {
-        useStore.getState().set({
-          measureStart: null,
-          modelPreview: null,
-          modelTool: 'select',
-          notice: 'Pending modelling action cancelled.',
-        });
+      if (e.key === 'Escape' && state.showModelTools) {
+        if (state.measureStart || state.modelPreview || state.modelTool !== 'select' || typing)
+          state.set({
+            measureStart: null,
+            modelPreview: null,
+            modelTool: 'select',
+            notice: 'Pending modelling action cancelled.',
+          });
+        else {
+          exitViewportMode();
+          state.set({ notice: 'Modelling tools closed.' });
+        }
         return;
       }
       if (e.key === 'Escape')
@@ -713,7 +726,11 @@ function Guide() {
     ],
     [
       'Install equipment',
-      'Drag a library item into the rack, or use its precise placement button. Rotate with left drag, pan with right drag and zoom with the wheel. Select installed equipment to edit its U position.',
+      'Drag a library item onto a U position in the rack, or use + on its card to place it by U number. Choose Mount: Front or Mount: Rear in the viewport toolbar before dropping. Orbit with left drag, pan with right drag and zoom with the wheel. Select installed equipment to edit its U position.',
+    ],
+    [
+      'Wiring and tools',
+      'Wiring connects ports (click the source port, then the destination), places surface waypoints (Shift-click two points for a line guide) and links cables to guides. Tools move, rotate and measure. The pill in the viewport says what the next click does; Esc cancels a pending click, and Esc again or Exit leaves the mode.',
     ],
     [
       'Connect and document',

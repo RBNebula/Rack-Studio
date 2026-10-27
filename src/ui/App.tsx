@@ -406,6 +406,7 @@ export default function App() {
             <div className="designer-centre">
               <div className="designer-heading">
                 <span className="eyebrow">DESIGN ZONE</span>
+                <div className="designer-toolbar" id="designer-toolbar" />
                 <div className="button-row">
                   <Button icon="cable" onClick={() => setDialog('connection')}>
                     Connect

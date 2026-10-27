@@ -115,6 +115,32 @@ export function Icon({ name, size = 18 }: { name: string; size?: number }) {
       </>
     ),
     bolt: <path d="M13 2 4.5 13.5H12L11 22l8.5-11.5H12z" />,
+    plug: (
+      <>
+        <path d="M9 2v5M15 2v5" />
+        <path d="M6 7h12v4a6 6 0 0 1-12 0z" />
+        <path d="M12 17v5" />
+      </>
+    ),
+    move: (
+      <>
+        <path d="M12 3v18M3 12h18" />
+        <path d="m9 6 3-3 3 3M9 18l3 3 3-3M6 9l-3 3 3 3M18 9l3 3-3 3" />
+      </>
+    ),
+    ortho: (
+      <>
+        <rect x="4" y="4" width="16" height="16" rx="1" />
+        <path d="M4 12h16M12 4v16" />
+      </>
+    ),
+    mount: (
+      <>
+        <path d="M5 3v18M19 3v18" />
+        <rect x="8" y="8" width="8" height="8" rx="1" />
+        <path d="M5 8h3M5 16h3M16 8h3M16 16h3" />
+      </>
+    ),
     home: (
       <>
         <path d="m3 11 9-7 9 7" />

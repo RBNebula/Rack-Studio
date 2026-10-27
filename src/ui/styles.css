@@ -1287,6 +1287,9 @@ body.is-resizing canvas {
   background: var(--surface-3);
 }
 .designer-heading {
+  /* Above the viewport, so toolbar dropdowns and Add object open over the canvas. */
+  position: relative;
+  z-index: 20;
   height: 50px;
   display: flex;
   justify-content: space-between;
@@ -1813,6 +1816,9 @@ body.is-resizing canvas {
   background: var(--surface-3);
 }
 .designer-heading {
+  /* Above the viewport, so toolbar dropdowns and Add object open over the canvas. */
+  position: relative;
+  z-index: 20;
   height: 50px;
   display: flex;
   justify-content: space-between;

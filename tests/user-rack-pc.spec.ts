@@ -3,7 +3,7 @@ import type { Page } from '@playwright/test';
 import { readFile } from 'node:fs/promises';
 import { resolve } from 'node:path';
 import type { DeviceDefinition, Project } from '../src/model';
-import { fileAction, openView, setView } from './navigation';
+import { fileAction, openView, selectInstalled, setView } from './navigation';
 
 const definitionName = 'User rack PC · 1U';
 const definitionId = 'def-user-rack-pc';
@@ -362,10 +362,7 @@ test('a photographed rear network port connects through the UI and retains ident
     .locator('.workspace-tabs')
     .getByRole('button', { name: '3D Rack Designer', exact: true })
     .click();
-  await page
-    .locator('.installed-pills > button')
-    .filter({ hasText: `${definitionName} 1` })
-    .click();
+  await selectInstalled(page, `${definitionName} 1`);
   const startU = page.locator('.inspector').getByLabel('Start U', { exact: true });
   await startU.fill('9');
   await startU.press('Tab');

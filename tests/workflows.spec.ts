@@ -551,7 +551,8 @@ test('a first visit starts blank and the tutorial rack opens as a separate, rest
   await expect(page.locator('.header-project')).toContainText('Vehicle communications · example');
   await expect(page.locator('.installed-pills > button')).toHaveCount(6);
   await expect(page.locator('.statusbar')).toContainText('Tutorial rack opened');
-  await expect(page.locator('.toolbar-save')).toContainText('Saved locally');
+  // The earlier save's "Saved locally" text remains, so wait for this project's autosave to clear dirty.
+  await expect(page.locator('.toolbar-save .saved-dot')).toBeVisible();
 
   await page.reload();
   await expect(page.locator('.header-project')).toContainText('Vehicle communications · example');

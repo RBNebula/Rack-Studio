@@ -2,6 +2,7 @@ import { test as base, expect } from '@playwright/test';
 import type { Locator, Page } from '@playwright/test';
 import { readFile } from 'node:fs/promises';
 import { resolve } from 'node:path';
+import { openView } from './navigation';
 
 const test = base.extend<{ uncaughtErrors: string[] }>({
   uncaughtErrors: [
@@ -97,10 +98,7 @@ async function bankMaximum(bank: Locator) {
 }
 
 async function openDefinitionEditor(page: Page, name: string) {
-  await page
-    .locator('.workspace-tabs')
-    .getByRole('button', { name: 'Device Library', exact: true })
-    .click();
+  await openView(page, 'Device Library');
   await page.getByRole('button', { name: `Edit ${name}`, exact: true }).click();
   const dialog = page.getByRole('dialog', { name: `Device definition · ${name}` });
   await dialog.getByRole('button', { name: 'Power & weight', exact: true }).click();
@@ -108,10 +106,7 @@ async function openDefinitionEditor(page: Page, name: string) {
 }
 
 async function connect(page: Page, sourceLabel: string, destinationLabel: string) {
-  await page
-    .locator('.workspace-tabs')
-    .getByRole('button', { name: 'Connections', exact: true })
-    .click();
+  await openView(page, 'Connections');
   await page.getByRole('button', { name: 'New connection', exact: true }).click();
   const dialog = page.getByRole('dialog', { name: 'New cable connection' });
   await dialog
@@ -457,10 +452,7 @@ test('mass edits undo and redo, and removing powered equipment still needs its c
   await expect(page.getByRole('alert')).toContainText('Remove the 1 connected cable(s)');
   await page.getByRole('button', { name: 'Dismiss error', exact: true }).click();
   await expect(page.locator('.installed-pills > button')).toHaveCount(6);
-  await page
-    .locator('.workspace-tabs')
-    .getByRole('button', { name: /Cable Schedule/ })
-    .click();
+  await openView(page, 'Cable Schedule');
   await page
     .locator('.schedule-table')
     .getByRole('button', { name: cableNumber, exact: true })
@@ -476,10 +468,7 @@ test('the imported APC AP7922B evaluates its B1/B2 banks for a connected IEC-C14
   page,
 }) => {
   await open(page);
-  await page
-    .locator('.workspace-tabs')
-    .getByRole('button', { name: 'Device Library', exact: true })
-    .click();
+  await openView(page, 'Device Library');
   await page
     .locator('label.button', { hasText: 'Import library' })
     .locator('input[type=file]')

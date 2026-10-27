@@ -1,5 +1,6 @@
 import { test, expect } from '@playwright/test';
 import { readFile } from 'node:fs/promises';
+import { openView } from './navigation';
 test.use({ baseURL: process.env.RACK_TEST_URL ?? 'http://127.0.0.1:5173' });
 test('isolated device designer, face drag/drop, library persistence and tray stretching', async ({
   page,
@@ -10,7 +11,7 @@ test('isolated device designer, face drag/drop, library persistence and tray str
   await page.goto('/');
   await expect(page.locator('canvas')).toBeVisible();
   await page.getByRole('button', { name: 'New', exact: true }).click();
-  await page.getByRole('button', { name: 'Device Model Designer', exact: true }).click();
+  await openView(page, 'Device Model Designer');
   await page.getByLabel('Model name', { exact: true }).fill('QA designed device');
   const face = page.getByLabel('Device face editor', { exact: true });
   const drop = async (kind: string, x: number, y: number) => {

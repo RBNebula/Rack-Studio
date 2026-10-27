@@ -1,28 +1,28 @@
 .reference-card {
-  background: #fafcfc;
+  background: var(--surface-2);
   cursor: default;
   border-style: dashed;
 }
 .reference-card > h3 {
-  font-size: 12px;
-  margin: 12px 0 7px;
+  font-size: var(--fs-sm);
+  margin: var(--space-3) 0 7px;
   line-height: 1.4;
-  color: #4b6572;
+  color: var(--text-2);
 }
 .reference-card > .badge {
-  font-size: 8px;
+  font-size: var(--fs-2xs);
   white-space: normal;
   line-height: 1.4;
 }
 .reference-card > p {
-  font-size: 9px;
-  line-height: 1.6;
-  color: #8c9ba4;
+  font-size: var(--fs-xs);
+  line-height: 1.55;
+  color: var(--muted);
 }
 .reference-card > .button {
-  font-size: 9px;
-  min-height: 28px;
-  padding: 5px 7px;
-  background: #fff;
-  color: #547c7e;
+  font-size: var(--fs-xs);
+  min-height: var(--control-h-sm);
+  padding: 5px var(--space-2);
+  background: var(--surface);
+  color: var(--teal-text);
 }

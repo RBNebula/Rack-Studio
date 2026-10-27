@@ -55,10 +55,10 @@ import { FaceFeatures } from './FaceFeatures';
 import { PerforatedTray } from './PerforatedTray';
 import { addAccessory } from './Inspector';
 import { DeviceRails } from './DeviceRails';
-import { WiringPanel } from './WiringPanel';
 import { WiringPicker } from './WiringPicker';
 import { clickWiringGuide, connectWiringPort } from './wiringActions';
-import { ModellingPanel } from './ModellingPanel';
+import { ModeIndicator, SceneDrawer, viewportMode } from './ViewportMode';
+import { useStoredState } from './Panels';
 import { ModellingGizmo } from './ModellingGizmo';
 import {
   add as addPosition,
@@ -111,6 +111,16 @@ const centerOf = (box: Obstacle): Vec3 =>
   box.min.map((value, i) => (value + box.max[i]) / 2) as Vec3;
 const sizeOf = (box: Obstacle): Vec3 => box.max.map((value, i) => value - box.min[i]) as Vec3;
 const OverlayHost = createContext<HTMLDivElement | null>(null);
+/** Layout size of each overlay host (same box as the canvas), kept by one ResizeObserver so
+ * labels can compare it with the renderer size without forcing a layout every frame. */
+const hostSizes = new WeakMap<Element, { width: number; height: number }>();
+function observeHost(host: HTMLDivElement) {
+  if (hostSizes.has(host)) return;
+  hostSizes.set(host, { width: host.clientWidth, height: host.clientHeight });
+  new ResizeObserver(([entry]) =>
+    hostSizes.set(host, { width: entry.contentRect.width, height: entry.contentRect.height }),
+  ).observe(host);
+}
 
 /** Each mount owns a fresh DOM container. Deferred root cleanup therefore cannot
  * delete a later StrictMode mount's children, and Canvas never shares its DOM
@@ -135,8 +145,11 @@ function SceneLabel({
   const scratch = useMemo(() => new THREE.Vector3(), []);
   useLayoutEffect(() => {
     if (!host) return;
+    observeHost(host);
     const container = document.createElement('div');
-    container.style.cssText = 'position:absolute;top:0;left:0;will-change:transform;';
+    // Hidden until the first frame places it, so it is never seen (or clicked) at the origin.
+    container.style.cssText =
+      'position:absolute;top:0;left:0;will-change:transform;visibility:hidden;';
     host.appendChild(container);
     const contentRoot = createRoot(container);
     element.current = container;
@@ -169,6 +182,12 @@ function SceneLabel({
     object.current.getWorldPosition(scratch);
     scratch.project(camera);
     element.current.style.display = scratch.z < -1 || scratch.z > 1 ? 'none' : 'block';
+    // While the viewport is being resized (e.g. a mode drawer opening), the projection can lag
+    // the real canvas size for a frame; keep labels hidden until both agree.
+    const box = host ? hostSizes.get(host) : undefined;
+    const current =
+      !box || (Math.abs(box.width - size.width) < 1 && Math.abs(box.height - size.height) < 1);
+    element.current.style.visibility = current ? 'visible' : 'hidden';
     element.current.style.transform = `translate3d(${((scratch.x + 1) * size.width) / 2}px,${((1 - scratch.y) * size.height) / 2}px,0)`;
   });
   return <group ref={object} position={position} />;
@@ -231,6 +250,11 @@ export default function Scene() {
     (definition) => definition.id === (draggedDevice?.definitionId ?? dragDefinitionId),
   );
   const dragging = Boolean(dragDefinitionId || dragDeviceId);
+  const mode = viewportMode({ wiringTool, showModelTools });
+  const [drawerCollapsed, setDrawerCollapsed] = useStoredState(
+    'rack-studio-viewport-drawer-collapsed',
+    false,
+  );
 
   const candidateAt = useCallback((u: number, definitionId?: string): Device | null => {
     const state = useStore.getState();
@@ -510,7 +534,7 @@ export default function Scene() {
 
   return (
     <section
-      className={`scene-container ${dragging ? 'is-dragging' : ''}`}
+      className={`scene-container ${dragging ? 'is-dragging' : ''} ${mode ? `has-mode drawer-${drawerCollapsed ? 'collapsed' : 'open'}` : ''}`}
       aria-label="3D rack viewport"
       onDragOver={(e) => {
         if (e.dataTransfer.types.includes('application/rack-tray')) e.preventDefault();
@@ -544,19 +568,26 @@ export default function Scene() {
           ))}
         </div>
         <div className="scene-tools" role="group" aria-label="Viewport settings">
-          <select
-            aria-label="Drop mounting face"
-            title="Mounting face for new equipment drops"
-            value={placeFace}
-            disabled={dragging}
-            onChange={(e) => set({ placeFace: e.target.value as 'front' | 'rear' })}
+          <label
+            className={`scene-mount ${placeFace === 'rear' ? 'rear' : ''}`}
+            data-tooltip="Mounting face for new equipment drops"
           >
-            <option value="front">Mount: Front</option>
-            <option value="rear">Mount: Rear</option>
-          </select>
+            <span>Mount</span>
+            <select
+              aria-label="Drop mounting face"
+              value={placeFace}
+              disabled={dragging}
+              onChange={(e) => set({ placeFace: e.target.value as 'front' | 'rear' })}
+            >
+              <option value="front">Mount: Front</option>
+              <option value="rear">Mount: Rear</option>
+            </select>
+          </label>
+          <span className="scene-tools-divider" />
           <button
             aria-label="Modelling tools"
             aria-pressed={showModelTools}
+            data-tooltip="Move, rotate, measure and place fixings"
             className={showModelTools ? 'active' : ''}
             onClick={() =>
               set({
@@ -567,11 +598,13 @@ export default function Scene() {
               })
             }
           >
+            <Icon name="settings" size={15} />
             Tools
           </button>
           <button
             aria-label="Wiring mode"
             aria-pressed={wiringTool !== 'off'}
+            data-tooltip="Connect ports, place waypoints and link guides"
             className={wiringTool !== 'off' ? 'active' : ''}
             onClick={() =>
               set({
@@ -585,10 +618,12 @@ export default function Scene() {
               })
             }
           >
+            <Icon name="cable" size={15} />
             Wiring
           </button>
+          <span className="scene-tools-divider" />
           <button
-            title="Toggle orthographic camera"
+            data-tooltip="Orthographic camera (no perspective)"
             aria-label="Orthographic camera"
             aria-pressed={orthographic}
             className={orthographic ? 'active' : ''}
@@ -598,44 +633,45 @@ export default function Scene() {
             Ortho
           </button>
           <button
-            title="Toggle port and U labels"
+            data-tooltip={showLabels ? 'Hide port and U labels' : 'Show port and U labels'}
             aria-label="Show labels"
             aria-pressed={showLabels}
-            className={showLabels ? 'active' : ''}
+            className={`icon-toggle ${showLabels ? 'active' : ''}`}
             onClick={() => set({ showLabels: !showLabels })}
           >
             <Icon name="layers" size={16} />
           </button>
           <button
-            title="Show dimension guides"
+            data-tooltip={showMeasurements ? 'Hide dimension guides' : 'Show dimension guides'}
             aria-label="Show measurements"
             aria-pressed={showMeasurements}
-            className={showMeasurements ? 'active' : ''}
+            className={`icon-toggle ${showMeasurements ? 'active' : ''}`}
             onClick={() => set({ showMeasurements: !showMeasurements })}
           >
             <Icon name="ruler" size={16} />
           </button>
           <button
-            title="Show cables"
+            data-tooltip={showCables ? 'Hide cables' : 'Show cables'}
             aria-label="Show cables"
             aria-pressed={showCables}
-            className={showCables ? 'active' : ''}
+            className={`icon-toggle ${showCables ? 'active' : ''}`}
             onClick={() => set({ showCables: !showCables })}
           >
             <Icon name="cable" size={16} />
           </button>
           <button
-            title="Reset camera"
+            data-tooltip="Reset camera"
             aria-label="Reset camera"
+            className="icon-toggle"
             disabled={dragging}
             onClick={() => setResetKey((key) => key + 1)}
           >
             <Icon name="refresh" size={16} />
           </button>
         </div>
+        <ModeIndicator />
       </div>
-      <WiringPanel />
-      <ModellingPanel />
+      <SceneDrawer collapsed={drawerCollapsed} onCollapsedChange={setDrawerCollapsed} />
       <div className="scene-model-info">
         <span className="scene-model-kicker">RACK WORKSPACE</span>
         <strong>{activeRack.name}</strong>
@@ -818,10 +854,28 @@ export default function Scene() {
           <span className="scene-status-dot" />
           {project.devices.length} devices <b>·</b> {project.cables.length} cables
         </span>
-        <span>
-          {dragging ? 'ESC to cancel' : 'Drag to orbit · Scroll to zoom · Right-drag to pan'}
-        </span>
+        {dragging ? (
+          <span className="scene-hints">
+            <kbd>Esc</kbd> cancel
+          </span>
+        ) : (
+          <span className="scene-hints" aria-label="Camera controls">
+            <kbd>Left-drag</kbd> orbit <kbd>Right-drag</kbd> pan <kbd>Wheel</kbd> zoom
+          </span>
+        )}
       </div>
+      {!dragging && !mode && project.devices.length === 0 && (
+        <div className="scene-empty-hint" role="note">
+          <Icon name="box" size={20} />
+          <div>
+            <strong>Drag equipment from the library onto a U position</strong>
+            <span>
+              New equipment mounts on the <b>{placeFace}</b> face; change it with Mount before
+              dropping, or use + on a library card to place by U number.
+            </span>
+          </div>
+        </div>
+      )}
       <div className="scene-axis" aria-hidden="true">
         <span className="axis-y">Y</span>
         <span className="axis-z">Z</span>

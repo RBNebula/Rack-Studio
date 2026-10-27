@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { useStore } from '../state';
 import { clone, uid, definitionSchema } from '../model';
 import type { DeviceDefinition, PhysicalBox, Port, ShelfConfiguration } from '../model';
-import { Button, Icon, Badge, Field, NumberField, Modal, download } from './shared';
+import { Button, Icon, IconButton, Badge, Field, NumberField, Modal, download } from './shared';
 import { PlacementDialog } from './Forms';
 import { catalogueReferences } from '../catalogue';
 import {
@@ -198,7 +198,14 @@ function PlateMini({ definition: d }: { definition: DeviceDefinition }) {
     </div>
   );
 }
-export default function Library({ expanded = false }: { expanded?: boolean }) {
+export default function Library({
+  expanded = false,
+  onCollapse,
+}: {
+  expanded?: boolean;
+  /** Designer sidebar only: collapse the panel to widen the 3D viewport. */
+  onCollapse?: () => void;
+}) {
   const { project, set, edit } = useStore();
   const [search, setSearch] = useState('');
   const [category, setCategory] = useState('All equipment');
@@ -230,33 +237,38 @@ export default function Library({ expanded = false }: { expanded?: boolean }) {
             Device library <span>{project.definitions.length}</span>
           </h2>
         </div>
-        <button
-          className="icon-button teal"
-          title="New device"
-          aria-label="New device"
-          onClick={() =>
-            setEditing({
-              ...clone(project.definitions[0]),
-              id: uid('def'),
-              name: 'Custom device',
-              lacing: undefined,
-              manufacturer: '',
-              model: '',
-              category: 'Custom equipment',
-              ports: [],
-              parts: [],
-              shelf: null,
-              plate: null,
-              appearance: null,
-              frontImage: null,
-              rearImage: null,
-              evidence: 'user-entered',
-              source: '',
-            })
-          }
-        >
-          <Icon name="plus" />
-        </button>
+        <div className="panel-actions">
+          <button
+            className="icon-button teal"
+            data-tooltip="New device"
+            aria-label="New device"
+            onClick={() =>
+              setEditing({
+                ...clone(project.definitions[0]),
+                id: uid('def'),
+                name: 'Custom device',
+                lacing: undefined,
+                manufacturer: '',
+                model: '',
+                category: 'Custom equipment',
+                ports: [],
+                parts: [],
+                shelf: null,
+                plate: null,
+                appearance: null,
+                frontImage: null,
+                rearImage: null,
+                evidence: 'user-entered',
+                source: '',
+              })
+            }
+          >
+            <Icon name="plus" />
+          </button>
+          {onCollapse && (
+            <IconButton icon="panel-left" label="Collapse equipment library" onClick={onCollapse} />
+          )}
+        </div>
       </div>
       <div className="search-field">
         <Icon name="search" />
@@ -400,21 +412,21 @@ export default function Library({ expanded = false }: { expanded?: boolean }) {
               </span>
               <div className="card-actions">
                 <button
-                  title={`Place ${d.name}`}
+                  data-tooltip={`Place ${d.name}`}
                   aria-label={`Place ${d.name}`}
                   onClick={() => setPlacing(d)}
                 >
                   <Icon name="plus" size={14} />
                 </button>
                 <button
-                  title={`Edit ${d.name}`}
+                  data-tooltip={`Edit ${d.name}`}
                   aria-label={`Edit ${d.name}`}
                   onClick={() => setEditing(clone(d))}
                 >
                   <Icon name="settings" size={14} />
                 </button>
                 <button
-                  title={`Duplicate ${d.name}`}
+                  data-tooltip={`Duplicate ${d.name}`}
                   aria-label={`Duplicate ${d.name}`}
                   onClick={() =>
                     edit('Definition duplicated.', (p) =>
@@ -425,7 +437,11 @@ export default function Library({ expanded = false }: { expanded?: boolean }) {
                   <Icon name="copy" size={14} />
                 </button>
                 {expanded && (
-                  <button title={`Delete ${d.name}`} onClick={() => remove(d)}>
+                  <button
+                    aria-label={`Delete ${d.name}`}
+                    data-tooltip={`Delete ${d.name}`}
+                    onClick={() => remove(d)}
+                  >
                     <Icon name="trash" size={14} />
                   </button>
                 )}
@@ -1122,7 +1138,8 @@ function DeviceEditor({ initial, onClose }: { initial: DeviceDefinition; onClose
                   </Field>
                   <button
                     className="icon-button danger"
-                    title="Delete port"
+                    aria-label="Delete port"
+                    data-tooltip="Delete port"
                     onClick={() => update({ ports: d.ports.filter((_, j) => j !== i) })}
                   >
                     <Icon name="trash" />

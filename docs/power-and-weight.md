@@ -17,7 +17,7 @@ Both power fields are optional. Projects saved before they existed load unchange
 ## Editing
 
 - **Inspector → Power & weight** (select a placed device): nominal and maximum draw, mass, power data status and source notes. The section names the equipment model and how many placed copies share the values. Changing a value without choosing a status marks the record `user-entered`. On a distributor, each bank card shows its load and lets you edit the bank limit, per-outlet limit and voltage.
-- **Device Library → Edit → Power & weight**: the same draw and mass fields, plus adding, removing and naming banks and choosing their outlet ports. A new bank starts with an `unknown` 10 A, 230 V placeholder that must be replaced with the rated values.
+- **Equipment → Device Library → Edit → Power & weight**: the same draw and mass fields, plus adding, removing and naming banks and choosing their outlet ports. A new bank starts with an `unknown` 10 A, 230 V placeholder that must be replaced with the rated values.
 
 Every change is one atomic, validated, undoable edit.
 
@@ -39,7 +39,7 @@ Every change is one atomic, validated, undoable edit.
 
 ## Power & weights document
 
-The **Power & Weights** tab is a read-only document built by `buildPowerReport` in `src/engineering/power-report.ts`. It only selects, labels and formats `analysePower` results; it recalculates nothing. `Unknown` marks an unknown value, which is never shown as 0. A figure starting with `≥` is the known part of an incomplete total, and `—` means not applicable.
+The **Reports → Power & Weights** view is a read-only document built by `buildPowerReport` in `src/engineering/power-report.ts`. It only selects, labels and formats `analysePower` results; it recalculates nothing. `Unknown` marks an unknown value, which is never shown as 0. A figure starting with `≥` is the known part of an incomplete total, and `—` means not applicable.
 
 - **Equipment**: one row per placed device, top of each rack first. Columns: device, model, position (rack · U · face, plus the supporting shelf), mass and its evidence, nominal and maximum draw, maximum inlet current, power evidence and fed from (distributor · bank · outlet). A device with several feeds lists each one and is marked `redundant feed`. A powered device without a feed reads `Not connected`. An unpowered device, such as a blank plate, shows `—`. Maximum inlet current is the device's whole input load divided by each feeding bank's voltage, so for a PDU fed from a UPS it includes everything the PDU supplies.
 - **Power distribution**: grouped by distributor. Each group shows the model, position, what feeds it and its input load. A distributor fed from another distributor is listed after it and indented, so a UPS → PDU chain needs no change to the document. Each bank row has voltage, bank and per-outlet limits, nominal and maximum A/W, utilisation, status (`OK`, `Warning`, `Over limit`, `Incomplete`), consumers with their outlets and maximum load, unknown draws (including outlets that feed external destinations) and rating evidence.

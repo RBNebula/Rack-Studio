@@ -4,6 +4,18 @@
 
 The opening project is an illustrative20U rack. Its numerical dimensions are examples. Rack depth means the distance between the front and rear screw planes; U1 starts at the bottom, and a new rack has no depth step. Square holes with cage nuts are the current default.
 
+## Workspace layout
+
+The workspace bar has five tabs: **3D Rack Designer**; **Equipment** (Device Library, Device Model Designer); **Cabling** (Cable Schedule, Connections; the badge counts physical cables); **Reports** (Cut List, Procurement, Power & Weights); and **Project Settings**. A tab with several views shows them in a second bar underneath and reopens the view you last used there. Below, "Equipment → Device Library" means the Equipment tab, then its Device Library view.
+
+The amber **Illustrative engineering model** strip under the tabs states that dimensions and port positions need confirmation. Its × hides it for the current browser session only; the amber **Illustrative model** badge beside the project name stays visible and reopens it. A rack marked verified shows **Verify cables** instead, because cable specifications and routes still need verification.
+
+In the 3D Rack Designer, the equipment library (left) and properties panel (right) collapse with the panel icon in their headings and reopen from the labelled rail. Drag a panel's inner edge, or focus it and use the arrow keys (Shift for larger steps), to resize it. Widths and open/closed state are remembered in this browser.
+
+The properties panel groups fields into titled sections (for equipment: Identity, Position & mounting, Rails, Power & weight, Ports; for cables: Identity, Specification, Length breakdown, Route; for the rack: Identity, Dimensions, Construction, Mounting & depth, Structural members). Click a section heading to collapse or expand it; each section type remembers its state. Caveats appear as one-line notes, amber for provisional or unverified data, with **Why?** for the full explanation. Route issues, length warnings and placement errors are always shown above the sections. Equipment name, rack and position edits show **Unapplied** until you press **Apply position**.
+
+Hover or keyboard-focus any icon button for its tooltip. The **?** button opens the quick guide.
+
 ## Configure and install
 
 Select an installed rack chassis and enable **Fit sliding rack rails**. **Pull device forward on rails** selects the example service position, using the user-confirmed 500 mm rail projection and approximate 600 mm chassis protrusion. Member dimensions, mounting height and chassis lead are editable; post spacing has no invented kit min/max. Supplied cables keep their lengths and can become insufficient. See [sliding rail guide](device-rails.md).
@@ -15,13 +27,13 @@ For a rear-mounted device, click **Rear** above the viewport, then drag from the
 
 Drag a device from the library onto a U location. The preview shows the snapped position and any error; invalid drops do not install. The plus icon on a card opens precise placement, including front/rear face and a supporting shelf for a freestanding computer. Select installed equipment to change its name or U position. Moving equipment retains its cable IDs and updates its port endpoints. Undo/redo are available from the toolbar and Ctrl+Z/Ctrl+Shift+Z.
 
-Orbit with the left mouse button on empty workspace, pan with the right button, and zoom with the wheel. Front/rear/left/right/top/3D buttons position the camera; Ortho changes projection. Measurements and labels are independently visible. Selecting equipment can be done through the installed-equipment strip when a port or cable obscures it.
+Orbit with the left mouse button on empty workspace, pan with the right button, and zoom with the wheel; the viewport footer repeats these controls. Front/rear/left/right/top/3D buttons position the camera; Ortho changes projection. Labels, dimension guides and cables are independent icon toggles; a switched-on toggle shows a teal chip with an underline. **Mount** turns amber when new drops will mount on the rear face. An empty rack shows a drag-to-place hint naming the current mounting face. Selecting equipment can be done through the installed-equipment strip when a port or cable obscures it.
 
 Catalogue cards for the requested Cisco/Connectix/APC models include published facts and unresolved fields. Configure measured geometry before saving them into the usable library. Zero in an incomplete draft is an unanswered field and blocks saving. Do not copy maximum overall width into a chassis-width field, or assume catalogue depth starts at the mounting ears. Generic examples can be used while the exact mechanical drawings are unavailable.
 
 ## Define ports and cables
 
-The **Device Model Designer** workspace provides isolated 3D preview and front/rear drag/drop authoring. See [the designer and tray guide](model-designer.md), including the perforated PVC tray's fixed-hole stretch behaviour and calibration limits.
+The **Equipment → Device Model Designer** view provides isolated 3D preview and front/rear drag/drop authoring. See [the designer and tray guide](model-designer.md), including the perforated PVC tray's fixed-hole stretch behaviour and calibration limits.
 **User rack PC · 1U** models the photographed computer. Its 431.8 mm chassis width, 482.6 mm ear width and 381 mm ear-to-rear depth are user measurements; 1U is confirmed and physical height 43 mm is provisional. Two front and fifteen rear sockets have editable photo-estimated centres. Use the equipment library in a new project, import `examples/user-rack-pc.library.json` into an existing project's expanded library, or open `examples/user-rack-pc.rack.json`. See [PC reference notes](user-pc-reference.md) for the port inventory and outstanding measurements. Chassis edits do not automatically rescale stored ports or fittings.
 
 Edit a library definition, open Ports and enter each port's identity, connector, local coordinates and outward direction. Images are embedded in the project and can be fitted to front/rear faces; calibration, cropping and perspective correction are not implemented. An image is not a dimension source by itself.
@@ -34,9 +46,9 @@ Choose Follow an existing cable run to reuse a section of another route. Set the
 
 ## External runs and lengths
 
-For interactive rack cabling, open **Wiring** in the 3D viewport. **Connect ports** uses two socket clicks. **Waypoints** places guides 10 mm outward from clicked surfaces; Shift-click starts a line and a second click finishes it. Choose a cable, enter **Link cable**, and click guides in route order. Reverse/reorder/unlink in the route list, or edit shared guide coordinates. Guides stay fixed in world space when equipment moves. See [the Wiring mode guide](wiring-mode.md).
+For interactive rack cabling, open **Wiring** in the 3D viewport. Its panel docks at the left of the viewport (hide it with its panel icon; the mode stays active), and a dark pill under the toolbar states the active tool and what the next click does, for example "Wiring · Connect ports — click the source port". **Esc** cancels a pending click; with nothing pending, **Esc** or the pill's **Exit** leaves the mode. **Tools** works the same way. **Connect ports** uses two socket clicks. **Waypoints** places guides 10 mm outward from clicked surfaces; Shift-click starts a line and a second click finishes it. Choose a cable, enter **Link cable**, and click guides in route order. Reverse/reorder/unlink in the route list, or edit shared guide coordinates. Guides stay fixed in world space when equipment moves. See [the Wiring mode guide](wiring-mode.md).
 
-Create a rack exit in a clear opening, then a named logical destination from Connections. Connect a rack port to that destination through the exit. Enter the surveyed external distance on the cable. Until entered, the total required length remains unknown even though the rack-side route has a calculated length.
+Create a rack exit in a clear opening, then a named logical destination from **Cabling → Connections**. Connect a rack port to that destination through the exit. Enter the surveyed external distance on the cable. Until entered, the total required length remains unknown even though the rack-side route has a calculated length.
 
 Bulk cable uses endA60mm + endB60mm by default, with no default service loop. Both allowances and their120mm total appear in the schedule and are editable per cable. Rounding goes upwards. A preterminated cable retains its supplied assembly length and is checked against the requirement; it is never stretched. Available excess does not establish that slack physically fits.
 
@@ -44,7 +56,7 @@ Bulk cable uses endA60mm + endB60mm by default, with no default service loop. Bo
 
 The master schedule supports searching, sorting, supply filtering, column selection/reordering, purpose editing and multi-row installation-status changes. Select a row and return to3D to highlight that cable. CSV exports include all physical cable records. The cut list distinguishes bulk cuts from supplied assemblies; Procurement allocates continuous cuts, shows remnants and separates technical feasibility from reserve recommendations.
 
-**Power & Weights** lists every placed device with its mass, nominal and maximum draw, maximum inlet current and the PDU or UPS bank outlet that feeds it. It then shows each distributor's bank loads and status, the totals (mass, draw, estimated heat, unconnected and dual-fed devices, and each distributor's input load) and the power issues. Enter draw and mass in **Inspector → Power & weight** for a selected device; for example, giving the PC a mass adds it to the total mass. Unknown values read `Unknown`, and a total starting with `≥` is incomplete. **Export CSV** downloads the document as a sectioned CSV, and **Print / save PDF** prints it or saves it as a PDF through the browser. See [power and weight](power-and-weight.md#power--weights-document).
+**Reports → Power & Weights** lists every placed device with its mass, nominal and maximum draw, maximum inlet current and the PDU or UPS bank outlet that feeds it. It then shows each distributor's bank loads and status, the totals (mass, draw, estimated heat, unconnected and dual-fed devices, and each distributor's input load) and the power issues. Enter draw and mass in **Inspector → Power & weight** for a selected device; for example, giving the PC a mass adds it to the total mass. Unknown values read `Unknown`, and a total starting with `≥` is incomplete. **Export CSV** downloads the document as a sectioned CSV, and **Print / save PDF** prints it or saves it as a PDF through the browser. See [power and weight](power-and-weight.md#power--weights-document).
 
 Enter actual reel products and partial stock before relying on purchasing quantities. Provisional results allocate only known cuts. Inventory is not reserved or consumed across projects yet. Unknown dimensions, cable bend specifications or external surveys prevent an installation-grade conclusion.
 
@@ -54,7 +66,7 @@ The project remains under development. Consult [acceptance.md](acceptance.md) be
 
 ## Modelling, cable hardware and equipment calibration
 
-See [Modelling workspace](modelling-workspace.md) for free tray placement/rotation, guide dragging, duplicate/align, measurements, visibility, surface clips/ties, bundles, positioned vehicle endpoints and adjacent rack assemblies. Use **Device Library → Edit** to calibrate existing photographed equipment; use **Device Model Designer** for new chassis. Save and export both the library and project JSON. Libraries remain project-local.
+See [Modelling workspace](modelling-workspace.md) for free tray placement/rotation, guide dragging, duplicate/align, measurements, visibility, surface clips/ties, bundles, positioned vehicle endpoints and adjacent rack assemblies. Use **Equipment → Device Library → Edit** to calibrate existing photographed equipment; use **Equipment → Device Model Designer** for new chassis. Save and export both the library and project JSON. Libraries remain project-local.
 
 ## Generic network switch
 

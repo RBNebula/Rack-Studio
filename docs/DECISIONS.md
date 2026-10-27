@@ -19,6 +19,7 @@ Recorded from existing code and retained documentation, 25 October 2026. These a
 | Continuous cuts and honest optimiser labels | `procurement.ts` separates products, waste, stock and reserves; exact search is bounded and distinguished from heuristic results. Planning does not consume shared stock |
 | Local persistence adapter | `ProjectRepository` implemented by IndexedDB; JSON carries versioned records and validated embedded images. Autosave clears dirty only for the saved revision. No remote backend exists |
 | Private static hosting on Cloudflare | `wrangler.jsonc` serves `dist/` from a Workers static-assets Worker on the custom domain `rackstudio.app` only; `workers.dev` and preview URLs are disabled. Worker-level Cloudflare Access gates every request. `public/_headers` sets a same-origin CSP and caching. No server code or secrets; projects stay in browser IndexedDB. See `HOSTING.md` |
+| Five top-level workspace tabs | Owner approved option 3 of `ui-navigation-proposal.md` (27 October 2026): 3D Rack Designer, Equipment, Cabling, Reports, Project Settings, with sub-tabs for grouped views. Navigation only: workspace view ids, reports and data are unchanged. Browser tests open grouped views through `tests/navigation.ts` |
 | Public repository with PR handover | Initial import to main, then independent branches/checkouts and reviewed PRs; `AGENTS.md` is authoritative, Gemini/Claude files link to it. Git shares files/history, not agent conversations or unsaved browser storage |
 
 ## Unresolved decisions

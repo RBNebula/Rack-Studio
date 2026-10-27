@@ -53,7 +53,7 @@ See [architecture](docs/ARCHITECTURE.md), [roadmap](docs/ROADMAP.md), [decisions
 
 - Rotate connectors on their faces in the model designer or library port editor: quarter-turn button plus an exact angle field, with matching previews, socket openings and saved definitions. See [connector rotation](docs/model-designer.md#rotate-a-connector).
 
-- In **Device Model Designer**, load an existing model, make changes and choose **Save as new** to name an independent variant. Original definitions, installed equipment and cables stay unchanged; later saves edit the copy. See [designer controls](docs/model-designer.md).
+- In **Equipment → Device Model Designer**, load an existing model, make changes and choose **Save as new** to name an independent variant. Original definitions, installed equipment and cables stay unchanged; later saves edit the copy. See [designer controls](docs/model-designer.md).
 
 - Add **Generic 24-port switch · 1U**: silver chassis, slotted ears, 24 numbered RJ45 ports in one row, two front SFP cages and one rear IEC C14 inlet. Existing projects can add it from the library without replacing their old switch connections. See [switch model and provisional dimensions](docs/generic-switch.md).
 

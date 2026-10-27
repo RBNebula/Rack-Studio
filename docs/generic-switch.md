@@ -15,7 +15,7 @@ Save your project and refresh the application. Search for **Generic 24-port swit
 
 The original temporary **24-port network switch** remains available for existing projects and demo connections, including its old rear-uplink identifier. It is a separate definition. Replacing a connected device requires an explicit port mapping; this update does not silently reassign its cables.
 
-Use **Device Library → Edit** to adjust chassis dimensions, ears, socket coordinates/sizes, names and evidence. **Visual model → Generic equipment / explicit components** switches off the detailed switch appearance if you need a different construction. The detailed shell derives its connector apertures and number labels from the same editable port records. Socket positions do not rescale automatically when the chassis is resized.
+Use **Equipment → Device Library → Edit** to adjust chassis dimensions, ears, socket coordinates/sizes, names and evidence. **Visual model → Generic equipment / explicit components** switches off the detailed switch appearance if you need a different construction. The detailed shell derives its connector apertures and number labels from the same editable port records. Socket positions do not rescale automatically when the chassis is resized.
 
 For a portable model, import [generic-switch-24.library.json](../examples/generic-switch-24.library.json). For a separate single-device reference scene, import [generic-switch-24.rack.json](../examples/generic-switch-24.rack.json).
 

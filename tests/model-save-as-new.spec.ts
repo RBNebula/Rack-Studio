@@ -1,6 +1,7 @@
 import { test, expect, type Page } from '@playwright/test';
 import { readFile } from 'node:fs/promises';
 import type { Project } from '../src/model';
+import { openView } from './navigation';
 
 test.use({ baseURL: process.env.RACK_TEST_URL ?? 'http://127.0.0.1:5173' });
 test.setTimeout(120000);
@@ -22,7 +23,7 @@ test('save as new preserves the source and its cables, edits only the copy and s
     .getByLabel('Import project JSON', { exact: true })
     .setInputFiles('examples/wiring-guides.rack.json');
   const original = source.definitions.find((d) => d.id === source.devices[0].definitionId)!;
-  await page.getByRole('button', { name: 'Device Model Designer', exact: true }).click();
+  await openView(page, 'Device Model Designer');
   const models = page.getByRole('combobox', { name: 'Edit library model', exact: true });
   await models.selectOption(original.id);
   await expect(models).toHaveValue(original.id);

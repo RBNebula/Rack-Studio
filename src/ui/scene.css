@@ -672,10 +672,9 @@
 .scene-container .canvas-wrap {
   left: var(--drawer-w);
 }
-.scene-container.has-mode .scene-toolbar {
-  justify-content: flex-start;
+.scene-container.has-mode .scene-toolbar .scene-mode-pill {
+  margin-left: var(--drawer-w);
 }
-.scene-container.has-mode .scene-toolbar,
 .scene-container.has-mode .scene-footer {
   left: calc(var(--drawer-w) + 18px);
 }
@@ -685,7 +684,10 @@
 .scene-drawer {
   position: absolute;
   left: 0;
-  top: 0;
+  /* Below the viewport toolbar, which keeps the full width so it stays on one row. */
+  top: 62px;
+  border-top: 1px solid var(--line);
+  border-top-right-radius: var(--radius-md);
   bottom: 0;
   width: var(--drawer-w);
   z-index: 13;
@@ -758,7 +760,8 @@
 /* Active-mode indicator: what the next click does, and how to leave. */
 .scene-mode-pill {
   flex-basis: 100%;
-  pointer-events: auto;
+  /* Clicks pass through to the canvas (ports may sit under it); only Exit is interactive. */
+  pointer-events: none;
   display: flex;
   align-items: center;
   gap: var(--space-2);
@@ -794,6 +797,7 @@
 }
 .scene-toolbar .scene-mode-exit {
   min-width: 0;
+  pointer-events: auto;
   display: inline-flex;
   align-items: center;
   gap: 6px;

@@ -164,3 +164,7 @@ A first visit (no stored project and no `rack-studio-tour-done` flag) opens a te
 
 `playwright.config.ts` presets the flag so existing workflows are not covered by the tour; `tests/walkthrough.spec.ts` clears it and checks every step's title, the spotlight bounds against each target, the card staying inside the viewport, Back and arrow keys, no reappearance after finishing, replay from the quick guide, Escape, skipping, and that reopening a stored project does not start the tour. `pnpm check` passes (454 tests); the walkthrough, elevations, STEP import and two workflows specs pass on Linux Chromium 1248.
 
+## STEP import stall reporting · 28 October 2026
+
+The owner saw "Reading and tessellating the CAD model… 3053 s" on rackstudio.app. The import dialog had no handler for a worker that dies without replying (an out-of-memory crash or a failed load), so its timer ran forever. `StepImport.tsx` now reports `error`/`messageerror` events from the worker, terminates it and starts a fresh worker for the next file, and after 180 s suggests cancelling; `step.worker.ts` reports unhandled promise rejections (such as a failed WebAssembly instantiation). A new `step-import.spec.ts` workflow simulates a worker that crashes without replying and checks the error and the recovery with a second file. The cause of the owner's stall is not yet known: it may be a crash (now reported) or a genuinely very large model.
+

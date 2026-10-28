@@ -36,6 +36,12 @@ const reply = (message: StepResponse, transfer: Transferable[] = []) =>
 
 // Requests run in order: a build posted straight after a read waits for the read to finish.
 let queue: Promise<void> = Promise.resolve();
+// The kernel can fail asynchronously (for example while instantiating WebAssembly); report it
+// rather than leaving the request waiting.
+self.onunhandledrejection = (event: PromiseRejectionEvent) => {
+  const reason: unknown = event.reason;
+  reply({ type: 'error', message: reason instanceof Error ? reason.message : String(reason) });
+};
 self.onmessage = (event: MessageEvent<StepRequest>) => {
   queue = queue.then(() => handle(event.data));
 };

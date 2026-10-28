@@ -3509,3 +3509,78 @@ td {
 .step-actions {
   justify-content: flex-end;
 }
+
+/* First-visit walkthrough: a spotlight on one area with a step card beside it. */
+.tour {
+  position: fixed;
+  inset: 0;
+  z-index: 1000;
+}
+.tour-backdrop {
+  position: absolute;
+  inset: 0;
+}
+.tour-backdrop.dim {
+  background: rgb(10 20 35 / 55%);
+}
+.tour-spotlight {
+  position: absolute;
+  border-radius: 8px;
+  box-shadow:
+    0 0 0 3px var(--teal),
+    0 0 0 9999px rgb(10 20 35 / 55%);
+  pointer-events: none;
+  transition:
+    left 0.2s ease,
+    top 0.2s ease,
+    width 0.2s ease,
+    height 0.2s ease;
+}
+.tour-card {
+  position: absolute;
+  width: min(340px, calc(100vw - 24px));
+  padding: 16px 18px 14px;
+  border-radius: 10px;
+  background: var(--surface);
+  box-shadow: 0 16px 40px rgb(10 20 35 / 30%);
+}
+.tour-card h2 {
+  margin: 4px 0 6px;
+  font-size: 15px;
+}
+.tour-card p {
+  margin: 0 0 14px;
+  line-height: 1.5;
+}
+.tour-progress {
+  color: var(--muted);
+  font-size: 11px;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+.tour-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.tour-skip {
+  margin-right: auto;
+  padding: 0;
+  border: 0;
+  background: none;
+  color: var(--muted);
+  cursor: pointer;
+}
+.tour-skip:hover {
+  color: var(--navy);
+  text-decoration: underline;
+}
+.guide-tour {
+  justify-self: start;
+  margin-bottom: 4px;
+}
+@media (prefers-reduced-motion: reduce) {
+  .tour-spotlight {
+    transition: none;
+  }
+}

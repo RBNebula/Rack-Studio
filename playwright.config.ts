@@ -2,6 +2,12 @@ import { defineConfig } from '@playwright/test';
 // Preserve the existing Edge workflow on Windows; use bundled Chromium on Linux/CI.
 const channel =
   process.env.RACK_BROWSER_CHANNEL ?? (process.platform === 'win32' ? 'msedge' : 'chromium');
+// Workflows start with the first-visit walkthrough already seen, so it does not cover the
+// controls they use; tests/walkthrough.spec.ts clears this to exercise the tour itself.
+const tourSeen = (origin: string) => ({
+  origin,
+  localStorage: [{ name: 'rack-studio-tour-done', value: '1' }],
+});
 export default defineConfig({
   testDir: './tests',
   fullyParallel: false,
@@ -11,6 +17,13 @@ export default defineConfig({
   reporter: 'list',
   use: {
     baseURL: 'http://127.0.0.1:5173',
+    storageState: {
+      cookies: [],
+      origins: [
+        tourSeen('http://127.0.0.1:5173'),
+        ...(process.env.RACK_TEST_URL ? [tourSeen(new URL(process.env.RACK_TEST_URL).origin)] : []),
+      ],
+    },
     viewport: { width: 1600, height: 1000 },
     headless: true,
     trace: process.env.CI ? 'retain-on-failure' : 'off',

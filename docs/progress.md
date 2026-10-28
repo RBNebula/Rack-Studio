@@ -158,3 +158,9 @@ Hosting fix: under the production `_headers` policy, STEP import failed in Chrom
 
 Mounting hole types (owner decision, 28 October 2026): the rack's hole type is now **Square** or **Round** only. Projects saved with the retired `unconfirmed` or `threaded` values open as square and round respectively (threaded was already drawn as round holes), so the "hole type is unconfirmed" placement warning no longer appears. `src/data/project.test.ts` covers the mapping. `pnpm check` passes with 454 tests; `tests/workflows.spec.ts` passes 6 of 7 workflows on Linux Chromium, and the custom-definition save/reload workflow fails identically on unchanged main.
 
+## First-visit walkthrough · 28 October 2026
+
+A first visit (no stored project and no `rack-studio-tour-done` flag) opens a ten-step tour in `src/ui/Walkthrough.tsx`: a dimmed spotlight frames one area at a time (File menu, workspace tabs, equipment library, Import STEP model, design zone, 3D / 2D switch, Connect and Add object, properties panel, undo/save/help) with a step card placed beside it inside the viewport. Next/Back, arrow keys, Skip tour and Esc work; finishing or skipping sets the flag, and **? → Take the tour** replays it with the panels open in 3D. Targets are `data-tour` attributes (plus the Import STEP model button's label). There is no tutorial project; new users stay on the empty rack.
+
+`playwright.config.ts` presets the flag so existing workflows are not covered by the tour; `tests/walkthrough.spec.ts` clears it and checks every step's title, the spotlight bounds against each target, the card staying inside the viewport, Back and arrow keys, no reappearance after finishing, replay from the quick guide, Escape, skipping, and that reopening a stored project does not start the tour. `pnpm check` passes (454 tests); the walkthrough, elevations, STEP import and two workflows specs pass on Linux Chromium 1248.
+

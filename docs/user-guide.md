@@ -18,6 +18,10 @@ The properties panel groups fields into titled sections (for equipment: Identity
 
 Hover or keyboard-focus any icon button for its tooltip. The **?** button opens the quick guide.
 
+## First-visit walkthrough
+
+On a first visit (no saved project in this browser) a short tour highlights the main areas in turn: the File menu, the workspace tabs, the equipment library and **Import STEP model**, the design zone, the **3D / 2D** switch, **Connect** and **Add object**, the properties panel, and undo, save status and help. Use **Next** and **Back** (or the arrow keys), and **Skip tour** or Esc to close it. Finishing or skipping it is remembered in this browser; replay it any time with **? → Take the tour**.
+
 ## 2D rack elevations
 
 The **3D / 2D** switch in the **Design zone** bar swaps the 3D viewport for flat elevations; the library and properties panel stay beside it, and the 3D camera is kept for when you switch back. Each rack shows its **Front** then its **Rear**, and racks run left to right as seen from the front, so a second rack shows as left front, left rear, right front, right rear. U numbers run up the left of each face. Equipment mounted on the other face appears as a dashed outline, because deep equipment can still occupy the space behind.

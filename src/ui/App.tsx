@@ -18,6 +18,7 @@ import { ResizeHandle, useStoredState } from './Panels';
 import { FileMenu } from './FileMenu';
 import { exitViewportMode } from './ViewportMode';
 import RackElevations from './RackElevations';
+import { Walkthrough, tourDone } from './Walkthrough';
 
 /** Workspace views, grouped under five top-level tabs. View ids are unchanged state values. */
 const views: Record<Workspace, [string, string]> = {
@@ -97,6 +98,7 @@ export default function App() {
   const [libraryOpen, setLibraryOpen] = useStoredState('rack-studio-library-open', true);
   const [inspectorOpen, setInspectorOpen] = useStoredState('rack-studio-inspector-open', true);
   const [designView, setDesignView] = useStoredState<'3d' | '2d'>('rack-studio-design-view', '3d');
+  const [tourOpen, setTourOpen] = useState(false);
   // The last view opened in each top-level tab, so returning to a tab restores it.
   const [lastViews, setLastViews] = useStoredState<Record<string, string>>(
     'rack-studio-last-views',
@@ -153,6 +155,8 @@ export default function App() {
             return;
           }
         }
+        // A first visit (nothing to reopen) introduces the main areas once.
+        if (active && !tourDone()) setTourOpen(true);
       } catch (error) {
         if (active)
           useStore.getState().set({
@@ -313,7 +317,7 @@ export default function App() {
             )
           }
         />
-        <nav className="workspace-tabs" aria-label="Workspace">
+        <nav className="workspace-tabs" aria-label="Workspace" data-tour="tabs">
           {groups.map((g) => (
             <button
               key={g.id}
@@ -333,7 +337,7 @@ export default function App() {
             </button>
           ))}
         </nav>
-        <div className="header-actions">
+        <div className="header-actions" data-tour="save">
           <IconButton
             icon="undo"
             size={18}
@@ -416,7 +420,7 @@ export default function App() {
         {workspace === 'designer' ? (
           <>
             {libraryOpen ? (
-              <div className="side-panel left">
+              <div className="side-panel left" data-tour="library">
                 <Library onCollapse={() => setLibraryOpen(false)} />
                 <ResizeHandle
                   label="Resize equipment library"
@@ -438,10 +442,15 @@ export default function App() {
                 <span>Equipment library</span>
               </button>
             )}
-            <div className={`designer-centre view-${designView}`}>
+            <div className={`designer-centre view-${designView}`} data-tour="design-zone">
               <div className="designer-heading">
                 <span className="eyebrow">DESIGN ZONE</span>
-                <div className="design-view-switch" role="group" aria-label="Design view">
+                <div
+                  className="design-view-switch"
+                  role="group"
+                  aria-label="Design view"
+                  data-tour="view-switch"
+                >
                   {(['3d', '2d'] as const).map((v) => (
                     <button
                       key={v}
@@ -459,7 +468,7 @@ export default function App() {
                   ))}
                 </div>
                 <div className="designer-toolbar" id="designer-toolbar" />
-                <div className="button-row">
+                <div className="button-row" data-tour="connect">
                   <Button icon="cable" onClick={() => setDialog('connection')}>
                     Connect
                   </Button>
@@ -521,7 +530,7 @@ export default function App() {
               {designView === '2d' && <RackElevations />}
             </div>
             {inspectorOpen ? (
-              <div className="side-panel right">
+              <div className="side-panel right" data-tour="properties">
                 <ResizeHandle
                   label="Resize properties panel"
                   side="right"
@@ -787,13 +796,23 @@ export default function App() {
       {dialog === 'exit' && <ExitDialog onClose={() => setDialog(null)} />} <TooltipLayer />
       {dialog === 'help' && (
         <Modal title="Rack Studio · quick guide" onClose={() => setDialog(null)}>
-          <Guide />
+          <Guide
+            onTour={() => {
+              setDialog(null);
+              set({ workspace: 'designer', selection: null });
+              setLibraryOpen(true);
+              setInspectorOpen(true);
+              setDesignView('3d');
+              setTourOpen(true);
+            }}
+          />
         </Modal>
       )}
+      {tourOpen && <Walkthrough onClose={() => setTourOpen(false)} />}
     </div>
   );
 }
-function Guide() {
+function Guide({ onTour }: { onTour: () => void }) {
   const items: [string, ReactNode][] = [
     [
       'Configure the rack',
@@ -822,6 +841,9 @@ function Guide() {
   ];
   return (
     <div className="modal-content guide">
+      <Button className="primary guide-tour" onClick={onTour}>
+        Take the tour
+      </Button>
       {items.map(([title, text], i) => (
         <div key={title}>
           <span>{i + 1}</span>

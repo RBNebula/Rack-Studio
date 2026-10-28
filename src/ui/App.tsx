@@ -41,6 +41,13 @@ const groups: { id: string; label: string; icon: string; views: Workspace[] }[] 
 const groupOf = (view: Workspace) => groups.find((g) => g.views.includes(view)) ?? groups[0];
 const Scene = lazy(() => import('./Scene'));
 const ModelDesigner = lazy(() => import('./ModelDesigner'));
+let persistenceRequested = false;
+/** Once work exists, ask the browser not to evict this origin's IndexedDB under storage pressure. */
+function requestPersistentStorage() {
+  if (persistenceRequested) return;
+  persistenceRequested = true;
+  void navigator.storage?.persist?.().catch(() => false);
+}
 /** Opening a saved or imported project removes equipment retired from Rack Studio. */
 function withoutRetired(p: Project): { project: Project; notice: string } {
   const result = removeRetiredEquipment(p);
@@ -61,6 +68,7 @@ async function save(p: Project, manual = false): Promise<boolean> {
       saveStatus: `Saved locally ${new Date().toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' })}`,
       ...(manual ? { notice: 'Project saved to this browser’s local IndexedDB storage.' } : {}),
     });
+    requestPersistentStorage();
     return true;
   } catch (error) {
     useStore.getState().set({
@@ -139,8 +147,10 @@ export default function App() {
             useStore.getState().replace(retired.project);
             useStore.getState().set({
               saveStatus: 'Restored from local storage',
-              ...(retired.notice ? { notice: retired.notice, dirty: true } : {}),
+              notice: retired.notice || 'Reopened your last project.',
+              ...(retired.notice ? { dirty: true } : {}),
             });
+            return;
           }
         }
       } catch (error) {
@@ -214,7 +224,9 @@ export default function App() {
     return () => window.removeEventListener('keydown', handler);
   }, []);
   async function newProject(example = false) {
-    if (!(await save(project))) return;
+    // An untouched project has nothing to keep, so switching away does not store it.
+    const pristine = project.revision === 0 && !s.dirty;
+    if (!pristine && !(await save(project))) return;
     const next = example ? createExampleProject(true) : createWorkspaceProject(false);
     if (example) {
       next.settings.cablePrefix = '';
@@ -271,6 +283,12 @@ export default function App() {
     workspace !== 'settings' &&
     workspace !== 'power' &&
     s.selection?.kind === 'cable';
+  if (!s.hydrated)
+    return (
+      <div className="app-loading" role="status">
+        Opening Rack Studio…
+      </div>
+    );
   return (
     <div className="app-shell">
       <header className="app-header">

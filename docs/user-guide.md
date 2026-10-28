@@ -2,7 +2,7 @@
 
 ![Actual Rack Studio browser viewport](screenshots/rack-designer.png)
 
-Rack Studio opens on an empty, illustrative 20U rack; drag equipment from the library to start. Its numerical dimensions are examples. Rack depth means the distance between the front and rear screw planes; U1 starts at the bottom, and a new rack has no depth step. Square holes with cage nuts are the current default.
+Rack Studio reopens the project you last saved in this browser. A first visit opens an empty, illustrative 20U rack; drag equipment from the library to start. Its numerical dimensions are examples. Rack depth means the distance between the front and rear screw planes; U1 starts at the bottom, and a new rack has no depth step. Square holes with cage nuts are the current default.
 
 ## Workspace layout
 
@@ -85,7 +85,7 @@ The master schedule supports searching, sorting, supply filtering, column select
 
 Enter actual reel products and partial stock before relying on purchasing quantities. Provisional results allocate only known cuts. Inventory is not reserved or consumed across projects yet. Unknown dimensions, cable bend specifications or external surveys prevent an installation-grade conclusion.
 
-Save writes this browser's IndexedDB; edits autosave after a short delay. **File → Open** lists locally saved projects. **File → Export project** creates a portable JSON backup with embedded images. Import validates the whole graph and rejects unknown fields rather than discarding them. Keep exported backups if moving browser/computer or clearing browser data.
+Save writes this browser's IndexedDB; edits autosave after a short delay. **File → Open** lists locally saved projects. **File → Export project** creates a portable JSON backup with embedded images. Import validates the whole graph and rejects unknown fields rather than discarding them. Keep exported backups if moving browser/computer or clearing browser data. After the first save, the app asks the browser to keep its stored data rather than evicting it under storage pressure; the browser may decline, and clearing site data still deletes projects.
 
 The project remains under development. Consult [acceptance.md](acceptance.md) before treating any stage as complete.
 

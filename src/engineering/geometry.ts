@@ -859,10 +859,6 @@ export function validatePlacement(project: Project, device: Device, ignoreId?: s
         );
       }
     }
-    if (rack.holeType === 'unconfirmed')
-      issues.push(
-        'Rack hole type is unconfirmed; mounting hardware compatibility needs verification.',
-      );
   }
   if (definition.mounting === 'side' || definition.mounting === 'custom')
     issues.push('Side or custom mounting requires an explicitly verified support design.');

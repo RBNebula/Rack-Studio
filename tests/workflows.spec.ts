@@ -511,3 +511,32 @@ test('imported power cable follows an existing curved run through UI edits and r
   await expect(page.locator('.rack-u-label').first()).toBeVisible();
   await page.screenshot({ path: 'docs/screenshots/cable-follow.png' });
 });
+
+test('a first visit starts blank, is not stored until edited and reopens after reload', async ({
+  page,
+}) => {
+  page.setDefaultTimeout(10_000);
+  const projectName = page.getByLabel('Project name', { exact: true });
+  const settings = page
+    .locator('.workspace-tabs')
+    .getByRole('button', { name: 'Project Settings', exact: true });
+  await page.goto('/');
+  await expect(page.locator('canvas')).toBeVisible();
+  await expect(page.locator('.installed-pills > button')).toHaveCount(0);
+  await fileAction(page, 'Open');
+  await expect(page.getByRole('dialog')).toContainText('No local projects yet');
+  await page.getByRole('button', { name: 'Close dialog', exact: true }).click();
+
+  await settings.click();
+  await expect(projectName).toHaveValue('Untitled rack project');
+  await projectName.fill('QA own rack');
+  await expect(page.locator('.toolbar-save .unsaved-dot')).toHaveCount(0);
+  await expect(page.locator('.toolbar-save')).toContainText('Saved locally');
+
+  await page.reload();
+  await expect(page.locator('.statusbar')).toContainText('Reopened your last project.');
+  await settings.click();
+  await expect(projectName).toHaveValue('QA own rack');
+  await fileAction(page, 'Open');
+  await expect(page.getByRole('dialog').locator('.saved-project')).toHaveCount(1);
+});

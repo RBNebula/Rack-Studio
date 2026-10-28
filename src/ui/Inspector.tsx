@@ -314,17 +314,15 @@ export function RackInspector({ full = false }: { full?: boolean }) {
         </Field>
         <Field
           label="Mounting hole type"
-          hint="Square holes with cage nuts are the confirmed default; alternative types are configurable."
+          hint="Square holes with cage nuts are the confirmed default; round holes are the alternative."
         >
           <select
             aria-label="Mounting hole type"
             value={r.holeType}
             onChange={(e) => update({ holeType: e.target.value as Rack['holeType'] })}
           >
-            <option value="unconfirmed">Unconfirmed</option>
             <option value="square">Square</option>
             <option value="round">Round</option>
-            <option value="threaded">Threaded</option>
           </select>
         </Field>
         <div className="section-title">

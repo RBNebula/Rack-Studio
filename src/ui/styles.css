@@ -550,6 +550,12 @@ svg {
   padding: 1px var(--space-1);
   border-radius: var(--radius-xs);
 }
+.app-loading {
+  display: grid;
+  place-items: center;
+  height: 100vh;
+  color: var(--muted);
+}
 .app-shell {
   display: flex;
   flex-direction: column;

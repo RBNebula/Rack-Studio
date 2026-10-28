@@ -1,5 +1,5 @@
 import type { Device, Project } from '../model';
-import { deviceRailBoxes, mmToScene } from '../engineering/geometry';
+import { deviceRailBoxes, deviceSupportRailBoxes, mmToScene } from '../engineering/geometry';
 /** Open channel artwork within conservative collision envelopes. */
 export function DeviceRails({ project, device }: { project: Project; device: Device }) {
   return (
@@ -30,6 +30,19 @@ export function DeviceRails({ project, device }: { project: Project; device: Dev
           </group>
         );
       })}
+      {/* Fixed L-section support rails: the leg, flange and end tabs are exactly these solids. */}
+      {deviceSupportRailBoxes(project, device).map((b) => (
+        <mesh
+          key={b.id}
+          name={b.id}
+          position={mmToScene(b.min.map((v, i) => (v + b.max[i]) / 2) as [number, number, number])}
+        >
+          <boxGeometry
+            args={mmToScene(b.max.map((v, i) => v - b.min[i]) as [number, number, number])}
+          />
+          <meshStandardMaterial color="#8d989f" metalness={0.7} roughness={0.4} />
+        </mesh>
+      ))}
     </group>
   );
 }

@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
-import type { Cable, DeviceDefinition, Endpoint, Port, Project } from '../model';
+import { definitionSchema } from '../model';
+import type { Cable, DeviceDefinition, Endpoint, Port, PowerOutputLimit, Project } from '../model';
 import { baseCable, createExampleProject } from '../testing/legacy-example';
 import { analyseProject } from './analysis';
 import {
@@ -10,6 +11,7 @@ import {
   setDefinitionMass,
   setDefinitionPower,
   setPowerBank,
+  setPowerOutputLimit,
 } from './power';
 
 const iec = (id: string, connector: 'IEC-C13' | 'IEC-C14', x: number): Port => ({
@@ -706,5 +708,302 @@ describe('independent verification cases', () => {
     expect(analysis.issues).toEqual([]);
     expect(bank(p, 'top').consumers).toEqual([]);
     expect(analysis.devices.find((d) => d.deviceId === 'pc')!.feeds).toEqual([]);
+  });
+});
+
+describe('distributor total output limit', () => {
+  const limit = (patch: Partial<PowerOutputLimit>): PowerOutputLimit => ({
+    maxVA: null,
+    maxW: null,
+    maxCurrentA: null,
+    voltageV: 230,
+    evidence: 'verified',
+    source: 'Datasheet',
+    ...patch,
+  });
+  const setLimit = (
+    p: Project,
+    patch: Partial<PowerOutputLimit>,
+    definitionId = 'def-fixture-pdu',
+  ) => {
+    p.definitions.find((d) => d.id === definitionId)!.powerOutputLimit = limit(patch);
+  };
+  const output = (p: Project, distributor = 'pdu') =>
+    analysePower(p).distributors.find((d) => d.deviceId === distributor)!.outputLimit!;
+  /** Two consumers, one on each bank, sharing `totalW` at maximum draw. */
+  function splitAcrossBanks(totalW: number) {
+    const p = fixture();
+    addConsumer(p, 'a', totalW / 4, totalW / 2);
+    addConsumer(p, 'b', totalW / 4, totalW / 2);
+    connect(p, 'A', device('pdu', 'o1'), device('a', 'psu1'));
+    connect(p, 'B', device('pdu', 'o5'), device('b', 'psu1'));
+    return p;
+  }
+
+  it.each(
+    (['W', 'VA', 'A'] as const).flatMap((kind) =>
+      (
+        [
+          [0.79, 'ok', []],
+          [0.8, 'warning', ['output-warning']],
+          [1, 'warning', ['output-warning']],
+          [1.01, 'over', ['output-over']],
+        ] as const
+      ).map(([utilisation, status, codes]) => [kind, utilisation, status, codes] as const),
+    ),
+  )('rates a %s limit at %s utilisation as %s', (kind, utilisation, status, codes) => {
+    // 1000 W, 1000 VA, or 10 A at 230 V (2300 W). Each bank and outlet stays within its rating.
+    const totalW = utilisation * (kind === 'A' ? 2300 : 1000);
+    const p = splitAcrossBanks(totalW);
+    setLimit(
+      p,
+      kind === 'W' ? { maxW: 1000 } : kind === 'VA' ? { maxVA: 1000 } : { maxCurrentA: 10 },
+    );
+    const result = output(p);
+    expect(result.max.complete).toBe(true);
+    expect(result.max.knownW).toBeCloseTo(totalW, 9);
+    expect(result.max.knownA).toBeCloseTo(totalW / 230, 9);
+    expect(result.nominal.knownW).toBeCloseTo(totalW / 2, 9);
+    expect(result.utilisation).toBeCloseTo(utilisation, 9);
+    expect(result.governingLimit).toBe(kind);
+    expect(result.utilisationByLimit[kind]).toBeCloseTo(utilisation, 9);
+    for (const other of (['W', 'VA', 'A'] as const).filter((k) => k !== kind))
+      expect(result.utilisationByLimit[other]).toBeNull();
+    expect(result.status).toBe(status);
+    expect(result.consumerDeviceIds).toEqual(['a', 'b']);
+    expect(bank(p, 'top').status).toBe('ok');
+    expect(bank(p, 'bottom').status).toBe('ok');
+    const issues = analysePower(p).issues;
+    expect(issues.map((i) => i.code)).toEqual(codes);
+    for (const i of issues) expect(i).toMatchObject({ deviceId: 'pdu', bankId: null });
+  });
+
+  it('uses the worst of the rated VA, W and A limits (3000 VA / 2700 W / 13 A UPS)', () => {
+    const p = splitAcrossBanks(2600);
+    setLimit(p, { maxVA: 3000, maxW: 2700, maxCurrentA: 13 });
+    let result = output(p);
+    expect(result.utilisationByLimit.W).toBeCloseTo(2600 / 2700, 9);
+    expect(result.utilisationByLimit.VA).toBeCloseTo(2600 / 3000, 9);
+    expect(result.utilisationByLimit.A).toBeCloseTo(2600 / 230 / 13, 9);
+    expect(result.governingLimit).toBe('W');
+    expect(result.utilisation).toBeCloseTo(2600 / 2700, 9);
+    expect(result.status).toBe('warning');
+    const message = analysePower(p).issues[0].message;
+    expect(message).toContain('2600 W of 2700 W (96.3 %)');
+    expect(message).toContain('2600 VA of 3000 VA (86.7 %)');
+    expect(message).toContain('11.30 A of 13.00 A (87.0 %)');
+    // The two 16 A banks together allow 32 A; only the total limit is exceeded.
+    const over = splitAcrossBanks(2800);
+    setLimit(over, { maxVA: 3000, maxW: 2700, maxCurrentA: 13 });
+    result = output(over);
+    expect(result.status).toBe('over');
+    expect((result.utilisation * 100).toFixed(1)).toBe('103.7');
+    expect(analysePower(over).issues.map((i) => i.code)).toEqual(['output-over']);
+    // A tighter current rating governs instead.
+    setLimit(over, { maxVA: 3000, maxW: 2700, maxCurrentA: 10 });
+    result = output(structuredClone(over));
+    expect(result.governingLimit).toBe('A');
+    expect(result.utilisation).toBeCloseTo(2800 / 2300, 9);
+  });
+
+  it('counts a device fed from two banks of the distributor once against the total', () => {
+    const p = fixture();
+    addConsumer(p, 'server', 450, 750);
+    connect(p, 'A', device('pdu', 'o1'), device('server', 'psu1'));
+    connect(p, 'B', device('pdu', 'o5'), device('server', 'psu2'));
+    setLimit(p, { maxW: 900 });
+    expect(bank(p, 'top').max.knownW).toBe(750);
+    expect(bank(p, 'bottom').max.knownW).toBe(750);
+    const result = output(p);
+    expect(result.consumerDeviceIds).toEqual(['server']);
+    expect(result.max).toMatchObject({ knownW: 750, complete: true });
+    expect(result.nominal).toMatchObject({ knownW: 450, complete: true });
+    expect(result.utilisation).toBeCloseTo(750 / 900, 9);
+    expect(result.status).toBe('warning');
+  });
+
+  it('counts a chained PDU and its consumers against the upstream UPS total, each device once', () => {
+    const p = fixture();
+    p.definitions.push({
+      ...pduDefinition('def-ups'),
+      power: { nominalW: 30, maxW: 40, evidence: 'example', source: '' },
+    });
+    p.devices.push({
+      id: 'ups',
+      definitionId: 'def-ups',
+      name: 'UPS',
+      startU: 15,
+      face: 'front',
+      supportId: null,
+      installation: 'installed',
+    });
+    p.definitions.find((d) => d.id === 'def-fixture-pdu')!.power = {
+      nominalW: 10,
+      maxW: 15,
+      evidence: 'example',
+      source: '',
+    };
+    addConsumer(p, 'pc1', 500, 800);
+    addConsumer(p, 'pc2', 300, 600);
+    addConsumer(p, 'server', 200, 400);
+    connect(p, 'U1', device('ups', 'o1'), device('pdu', 'inlet'));
+    connect(p, 'P1', device('pdu', 'o1'), device('pc1', 'psu1'));
+    connect(p, 'P2', device('pdu', 'o5'), device('pc2', 'psu1'));
+    // The server is fed from the PDU and directly from the UPS's other bank.
+    connect(p, 'P3', device('pdu', 'o2'), device('server', 'psu1'));
+    connect(p, 'U2', device('ups', 'o5'), device('server', 'psu2'));
+    setLimit(p, { maxVA: 3000, maxW: 2000 }, 'def-ups');
+    setLimit(p, { maxCurrentA: 8 });
+    const ups = output(p, 'ups');
+    expect(ups.consumerDeviceIds).toEqual(['pdu', 'server']);
+    // PDU 15 W + pc1 800 W + pc2 600 W + server 400 W once; the UPS's own 40 W is not output.
+    expect(ups.max).toMatchObject({ knownW: 1815, complete: true });
+    expect(ups.nominal).toMatchObject({ knownW: 1010, complete: true });
+    expect(ups.utilisation).toBeCloseTo(1815 / 2000, 9);
+    expect(ups.governingLimit).toBe('W');
+    expect(ups.status).toBe('warning');
+    // The banks see the server twice between them; the total does not.
+    expect(bank(p, 'top', 'ups').max.knownW + bank(p, 'bottom', 'ups').max.knownW).toBe(2215);
+    const pdu = output(p);
+    expect(pdu.max).toMatchObject({ knownW: 1800, complete: true });
+    expect(pdu.max.knownA).toBeCloseTo(1800 / 230, 9);
+    expect(pdu.utilisation).toBeCloseTo(1800 / 230 / 8, 9);
+    expect(pdu.status).toBe('warning');
+    expect(
+      analysePower(p)
+        .issues.filter((i) => i.code.startsWith('output-'))
+        .map((i) => [i.code, i.deviceId]),
+    ).toEqual([
+      ['output-warning', 'pdu'],
+      ['output-warning', 'ups'],
+    ]);
+  });
+
+  it('keeps unknown consumers and external feeds incomplete, never counting them as zero', () => {
+    const p = fixture();
+    addConsumer(p, 'known', 200, 500);
+    addConsumer(p, 'mystery', null, null);
+    connect(p, 'A', device('pdu', 'o1'), device('known', 'psu1'));
+    connect(p, 'B', device('pdu', 'o5'), device('mystery', 'psu1'));
+    setLimit(p, { maxW: 1000 });
+    let result = output(p);
+    expect(result.max).toMatchObject({ knownW: 500, complete: false });
+    expect(result.nominal).toMatchObject({ knownW: 200, complete: false });
+    expect(result.utilisation).toBeCloseTo(0.5, 9);
+    expect(result.status).toBe('incomplete');
+    expect(result.unknownConsumers).toEqual([
+      {
+        deviceId: 'mystery',
+        name: 'mystery',
+        reason: 'No nominal or maximum draw recorded for its equipment model.',
+      },
+    ]);
+    const incomplete = analysePower(p).issues.find((i) => i.code === 'output-incomplete')!;
+    expect(incomplete.severity).toBe('notice');
+    expect(incomplete.message).toContain('unknown draw for mystery');
+    // A known part already at 90 % wins over incompleteness.
+    p.definitions.find((d) => d.id === 'def-c-known')!.power!.maxW = 900;
+    result = output(structuredClone(p));
+    expect(result.status).toBe('warning');
+    // An outlet feeding an external destination leaves the total incomplete.
+    const external = splitAcrossBanks(400);
+    setLimit(external, { maxW: 1000 });
+    external.destinations.push({
+      id: 'van',
+      name: 'Vehicle socket',
+      location: '',
+      notes: '',
+      ports: [{ ...iec('in', 'IEC-C14', 0) }],
+      position: null,
+    });
+    external.cables.push({
+      ...baseCable('X1'),
+      label: 'X1',
+      source: device('pdu', 'o3'),
+      destination: { kind: 'external', destinationId: 'van', portId: 'in' },
+      exitId: 'exit-1',
+    });
+    result = output(external);
+    expect(result.externalOutlets).toEqual([{ portId: 'o3', cableId: 'X1', destinationId: 'van' }]);
+    expect(result.max).toMatchObject({ knownW: 400, complete: false });
+    expect(result.status).toBe('incomplete');
+    expect(analysePower(external).issues.map((i) => i.code)).toEqual([
+      'external-on-bank',
+      'bank-incomplete',
+      'output-incomplete',
+    ]);
+  });
+
+  it('gives no result or issues without a limit, and is deterministic and serialisable', () => {
+    const p = splitAcrossBanks(5000);
+    expect(analysePower(p).distributors[0].outputLimit).toBeNull();
+    expect(analysePower(p).issues.some((i) => i.code.startsWith('output-'))).toBe(false);
+    const limited = splitAcrossBanks(2000);
+    setLimit(limited, { maxVA: 3000, maxW: 2700, maxCurrentA: 13 });
+    const a = analysePower(limited);
+    expect(JSON.stringify(a)).toBe(JSON.stringify(analysePower(structuredClone(limited))));
+    expect(JSON.parse(JSON.stringify(a))).toEqual(a);
+  });
+
+  it('validates the limit in the schema and in editor checks', () => {
+    const d = pduDefinition();
+    expect(definitionSchema.safeParse(d).success).toBe(true);
+    expect(definitionSchema.parse(d)).not.toHaveProperty('powerOutputLimit');
+    // Omitted ratings default to null (not rated).
+    const parsed = definitionSchema.parse({
+      ...d,
+      powerOutputLimit: { maxW: 2700, voltageV: 230, evidence: 'verified', source: 'Datasheet' },
+    });
+    expect(parsed.powerOutputLimit).toEqual(limit({ maxW: 2700 }));
+    const none = { ...d, powerOutputLimit: limit({}) };
+    expect(definitionSchema.safeParse(none).error?.issues.map((i) => i.message)).toEqual([
+      'A total output limit needs at least one of maxVA, maxW or maxCurrentA.',
+    ]);
+    expect(powerDefinitionIssues(none)).toEqual([
+      'A total output limit needs at least one of VA, W or A.',
+    ]);
+    const unbanked = { ...d, powerBanks: undefined, powerOutputLimit: limit({ maxVA: 3000 }) };
+    expect(definitionSchema.safeParse(unbanked).error?.issues.map((i) => i.message)).toEqual([
+      'A total output limit requires power banks.',
+    ]);
+    expect(powerDefinitionIssues(unbanked)).toEqual([
+      'A total output limit requires at least one power bank.',
+    ]);
+    for (const bad of [{ maxW: 0 }, { maxVA: -1 }, { maxCurrentA: 0 }, { maxW: 1, voltageV: 0 }])
+      expect(definitionSchema.safeParse({ ...d, powerOutputLimit: limit(bad) }).success).toBe(
+        false,
+      );
+    expect(
+      powerDefinitionIssues({ ...d, powerOutputLimit: limit({ maxW: 0, voltageV: 0 }) }),
+    ).toEqual([
+      'The total output limit in W must be positive or empty.',
+      'The total output limit needs a positive voltage.',
+    ]);
+  });
+
+  it('sets, marks user-entered and removes the limit on the shared equipment model', () => {
+    const p = fixture();
+    const def = () => p.definitions.find((d) => d.id === 'def-fixture-pdu')!;
+    setPowerOutputLimit(p, 'def-fixture-pdu', { maxW: 2700 });
+    expect(def().powerOutputLimit).toEqual({
+      ...limit({ maxW: 2700 }),
+      evidence: 'user-entered',
+      source: '',
+    });
+    setPowerOutputLimit(p, 'def-fixture-pdu', { evidence: 'verified', source: 'Datasheet' });
+    setPowerOutputLimit(p, 'def-fixture-pdu', { source: 'Datasheet rev B' });
+    expect(def().powerOutputLimit).toMatchObject({
+      evidence: 'verified',
+      source: 'Datasheet rev B',
+    });
+    setPowerOutputLimit(p, 'def-fixture-pdu', { maxVA: 3000 });
+    expect(def().powerOutputLimit).toMatchObject({
+      maxVA: 3000,
+      maxW: 2700,
+      evidence: 'user-entered',
+    });
+    setPowerOutputLimit(p, 'def-fixture-pdu', null);
+    expect(def()).not.toHaveProperty('powerOutputLimit');
+    expect(() => setPowerOutputLimit(p, 'missing', { maxW: 1 })).toThrow();
   });
 });

@@ -165,7 +165,11 @@ const headings = (table: Locator) =>
 const equipmentTable = (page: Page) =>
   documentView(page).getByRole('region', { name: 'Equipment' }).locator('table');
 const bankTable = (page: Page) =>
-  documentView(page).locator('.power-distributor').filter({ hasText: AP_DEVICE }).locator('table');
+  documentView(page)
+    .locator('.power-distributor')
+    .filter({ hasText: AP_DEVICE })
+    .getByRole('table', { name: `${AP_DEVICE} power banks` });
+const outputTables = (page: Page) => documentView(page).locator('table.power-output-limit');
 async function equipment(page: Page) {
   const columns = await headings(equipmentTable(page));
   const rows = await bodyRows(equipmentTable(page));
@@ -515,7 +519,7 @@ test('the Power & Weights document lists equipment, banks, totals and issues, up
   const titles = csv
     .map((r, i) => (r.length === 1 && csv[i - 1]?.length === 0 ? r[0].text : null))
     .filter(Boolean);
-  expect(titles).toEqual(['Equipment', 'Power banks', 'Totals', 'Issues', 'Notes']);
+  expect(titles).toEqual(['Equipment', 'Power banks', 'Total output', 'Totals', 'Issues', 'Notes']);
 
   // Every figure matches the screen.
   const screenEquipment = await bodyRows(equipmentTable(page));
@@ -568,7 +572,32 @@ test('the Power & Weights document lists equipment, banks, totals and issues, up
       .locator('.report-notes li')
       .evaluateAll((li) => li.map((x) => x.textContent?.trim() ?? '')),
   );
-  expect(notesCsv).toHaveLength(6);
+  expect(notesCsv).toHaveLength(7);
+  // Total output: one row per distributor with a total output limit, matching the screen, or a
+  // placeholder when no placed model has one.
+  const outputCsv = csvSection(csv, 'Total output');
+  expect(outputCsv[0].map((c) => c.text)).toEqual([
+    'Distributor',
+    'Limit (VA)',
+    'Limit (W)',
+    'Limit (A)',
+    'Voltage (V)',
+    'Nominal (W)',
+    'Max (W)',
+    'Max (A)',
+    'Utilisation (%)',
+    'Utilisation by limit',
+    'Status',
+    'Unknown draw',
+    'Rating evidence',
+  ]);
+  const screenOutput = (await outputTables(page).count()) ? await bodyRows(outputTables(page)) : [];
+  if (screenOutput.length)
+    expect(outputCsv.slice(1).map((r) => r.slice(1).map(asScreen))).toEqual(screenOutput);
+  else
+    expect(outputCsv.slice(1).map((r) => r.map((c) => c.text))).toEqual([
+      ['No placed distributor has a total output limit.'],
+    ]);
 });
 
 /** Page sizes in PDF points from each page's MediaBox. */

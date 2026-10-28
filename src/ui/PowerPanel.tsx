@@ -1,16 +1,17 @@
 import { useState } from 'react';
-import type { Device, DeviceDefinition, PowerBank, PowerDraw } from '../model';
+import type { Device, DeviceDefinition, PowerBank, PowerDraw, PowerOutputLimit } from '../model';
 import { uid } from '../model';
 import { useStore } from '../state';
 import { analyseProject } from '../engineering/analysis';
 import {
+  EMPTY_POWER_OUTPUT_LIMIT,
   POWER_WARNING_UTILISATION,
   powerDefinitionIssues,
   setDefinitionMass,
   setDefinitionPower,
   setPowerBank,
 } from '../engineering/power';
-import type { PowerBankResult, PowerStatus } from '../engineering/power';
+import type { PowerBankResult, PowerOutputLimitResult, PowerStatus } from '../engineering/power';
 import { Badge, BlurTextField, Button, Field, NumberField, OptionalNumberField } from './shared';
 import { Note } from './Panels';
 
@@ -46,7 +47,8 @@ export function DevicePowerSection({
   const power = analyseProject(project).power;
   const info = power.devices.find((d) => d.deviceId === device.id);
   const copies = project.devices.filter((d) => d.definitionId === def.id).length;
-  const banks = power.distributors.find((d) => d.deviceId === device.id)?.banks ?? [];
+  const distributor = power.distributors.find((d) => d.deviceId === device.id);
+  const banks = distributor?.banks ?? [];
   const feedingBanks = (info?.feeds ?? []).map((feed) => ({
     feed,
     distributor: project.devices.find((d) => d.id === feed.distributorDeviceId),
@@ -147,10 +149,73 @@ export function DevicePowerSection({
           nominal{!info.input.nominal.complete && ' (known part only)'}.
         </p>
       )}
+      {distributor?.outputLimit && <OutputLimitCard limit={distributor.outputLimit} />}
       {banks.map((bank) => (
         <BankCard key={bank.bankId} bank={bank} definition={def} />
       ))}
     </section>
+  );
+}
+
+/** The distributor's total output across all banks against its rated VA, W and A limits. */
+function OutputLimitCard({ limit }: { limit: PowerOutputLimitResult }) {
+  const width = Math.min(100, limit.utilisation * 100);
+  const rated = (
+    [
+      ['VA', limit.maxVA],
+      ['W', limit.maxW],
+      ['A', limit.maxCurrentA],
+    ] as const
+  ).filter(([, rating]) => rating !== null);
+  return (
+    <div className="depth-section power-output-limit" data-status={limit.status}>
+      <div className="section-title">
+        <strong>Total output</strong>
+        <Badge tone={statusTone[limit.status]}>{statusText[limit.status]}</Badge>
+      </div>
+      <div
+        className="power-meter"
+        role="meter"
+        aria-label="Total output utilisation"
+        aria-valuemin={0}
+        aria-valuemax={100}
+        aria-valuenow={Math.round(limit.utilisation * 100)}
+      >
+        <span data-status={limit.status} style={{ width: `${width}%` }} />
+        <i style={{ left: `${POWER_WARNING_UTILISATION * 100}%` }} />
+      </div>
+      <p className="small">
+        Maximum: {watts(limit.max.knownW)} · {amps(limit.max.knownA)} at {limit.voltageV} V (
+        {percent(limit.utilisation)} of the {limit.governingLimit} limit)
+        {!limit.max.complete && ' · known part only'}
+        <br />
+        Nominal: {watts(limit.nominal.knownW)} · {amps(limit.nominal.knownA)}
+        {!limit.nominal.complete && ' · known part only'}
+        <br />
+        Limits:{' '}
+        {rated
+          .map(([k, rating]) => {
+            const u = limit.utilisationByLimit[k];
+            return `${rating} ${k}${u === null ? '' : ` (${percent(u)})`}`;
+          })
+          .join(' · ')}
+      </p>
+      {limit.unknownConsumers.length > 0 && (
+        <p className="small warning-text">
+          Unknown draw: {limit.unknownConsumers.map((u) => `${u.name} (${u.reason})`).join('; ')}
+        </p>
+      )}
+      {limit.externalOutlets.length > 0 && (
+        <p className="small warning-text">
+          {limit.externalOutlets.length} outlet feed(s) leave the rack; their draw is unknown.
+        </p>
+      )}
+      <p className="muted small">
+        Rating status: {limit.evidence}. Every device this distributor supplies counts once across
+        all of its banks, including equipment behind a chained PDU. Watts are compared with VA at
+        power factor 1. Change the limit in the equipment model editor (Power & weight).
+      </p>
+    </div>
   );
 }
 
@@ -279,6 +344,22 @@ export function DefinitionPowerFields({
     });
   const banks = d.powerBanks ?? [];
   const setBanks = (next: PowerBank[]) => update({ powerBanks: next.length ? next : undefined });
+  const limit = d.powerOutputLimit;
+  // As for banks, changing a rated value without choosing a status marks it user-entered.
+  const patchLimit = (patch: Partial<PowerOutputLimit>) => {
+    const previous = limit ?? EMPTY_POWER_OUTPUT_LIMIT;
+    update({
+      powerOutputLimit: {
+        ...previous,
+        ...((['maxVA', 'maxW', 'maxCurrentA', 'voltageV'] as const).some(
+          (k) => k in patch && patch[k] !== previous[k],
+        ) && !patch.evidence
+          ? { evidence: 'user-entered' as const }
+          : {}),
+        ...patch,
+      },
+    });
+  };
   // As in the inspector, changing a rated value without choosing a status marks it user-entered.
   const patchBank = (id: string, patch: Partial<PowerBank>) =>
     setBanks(
@@ -456,6 +537,86 @@ export function DefinitionPowerFields({
         >
           Add power bank
         </Button>
+      </section>
+      <section className="shape-row" aria-label="Total output limit">
+        <h3>Total output limit</h3>
+        <p className="muted">
+          For a UPS or PDU whose whole output is rated below the sum of its banks, for example a UPS
+          rated 3000 VA / 2700 W, or a PDU with a 32 A input. Every device it supplies counts once
+          against this limit. Leave a rating empty when the model is not rated for it; at least one
+          is needed. Watts are compared with VA at power factor 1, and amps are W ÷ the voltage
+          below.
+        </p>
+        {limit ? (
+          <div className="depth-section">
+            <div className="section-title">
+              <strong>Whole distributor</strong>
+              <Badge tone="warn">{limit.evidence}</Badge>
+            </div>
+            <div className="form-grid">
+              <OptionalNumberField
+                label="Output limit (VA)"
+                value={limit.maxVA}
+                positive
+                hint={limit.maxVA === null ? 'Not rated' : undefined}
+                onChange={(v) => patchLimit({ maxVA: v })}
+              />
+              <OptionalNumberField
+                label="Output limit (W)"
+                value={limit.maxW}
+                positive
+                hint={limit.maxW === null ? 'Not rated' : undefined}
+                onChange={(v) => patchLimit({ maxW: v })}
+              />
+              <OptionalNumberField
+                label="Output limit (A)"
+                value={limit.maxCurrentA}
+                positive
+                step={0.1}
+                hint={limit.maxCurrentA === null ? 'Not rated' : undefined}
+                onChange={(v) => patchLimit({ maxCurrentA: v })}
+              />
+              <NumberField
+                label="Output voltage (V)"
+                value={limit.voltageV}
+                min={1}
+                onChange={(v) => patchLimit({ voltageV: v })}
+              />
+              <Field label="Output rating status">
+                <select
+                  value={limit.evidence}
+                  onChange={(e) =>
+                    patchLimit({ evidence: e.target.value as PowerOutputLimit['evidence'] })
+                  }
+                >
+                  {evidenceLevels.map((x) => (
+                    <option key={x}>{x}</option>
+                  ))}
+                </select>
+              </Field>
+              <Field label="Output rating source">
+                <input
+                  value={limit.source}
+                  onChange={(e) => patchLimit({ source: e.target.value })}
+                />
+              </Field>
+            </div>
+            <Button
+              className="danger"
+              icon="trash"
+              onClick={() => update({ powerOutputLimit: undefined })}
+            >
+              Remove total output limit
+            </Button>
+          </div>
+        ) : (
+          <Button
+            icon="plus"
+            onClick={() => update({ powerOutputLimit: { ...EMPTY_POWER_OUTPUT_LIMIT } })}
+          >
+            Add total output limit
+          </Button>
+        )}
       </section>
     </>
   );

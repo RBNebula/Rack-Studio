@@ -1,4 +1,11 @@
-import type { Device, DeviceDefinition, PowerBank, PowerDraw, Project } from '../model';
+import type {
+  Device,
+  DeviceDefinition,
+  PowerBank,
+  PowerDraw,
+  PowerOutputLimit,
+  Project,
+} from '../model';
 
 /**
  * Bank or outlet utilisation at or above this fraction raises a warning. It follows the common
@@ -91,11 +98,42 @@ export interface PowerBankResult {
   utilisation: number;
   status: PowerStatus;
 }
+/** Which rated total-output limit a utilisation figure refers to. */
+export type PowerOutputLimitKind = 'W' | 'VA' | 'A';
+/**
+ * A distributor's total output load across all of its banks, against its rated total output
+ * (`DeviceDefinition.powerOutputLimit`). Every unique downstream device counts once, including a
+ * device fed from two banks of this distributor and devices behind a chained distributor.
+ */
+export interface PowerOutputLimitResult {
+  maxVA: number | null;
+  maxW: number | null;
+  maxCurrentA: number | null;
+  voltageV: number;
+  evidence: PowerOutputLimit['evidence'];
+  source: string;
+  /** Devices fed directly from any bank of this distributor, in bank and outlet order. */
+  consumerDeviceIds: string[];
+  unknownConsumers: PowerUnknownConsumer[];
+  externalOutlets: PowerExternalOutlet[];
+  /** Amps at `voltageV`. Watts are treated as volt-amperes (power factor 1). */
+  nominal: BankLoad;
+  max: BankLoad;
+  /** Maximum-load utilisation of each rated limit; null where that limit is not rated. */
+  utilisationByLimit: Record<PowerOutputLimitKind, number | null>;
+  /** The highest utilisation of the rated limits; a lower bound when the load is incomplete. */
+  utilisation: number;
+  /** The rated limit with the highest utilisation (the first of W, VA, A on a tie). */
+  governingLimit: PowerOutputLimitKind;
+  status: PowerStatus;
+}
 export interface PowerDistributorResult {
   deviceId: string;
   name: string;
   definitionId: string;
   banks: PowerBankResult[];
+  /** Total output against the rated limit, or null when the model has no total output limit. */
+  outputLimit: PowerOutputLimitResult | null;
   /** Own draw plus every unique downstream consumer once. */
   input: InputLoad;
 }
@@ -122,6 +160,9 @@ export type PowerIssueCode =
   | 'bank-over'
   | 'bank-warning'
   | 'bank-incomplete'
+  | 'output-over'
+  | 'output-warning'
+  | 'output-incomplete'
   | 'outlet-over'
   | 'outlet-warning'
   | 'external-on-bank'
@@ -172,6 +213,10 @@ export function powerStatus(utilisation: number, complete: boolean): PowerStatus
   if (utilisation > 1 + EPSILON) return 'over';
   if (utilisation >= POWER_WARNING_UTILISATION - EPSILON) return 'warning';
   return complete ? 'ok' : 'incomplete';
+}
+/** True when a total output limit is present with at least one rated value. */
+export function hasPowerOutputLimit(limit: PowerOutputLimit | undefined): boolean {
+  return Boolean(limit && [limit.maxVA, limit.maxW, limit.maxCurrentA].some((v) => v != null));
 }
 export function isPowerDistributor(definition: DeviceDefinition | undefined): boolean {
   return (definition?.powerBanks?.length ?? 0) > 0;
@@ -402,6 +447,85 @@ function analysePowerUncached(project: Project): PowerAnalysis {
     return 'Its downstream load is incomplete.';
   };
 
+  // Total output of a distributor across all of its banks: every unique downstream device once.
+  const outputLimitResult = (
+    device: Device,
+    limit: PowerOutputLimit,
+    banks: PowerBankResult[],
+  ): PowerOutputLimitResult => {
+    const consumerIds = [...new Set(banks.flatMap((b) => b.consumers.map((c) => c.deviceId)))];
+    const externalOutlets = banks.flatMap((b) => b.externalOutlets);
+    const unknownConsumers = consumerIds.flatMap((c) => {
+      const reason = unknownReason(c);
+      return reason ? [{ deviceId: c, name: deviceName(c), reason }] : [];
+    });
+    const total = sumOwn(closure(consumerIds), externalOutlets.length === 0);
+    const nominal = amps(total.nominal, limit.voltageV);
+    const max = amps(total.max, limit.voltageV);
+    const ratio = (value: number, rating: number | null) =>
+      rating === null ? null : value / rating;
+    const utilisationByLimit: Record<PowerOutputLimitKind, number | null> = {
+      W: ratio(max.knownW, limit.maxW),
+      VA: ratio(max.knownW, limit.maxVA),
+      A: ratio(max.knownA, limit.maxCurrentA),
+    };
+    const kinds = (['W', 'VA', 'A'] as const).filter((k) => utilisationByLimit[k] !== null);
+    const governingLimit = kinds.reduce((a, b) =>
+      utilisationByLimit[b]! > utilisationByLimit[a]! ? b : a,
+    );
+    const utilisation = utilisationByLimit[governingLimit]!;
+    const status = powerStatus(utilisation, nominal.complete && max.complete);
+    const value = { W: max.knownW, VA: max.knownW, A: max.knownA };
+    const rating = { W: limit.maxW, VA: limit.maxVA, A: limit.maxCurrentA };
+    const figures = (['VA', 'W', 'A'] as const)
+      .filter((k) => utilisationByLimit[k] !== null)
+      .map(
+        (k) =>
+          `${fmt(value[k], k === 'A' ? 2 : 0)} ${k} of ${fmt(rating[k]!, k === 'A' ? 2 : 0)} ${k} (${fmt(utilisationByLimit[k]! * 100)} %)`,
+      )
+      .join(', ');
+    const label = `${device.name} · total output`;
+    const refs = { deviceId: device.id };
+    if (status === 'over')
+      issue(
+        'error',
+        'output-over',
+        `${label}: ${figures} at maximum draw exceeds the distributor's total output limit.`,
+        refs,
+      );
+    else if (status === 'warning')
+      issue(
+        'warning',
+        'output-warning',
+        `${label}: ${figures} at maximum draw is at or above the ${POWER_WARNING_UTILISATION * 100} % continuous-load guideline.`,
+        refs,
+      );
+    if (!(nominal.complete && max.complete))
+      issue(
+        'notice',
+        'output-incomplete',
+        `${label}: load is incomplete${unknownConsumers.length ? `; unknown draw for ${unknownConsumers.map((u) => u.name).join(', ')}` : ''}${externalOutlets.length ? `; ${externalOutlets.length} outlet feed(s) leave the rack` : ''}. Known part: ${figures}.`,
+        refs,
+      );
+    return {
+      maxVA: limit.maxVA,
+      maxW: limit.maxW,
+      maxCurrentA: limit.maxCurrentA,
+      voltageV: limit.voltageV,
+      evidence: limit.evidence,
+      source: limit.source,
+      consumerDeviceIds: consumerIds,
+      unknownConsumers,
+      externalOutlets,
+      nominal,
+      max,
+      utilisationByLimit,
+      utilisation,
+      governingLimit,
+      status,
+    };
+  };
+
   // 5. Per-distributor and per-bank results.
   const redundant = (deviceId: string) => feeds.get(deviceId)!.length > 1;
   const distributors: PowerDistributorResult[] = [];
@@ -517,6 +641,9 @@ function analysePowerUncached(project: Project): PowerAnalysis {
       name: device.name,
       definitionId: def.id,
       banks,
+      outputLimit: hasPowerOutputLimit(def.powerOutputLimit)
+        ? outputLimitResult(device, def.powerOutputLimit!, banks)
+        : null,
       input: inputOf(device.id),
     });
   }
@@ -601,6 +728,21 @@ export function powerDefinitionIssues(definition: DeviceDefinition): string[] {
       seen.add(id);
     }
   }
+  const limit = definition.powerOutputLimit;
+  if (limit) {
+    if (!hasPowerOutputLimit(limit))
+      issues.push('A total output limit needs at least one of VA, W or A.');
+    if (!definition.powerBanks?.length)
+      issues.push('A total output limit requires at least one power bank.');
+    for (const [value, label] of [
+      [limit.maxVA, 'VA'],
+      [limit.maxW, 'W'],
+      [limit.maxCurrentA, 'A'],
+    ] as const)
+      if (value !== null && !(value > 0))
+        issues.push(`The total output limit in ${label} must be positive or empty.`);
+    if (!(limit.voltageV > 0)) issues.push('The total output limit needs a positive voltage.');
+  }
   return issues;
 }
 
@@ -651,4 +793,37 @@ export function setPowerBank(
     (k) => k in patch && patch[k] !== bank[k],
   );
   Object.assign(bank, valueChanged && !patch.evidence ? { evidence: 'user-entered' } : {}, patch);
+}
+/** A new total output limit: nothing rated yet, at 230 V. */
+export const EMPTY_POWER_OUTPUT_LIMIT: PowerOutputLimit = {
+  maxVA: null,
+  maxW: null,
+  maxCurrentA: null,
+  voltageV: 230,
+  evidence: 'user-entered',
+  source: '',
+};
+/**
+ * Set, update or (with null) remove an equipment model's total output limit. A rated-value change
+ * without an explicit evidence level marks the limit user-entered.
+ */
+export function setPowerOutputLimit(
+  p: Project,
+  definitionId: string,
+  patch: Partial<PowerOutputLimit> | null,
+): void {
+  const definition = definitionById(p, definitionId);
+  if (patch === null) {
+    delete definition.powerOutputLimit;
+    return;
+  }
+  const previous = definition.powerOutputLimit ?? EMPTY_POWER_OUTPUT_LIMIT;
+  const valueChanged = (['maxVA', 'maxW', 'maxCurrentA', 'voltageV'] as const).some(
+    (k) => k in patch && patch[k] !== previous[k],
+  );
+  definition.powerOutputLimit = {
+    ...previous,
+    ...(valueChanged && !patch.evidence ? { evidence: 'user-entered' as const } : {}),
+    ...patch,
+  };
 }

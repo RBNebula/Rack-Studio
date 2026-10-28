@@ -19,6 +19,7 @@ try {
   const { definitionSchema } = await server.ssrLoadModule('/src/model.ts');
   const { createExampleProject } = await server.ssrLoadModule('/src/examples.ts');
   const { validatePlacement } = await server.ssrLoadModule('/src/engineering/geometry.ts');
+  const { supportRailAssessment } = await server.ssrLoadModule('/src/engineering/support-rails.ts');
   for (const file of files) {
     const raw = JSON.parse(await readFile(file, 'utf8'));
     if (!Array.isArray(raw)) {
@@ -50,6 +51,7 @@ try {
           issues.push(`port ${port.id} direction is not a unit vector`);
       }
       const placements = [];
+      const notes = [];
       if (['direct', 'rails', 'bracket'].includes(definition.mounting)) {
         for (const face of ['front', 'rear']) {
           const project = createExampleProject(false);
@@ -71,6 +73,11 @@ try {
           const placementIssues = validatePlacement(project, device, device.id);
           for (const issue of placementIssues) issues.push(`${face} placement at U1: ${issue}`);
           placements.push(`${face} U1 ${placementIssues.length ? 'invalid' : 'valid'}`);
+          const rails = supportRailAssessment(project, device);
+          if (rails && face === 'front')
+            notes.push(
+              `fixed support rails: span ${rails.span}, load ${rails.load}; ${rails.advisories.join(' ')}`,
+            );
         }
       } else placements.push(`placement not checked for ${definition.mounting} mounting`);
       const unverified = definition.ports.filter((p) => p.evidence !== 'verified').length;
@@ -80,6 +87,7 @@ try {
         process.stdout.write(`${label}: FAIL ${summary}\n`);
         for (const issue of issues) process.stdout.write(`  ${issue}\n`);
       } else process.stdout.write(`${label}: OK ${summary}\n`);
+      for (const note of notes) process.stdout.write(`  note: ${note}\n`);
     }
   }
 } finally {

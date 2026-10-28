@@ -512,7 +512,7 @@ test('imported power cable follows an existing curved run through UI edits and r
   await page.screenshot({ path: 'docs/screenshots/cable-follow.png' });
 });
 
-test('a first visit starts blank and the tutorial rack opens as a separate, restorable project', async ({
+test('a first visit starts blank, an untouched rack is not stored and the last project reopens', async ({
   page,
 }) => {
   page.setDefaultTimeout(10_000);
@@ -523,26 +523,20 @@ test('a first visit starts blank and the tutorial rack opens as a separate, rest
   await page.goto('/');
   await expect(page.locator('canvas')).toBeVisible();
   await expect(page.locator('.installed-pills > button')).toHaveCount(0);
+  await fileAction(page, 'New');
+  await fileAction(page, 'Open');
+  await expect(page.getByRole('dialog')).toContainText('No local projects yet');
+  await page.getByRole('button', { name: 'Close dialog', exact: true }).click();
+
   await settings.click();
   await expect(projectName).toHaveValue('Untitled rack project');
   await projectName.fill('QA own rack');
   await expect(page.locator('.toolbar-save')).toContainText('Saved locally');
 
-  await fileAction(page, 'Tutorial rack');
-  await expect(page.locator('.statusbar')).toContainText('Tutorial rack opened');
-  await expect(page.locator('.installed-pills > button')).toHaveCount(1);
-  // The earlier save's "Saved locally" text remains, so wait for this project's autosave to clear dirty.
-  await expect(page.locator('.toolbar-save .saved-dot')).toBeVisible();
-
   await page.reload();
   await expect(page.locator('.statusbar')).toContainText('Reopened your last project.');
-  await expect(page.locator('.installed-pills > button')).toHaveCount(1);
   await settings.click();
-  await expect(projectName).toHaveValue('Vehicle communications · example');
-
+  await expect(projectName).toHaveValue('QA own rack');
   await fileAction(page, 'Open');
-  const saved = page.getByRole('dialog').locator('.saved-project');
-  await expect(saved).toHaveCount(2);
-  await expect(saved.filter({ hasText: 'QA own rack' })).toHaveCount(1);
-  await expect(saved.filter({ hasText: 'Vehicle communications · example' })).toHaveCount(1);
+  await expect(page.getByRole('dialog').locator('.saved-project')).toHaveCount(1);
 });

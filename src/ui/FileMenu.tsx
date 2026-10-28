@@ -9,14 +9,12 @@ import { Icon } from './shared';
 export function FileMenu({
   onNew,
   onOpen,
-  onTutorial,
   onSave,
   onImport,
   onExport,
 }: {
   onNew: () => void;
   onOpen: () => void;
-  onTutorial: () => void;
   onSave: () => void;
   onImport: (file: File | undefined) => void;
   onExport: () => void;
@@ -110,10 +108,6 @@ export function FileMenu({
         <button role="menuitem" onClick={choose(onOpen)}>
           <Icon name="folder" size={16} />
           Open
-        </button>
-        <button role="menuitem" onClick={choose(onTutorial)}>
-          <Icon name="cube" size={16} />
-          Tutorial rack
         </button>
         <button role="menuitem" onClick={choose(onSave)}>
           <Icon name="save" size={16} />

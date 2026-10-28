@@ -33,7 +33,7 @@ export async function openView(page: Page, view: View) {
     .click();
 }
 
-export type FileItem = 'New' | 'Open' | 'Tutorial rack' | 'Save' | 'Export project';
+export type FileItem = 'New' | 'Open' | 'Save' | 'Export project';
 
 /** Opens the header File menu (if closed) and returns one of its items. */
 export async function fileItem(page: Page, item: FileItem) {

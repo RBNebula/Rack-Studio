@@ -223,12 +223,11 @@ export default function App() {
     window.addEventListener('keydown', handler);
     return () => window.removeEventListener('keydown', handler);
   }, []);
-  async function newProject(kind: 'blank' | 'tutorial' | 'stepped' = 'blank') {
+  async function newProject(example = false) {
     // An untouched project has nothing to keep, so switching away does not store it.
     const pristine = project.revision === 0 && !s.dirty;
     if (!pristine && !(await save(project))) return;
-    const example = kind === 'stepped';
-    const next = example ? createExampleProject(true) : createWorkspaceProject(kind === 'tutorial');
+    const next = example ? createExampleProject(true) : createWorkspaceProject(false);
     if (example) {
       next.settings.cablePrefix = '';
       next.cables.forEach((c, i) => {
@@ -245,9 +244,7 @@ export default function App() {
       workspace: 'designer',
       notice: example
         ? 'Explicit stepped demonstration loaded; all physical dimensions are examples.'
-        : kind === 'tutorial'
-          ? 'Tutorial rack opened as a separate project; your other projects are unchanged. All physical dimensions are examples.'
-          : 'New rack created without a depth step. Depth is front-to-rear screw-plane spacing.',
+        : 'New rack created without a depth step. Depth is front-to-rear screw-plane spacing.',
       error: '',
     });
   }
@@ -306,7 +303,6 @@ export default function App() {
         <FileMenu
           onNew={() => void newProject()}
           onOpen={() => void openProjects()}
-          onTutorial={() => void newProject('tutorial')}
           onSave={() => void save(project, true)}
           onImport={(file) => void importProject(file)}
           onExport={() =>
@@ -575,7 +571,7 @@ export default function App() {
                   </Badge>
                 </div>
               </div>
-              <Button icon="refresh" onClick={() => void newProject('stepped')}>
+              <Button icon="refresh" onClick={() => void newProject(true)}>
                 Load stepped example
               </Button>
             </div>
@@ -801,7 +797,7 @@ function Guide() {
   const items: [string, ReactNode][] = [
     [
       'Configure the rack',
-      'Use the properties panel to set dimensions, depth sections and the mounting hole type. Unconfirmed mounting details block new installations. File → Tutorial rack opens a worked example as a separate project.',
+      'Use the properties panel to set dimensions, depth sections and the mounting hole type. Unconfirmed mounting details block new installations.',
     ],
     [
       'Install equipment',

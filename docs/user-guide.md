@@ -2,7 +2,7 @@
 
 ![Actual Rack Studio browser viewport](screenshots/rack-designer.png)
 
-Rack Studio reopens the project you last saved in this browser. A first visit opens an empty, illustrative 20U rack; drag equipment from the library to start. **File → Tutorial rack** opens the worked example as a separate project, leaving your own projects unchanged. Its numerical dimensions are examples. Rack depth means the distance between the front and rear screw planes; U1 starts at the bottom, and a new rack has no depth step. Square holes with cage nuts are the current default.
+Rack Studio reopens the project you last saved in this browser. A first visit opens an empty, illustrative 20U rack; drag equipment from the library to start. Its numerical dimensions are examples. Rack depth means the distance between the front and rear screw planes; U1 starts at the bottom, and a new rack has no depth step. Square holes with cage nuts are the current default.
 
 ## Workspace layout
 

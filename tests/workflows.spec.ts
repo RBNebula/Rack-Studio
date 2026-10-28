@@ -512,7 +512,7 @@ test('imported power cable follows an existing curved run through UI edits and r
   await page.screenshot({ path: 'docs/screenshots/cable-follow.png' });
 });
 
-test('a first visit starts blank, an untouched rack is not stored and the last project reopens', async ({
+test('a first visit starts blank, is not stored until edited and reopens after reload', async ({
   page,
 }) => {
   page.setDefaultTimeout(10_000);
@@ -523,7 +523,6 @@ test('a first visit starts blank, an untouched rack is not stored and the last p
   await page.goto('/');
   await expect(page.locator('canvas')).toBeVisible();
   await expect(page.locator('.installed-pills > button')).toHaveCount(0);
-  await fileAction(page, 'New');
   await fileAction(page, 'Open');
   await expect(page.getByRole('dialog')).toContainText('No local projects yet');
   await page.getByRole('button', { name: 'Close dialog', exact: true }).click();
@@ -531,6 +530,7 @@ test('a first visit starts blank, an untouched rack is not stored and the last p
   await settings.click();
   await expect(projectName).toHaveValue('Untitled rack project');
   await projectName.fill('QA own rack');
+  await expect(page.locator('.toolbar-save .unsaved-dot')).toHaveCount(0);
   await expect(page.locator('.toolbar-save')).toContainText('Saved locally');
 
   await page.reload();

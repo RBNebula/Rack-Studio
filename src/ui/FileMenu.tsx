@@ -54,6 +54,7 @@ export function FileMenu({
   return (
     <div
       className={`file-menu ${isOpen ? 'open' : ''}`}
+      data-tour="file"
       ref={root}
       onMouseEnter={() => {
         cancelClose();

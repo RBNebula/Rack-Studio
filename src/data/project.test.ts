@@ -316,4 +316,14 @@ describe('versioned project persistence and authoritative relationships', () => 
     delete unbanked.definitions.find((d) => d.id === 'def-pdu')!.powerBanks;
     expect(() => parseProject(JSON.stringify(unbanked))).toThrow(/requires power banks/);
   });
+  it('opens retired unconfirmed and threaded hole types as square and round', () => {
+    const project = example();
+    const stored = JSON.parse(serializeProject(project)) as { rack: { holeType: string } };
+    stored.rack.holeType = 'unconfirmed';
+    expect(parseProject(JSON.stringify(stored)).rack.holeType).toBe('square');
+    stored.rack.holeType = 'threaded';
+    expect(parseProject(JSON.stringify(stored)).rack.holeType).toBe('round');
+    stored.rack.holeType = 'oval';
+    expect(() => parseProject(JSON.stringify(stored))).toThrow();
+  });
 });

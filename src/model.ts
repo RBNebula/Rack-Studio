@@ -367,7 +367,12 @@ export const rackSchema = z.object({
     .default(null),
   depthMeaning: z.enum(['unconfirmed', 'external', 'usable', 'rail-spacing']),
   fixedFace: z.enum(['front', 'rear', 'unconfirmed']),
-  holeType: z.enum(['square', 'round', 'threaded', 'unconfirmed']),
+  // Owner decision: square or round only. Older projects map unconfirmed to the square default
+  // and threaded (already drawn as round) to round.
+  holeType: z.preprocess(
+    (v) => (v === 'unconfirmed' ? 'square' : v === 'threaded' ? 'round' : v),
+    z.enum(['square', 'round']),
+  ),
   evidence: evidenceSchema,
   color: z.string(),
   sections: z.array(depthSectionSchema).min(1),

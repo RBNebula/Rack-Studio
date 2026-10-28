@@ -1172,7 +1172,7 @@ function RackStructure({ project, rack }: { project: Project; rack: Rack }) {
                     )}
                     rotation={rear ? [0, 0, 0] : [0, Math.PI, 0]}
                   >
-                    {rack.holeType === 'round' || rack.holeType === 'threaded' ? (
+                    {rack.holeType === 'round' ? (
                       <circleGeometry args={[0.0019, 8]} />
                     ) : (
                       <planeGeometry args={[0.0038, 0.0038]} />

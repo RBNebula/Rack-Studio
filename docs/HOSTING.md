@@ -50,7 +50,13 @@ Do this straight after the first deploy.
 3. Under **Authentication policy**, choose **Cloudflare account**. Only members of your Cloudflare account can then sign in.
 4. Select **Apply Access**.
 
-To let other people in later, edit the application under **Zero Trust > Access > Applications** and add an **Emails** rule listing their addresses. They sign in with a one-time code sent to that address. Never allow the email domain of a public mail provider such as `gmail.com`: that admits every account at that provider.
+To let other people in later, including yourself with an address that is not a member of the Cloudflare account:
+
+1. Under **Zero Trust > Integrations > Identity providers** (older dashboards: **Settings > Authentication > Login methods**), add **One-time PIN** if it is not listed.
+2. Edit the application under **Zero Trust > Access > Applications**. Under **Login methods**, enable **One-time PIN** next to the Cloudflare account login. Without it, the sign-in page offers only **Cloudflare** and says sign-in is restricted to members of the account, whatever the policy allows.
+3. Add an **Allow** policy whose **Include** rule is **Emails** listing their addresses, or **Emails ending in** a company domain. Keep it a separate policy, or an **Include** in the existing one; a **Require** rule would demand both conditions at once.
+
+They then sign in by entering their address and the one-time code emailed to it. Never allow the email domain of a public mail provider such as `gmail.com`: that admits every account at that provider.
 
 ### 4. Check it
 

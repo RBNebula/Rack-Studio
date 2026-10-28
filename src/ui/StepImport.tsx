@@ -63,17 +63,30 @@ export function StepImport({ onClose }: { onClose: () => void }) {
   const [setbackMm, setSetbackMm] = useState(50);
   const [chassisWidthMm, setChassisWidthMm] = useState<number | null>(null);
 
-  useEffect(() => {
+  const fail = (text: string) => {
+    if (failed.current) return;
+    failed.current = true;
+    setPhase('error');
+    setMessage(text);
+  };
+  // A crashed worker (out of memory, failed load) sends no message; report it and start a fresh
+  // one for the next file instead of leaving the progress timer running.
+  function startWorker() {
     const w = new Worker(new URL('../data/step.worker.ts', import.meta.url), { type: 'module' });
     worker.current = w;
+    w.onerror = (event) => {
+      event.preventDefault();
+      w.terminate();
+      if (worker.current === w) worker.current = null;
+      fail(
+        'The CAD import stopped unexpectedly. The model may be too large or detailed for this browser: close other tabs and try again, or export a simplified STEP file (without internal parts).',
+      );
+    };
+    w.onmessageerror = () => fail('The CAD import returned data that could not be read.');
     w.onmessage = (event: MessageEvent<StepResponse>) => {
       const r = event.data;
-      if (r.type === 'error') {
-        if (failed.current) return;
-        failed.current = true;
-        setPhase('error');
-        setMessage(r.message);
-      } else if (r.type === 'read')
+      if (r.type === 'error') fail(r.message);
+      else if (r.type === 'read')
         setMessage(`${r.parts} parts read in ${(r.ms / 1000).toFixed(0)} s.`);
       else if (r.type === 'build') {
         setBuilt({
@@ -86,10 +99,19 @@ export function StepImport({ onClose }: { onClose: () => void }) {
         setPhase('ready');
       } else if (r.type === 'measure') setChassisWidthMm(r.widthMm);
     };
-    return () => w.terminate();
+    return w;
+  }
+  useEffect(() => {
+    const w = startWorker();
+    return () => {
+      w.terminate();
+      worker.current?.terminate();
+    };
+    // The worker lives for the dialog; startWorker only replaces it after a crash.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
   const post = (request: StepRequest, transfer: Transferable[] = []) =>
-    worker.current?.postMessage(request, transfer);
+    (worker.current ?? startWorker()).postMessage(request, transfer);
 
   useEffect(() => {
     if (phase !== 'reading' && phase !== 'building') return;
@@ -100,7 +122,11 @@ export function StepImport({ onClose }: { onClose: () => void }) {
 
   // Measure the chassis behind the ear flanges whenever the model or ear depth changes.
   useEffect(() => {
-    if (built && mount === 'ears') post({ type: 'measure', fromZ: earOffsetMm + 2 });
+    if (built && mount === 'ears')
+      worker.current?.postMessage({
+        type: 'measure',
+        fromZ: earOffsetMm + 2,
+      } satisfies StepRequest);
   }, [built, mount, earOffsetMm]);
 
   async function choose(file: File | undefined) {
@@ -194,6 +220,8 @@ export function StepImport({ onClose }: { onClose: () => void }) {
           <p className="step-progress" role="status">
             {phase === 'reading' ? 'Reading and tessellating the CAD model' : 'Updating the model'}…{' '}
             {elapsed.toFixed(0)} s. Detailed assemblies can take a minute. {message}
+            {elapsed > 180 &&
+              ' This is taking much longer than usual. Close this dialog to cancel, then try a simplified STEP export.'}
           </p>
         )}
         {phase === 'error' && (

@@ -30,7 +30,7 @@ Drag a library card onto a face to place it at that U. Drag installed equipment 
 
 ## Import a STEP model
 
-Use the upload icon (**Import STEP model**) in the equipment library heading to add a manufacturer CAD model (`.stp` or `.step`). The file is read in the browser by the OpenCascade kernel; a detailed assembly can take about a minute. Nothing is uploaded.
+Use the upload icon (**Import STEP model**) in the equipment library heading to add a manufacturer CAD model (`.stp` or `.step`). The file is read in the browser by the OpenCascade kernel; a detailed assembly can take about a minute. Nothing is uploaded. If the kernel stops (for example when a very large assembly exhausts the browser's memory) the dialog says so and the next file starts a fresh kernel; after three minutes it suggests cancelling and trying a simplified export.
 
 - **Orientation.** By default the model's CAD front view (its +Z face, Y up) faces the rack front. If the front and rear previews show the wrong side, choose another **Front of the model** or **Up** axis.
 - **Hidden parts.** With **Omit internal parts** on, boards and components that no outside view can see are left out. This keeps the project file small: the Pepwave MAX BR2 Pro 5G model drops from 341,000 to about 96,000 triangles, roughly 1.6 MB.

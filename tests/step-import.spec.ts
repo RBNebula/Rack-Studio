@@ -117,3 +117,42 @@ test('a STEP model without rack ears imports, stands set back on a shelf and mov
   await expect(page.getByRole('region', { name: '3D rack viewport' })).toBeVisible();
   expect(errors).toEqual([]);
 });
+
+test('a crashed import worker is reported, and the next file starts a fresh worker', async ({
+  page,
+}) => {
+  page.setDefaultTimeout(15000);
+  // Simulate the first CAD worker dying without a message (as an out-of-memory crash does):
+  // it raises an error event and never answers.
+  await page.addInitScript(() => {
+    const Native = window.Worker;
+    let crashedOne = false;
+    window.Worker = class extends Native {
+      dead = false;
+      postMessage(message: unknown, transfer?: Transferable[] | StructuredSerializeOptions) {
+        // The first file sent to any worker crashes it, which then answers nothing more;
+        // a replacement worker behaves normally.
+        if (this.dead) return;
+        if (!crashedOne) {
+          crashedOne = true;
+          this.dead = true;
+          setTimeout(() => this.dispatchEvent(new ErrorEvent('error', { cancelable: true })), 50);
+          return;
+        }
+        super.postMessage(message, transfer as Transferable[]);
+      }
+    };
+  });
+  await page.goto('/');
+  await expect(page.locator('.rack-u-label').first()).toBeVisible();
+  await page.getByRole('button', { name: 'Import STEP model', exact: true }).click();
+  const dialog = page.getByRole('dialog', { name: 'Import STEP model' });
+  await dialog.getByLabel('STEP file').setInputFiles('tests/fixtures/test-unit.stp');
+  await expect(dialog.getByRole('alert')).toContainText('The CAD import stopped unexpectedly');
+  await expect(dialog.locator('.step-progress')).toHaveCount(0);
+  // Choosing the file again uses a new, working worker.
+  await dialog.getByLabel('STEP file').setInputFiles('tests/fixtures/test-unit.stp');
+  await expect(dialog.getByTestId('step-facts')).toContainText('200 W × 30 H × 156 D mm', {
+    timeout: 60000,
+  });
+});
